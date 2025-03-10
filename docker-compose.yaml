@@ -1,0 +1,22 @@
+services:
+  user-svc:
+    build:
+      context: ./user-svc
+      dockerfile: /Dockerfile
+    container_name: user-svc
+    environment:
+      - DB_HOST=postgresql_database
+    ports:
+      - "8081:8081"
+
+  postgresql_database:
+    image: postgres:17.4
+    container_name: user_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=user_db
+    volumes:
+      - ./init/postgres:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
