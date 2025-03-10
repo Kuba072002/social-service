@@ -5,7 +5,6 @@ import org.example.application.dto.SignUpRequest;
 import org.example.application.exception.ApplicationException;
 import org.example.comon.CustomErrorMessage;
 import org.example.domain.entity.User;
-import org.example.domain.service.UserMapper;
 import org.example.domain.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

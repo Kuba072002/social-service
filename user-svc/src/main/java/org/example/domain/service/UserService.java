@@ -26,4 +26,9 @@ public class UserService {
                 .orElseThrow(() -> new ApplicationException(CustomErrorMessage.INVALID_AUTH_DATA));
     }
 
+    public User getUser(String userName) {
+        return userRepository.findByUserName(userName)
+                .orElseThrow(() -> new ApplicationException(CustomErrorMessage.USER_NOT_EXISTS));
+    }
+
 }

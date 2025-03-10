@@ -16,7 +16,7 @@ import java.time.Instant;
         uniqueConstraints = {
                 @UniqueConstraint(columnNames = "user_name"),
                 @UniqueConstraint(columnNames = "email")
-        }
+        }, indexes = @Index(columnList = "email")
 )
 @Data
 @NoArgsConstructor
