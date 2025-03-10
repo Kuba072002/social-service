@@ -6,11 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+
+import java.time.Instant;
 
 @Entity
 @Table(name = "users",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = "user-name"),
+                @UniqueConstraint(columnNames = "user_name"),
                 @UniqueConstraint(columnNames = "email")
         }
 )
@@ -21,11 +25,15 @@ import lombok.NoArgsConstructor;
 public class User {
     @Id
     @GeneratedValue
-    private Long userId;
-    @Column(name = "user-name")
+    private Long id;
+    @Column(name = "user_name")
     private String userName;
     private String email;
     private String password;
     private String imageUrl;
+    @UpdateTimestamp
+    private Instant updatedAt;
+    @CreatedDate
+    private Instant createdAt;
 
 }
