@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Set;
+
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
@@ -37,9 +39,15 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    @GetMapping("/")
+    @GetMapping("/users")
     public ResponseEntity<UserDTO> getUser(String userName) {
         var response = userMapper.toUserDTO(userService.getUser(userName));
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/internal/users")
+    public ResponseEntity<Set<UserDTO>> getUsers(Set<Long> userIds) {
+        var response = userMapper.toUserDTOs(userService.getUsers(userIds));
         return ResponseEntity.ok(response);
     }
 }

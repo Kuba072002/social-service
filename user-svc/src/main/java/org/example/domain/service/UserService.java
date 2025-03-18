@@ -7,6 +7,9 @@ import org.example.domain.entity.User;
 import org.example.domain.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -29,6 +32,10 @@ public class UserService {
     public User getUser(String userName) {
         return userRepository.findByUserName(userName)
                 .orElseThrow(() -> new ApplicationException(CustomErrorMessage.USER_NOT_EXISTS));
+    }
+
+    public Collection<User> getUsers(Set<Long> userIds) {
+        return userRepository.findAllById(userIds);
     }
 
 }
