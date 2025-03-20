@@ -1,32 +1,35 @@
-package org.example.domain.chat.entity;
+package org.example.domain.message;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.Instant;
 
 @Entity
-@Table(name = "chat_participants",
+@Table(name = "messages",
         indexes = {
-                @Index(columnList = "user_id")
+                @Index(columnList = "chat_id")
         }
 )
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ChatParticipant {
+public class Message {
     @Id
     @GeneratedValue
     private Long id;
-    @ManyToOne
-    @JoinColumn(name="id", nullable=false)
-    private Chat chat;
-    private Long userId;
+    private Long chatId;
+    private Long senderId;
+    @JdbcTypeCode(SqlTypes.JSON)
+    private MessageContent content;
     @CreatedDate
-    private Instant joinedAt;
+    private Instant createdAt;
+
 }

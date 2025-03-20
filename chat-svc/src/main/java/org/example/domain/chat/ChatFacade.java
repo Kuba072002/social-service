@@ -1,4 +1,4 @@
-package org.example.domain.chat.service;
+package org.example.domain.chat;
 
 import lombok.RequiredArgsConstructor;
 import org.example.application.chat.dto.ChatRequest;

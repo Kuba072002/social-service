@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>chat-service</artifactId>
+    <artifactId>social-service</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
         <module>user-svc</module>
-        <module>message-svc</module>
+        <module>chat-svc</module>
     </modules>
 
     <properties>

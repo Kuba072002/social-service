@@ -8,27 +8,30 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.Instant;
-import java.util.List;
 
 @Entity
-@Table(name = "group_chats",
+@Table(name = "chat_participants",
         indexes = {
-                @Index(columnList = "char_id")
+                @Index(columnList = "user_id")
         }
 )
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Chat {
+public class ChatParticipant {
     @Id
     @GeneratedValue
     private Long id;
-    private String name;
-    private String imageUrl;
-    private boolean isPrivate;
+    @ManyToOne
+    @JoinColumn(name = "id", nullable = false)
+    private Chat chat;
+    private Long userId;
     @CreatedDate
-    private Instant createdAt;
-    @OneToMany(mappedBy = "chat")
-    private List<ChatParticipant> participants;
+    private Instant joinedAt;
+
+    public ChatParticipant(Chat chat, Long userId) {
+        this.chat = chat;
+        this.userId = userId;
+    }
 }
