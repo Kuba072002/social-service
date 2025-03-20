@@ -1,34 +1,29 @@
 package org.example.domain.message;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.cassandra.core.mapping.PrimaryKey;
+import org.springframework.data.cassandra.core.mapping.Table;
 
 import java.time.Instant;
+import java.util.UUID;
 
-@Entity
-@Table(name = "messages",
-        indexes = {
-                @Index(columnList = "chat_id")
-        }
-)
+@Table
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Message {
-    @Id
-    @GeneratedValue
-    private Long id;
+
+    @PrimaryKey
+    private UUID id;
     private Long chatId;
     private Long senderId;
-    @JdbcTypeCode(SqlTypes.JSON)
-    private MessageContent content;
+    private String content;
+    private String mediaContent;
     @CreatedDate
     private Instant createdAt;
 

@@ -11,6 +11,7 @@
     <modules>
         <module>user-svc</module>
         <module>chat-svc</module>
+        <module>message-svc</module>
     </modules>
 
     <properties>
