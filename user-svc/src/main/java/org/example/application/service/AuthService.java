@@ -10,9 +10,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
     private final UserService userService;
-    private final PasswordEncoder passwordEncoder;
 
     public User authUser(String email,String password){
-        return userService.getUser(email,passwordEncoder.encode(password));
+        return userService.getUser(email,password);
     }
 }

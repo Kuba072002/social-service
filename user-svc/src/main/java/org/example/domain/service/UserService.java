@@ -5,6 +5,7 @@ import org.example.application.exception.ApplicationException;
 import org.example.comon.CustomErrorMessage;
 import org.example.domain.entity.User;
 import org.example.domain.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -14,6 +15,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public void save(User user) {
         userRepository.save(user);
@@ -23,9 +25,9 @@ public class UserService {
         return userRepository.existsByUserNameOrEmail(userName, email);
     }
 
-    public User getUser(String email, String encodedPassword) {
+    public User getUser(String email, String password) {
         return userRepository.findByEmail(email)
-                .filter(user -> user.getPassword().equals(encodedPassword))
+                .filter(user -> passwordEncoder.matches(password, user.getPassword()))
                 .orElseThrow(() -> new ApplicationException(CustomErrorMessage.INVALID_AUTH_DATA));
     }
 

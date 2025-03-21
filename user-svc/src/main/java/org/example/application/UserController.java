@@ -11,9 +11,7 @@ import org.example.application.service.UserMapper;
 import org.example.domain.entity.User;
 import org.example.domain.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
@@ -28,25 +26,25 @@ public class UserController {
     private final UserMapper userMapper;
 
     @PostMapping("/signup")
-    public ResponseEntity<Void> register(@Valid SignUpRequest signUpRequest) {
+    public ResponseEntity<Void> register(@RequestBody @Valid SignUpRequest signUpRequest) {
         createUserService.createUser(signUpRequest);
         return ResponseEntity.status(CREATED).build();
     }
 
     @PostMapping("/signIn")
-    public ResponseEntity<User> login(@Valid SignInRequest signInRequest) {
+    public ResponseEntity<User> login(@RequestBody @Valid SignInRequest signInRequest) {
         var user = authService.authUser(signInRequest.email(), signInRequest.password());
         return ResponseEntity.ok(user);
     }
 
     @GetMapping("/users")
-    public ResponseEntity<UserDTO> getUser(String userName) {
+    public ResponseEntity<UserDTO> getUser(@RequestParam String userName) {
         var response = userMapper.toUserDTO(userService.getUser(userName));
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/internal/users")
-    public ResponseEntity<Set<UserDTO>> getUsers(Set<Long> userIds) {
+    public ResponseEntity<Set<UserDTO>> getUsers(@RequestParam Set<Long> userIds) {
         var response = userMapper.toUserDTOs(userService.getUsers(userIds));
         return ResponseEntity.ok(response);
     }
