@@ -1,21 +1,26 @@
 package org.example.application;
 
+import lombok.RequiredArgsConstructor;
 import org.example.domain.message.Message;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.example.domain.message.MessageFacade;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 
 @Controller
+@RequiredArgsConstructor
 public class MessageController {
-
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
+    private final MessageFacade messageFacade;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/message")
     public void createMessage(Message message) {
-        messagingTemplate.convertAndSendToUser(
-                "user", "/queue/messages", message
+        var userIdsToNotify = messageFacade.createMessage(message);
+
+        userIdsToNotify.forEach(userId ->
+                messagingTemplate.convertAndSendToUser(
+                        userId.toString(), "/queue/messages", message
+                )
         );
     }
 }
