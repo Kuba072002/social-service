@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.application.chat.dto.ChatParticipantsDTO;
 import org.example.application.chat.dto.ChatRequest;
+import org.example.application.chat.dto.ChatsResponse;
 import org.example.domain.chat.service.ChatService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,13 @@ public class ChatController {
             @RequestBody @Valid ChatRequest chatRequest) {
         return ResponseEntity.status(CREATED)
                 .body(createChatService.create(userId, chatRequest));
+    }
+
+    @GetMapping("/chat")
+    public ResponseEntity<ChatsResponse> getUserChats(
+            @RequestHeader Long userId
+    ) {
+        return ResponseEntity.ok(chatService.getChats(userId));
     }
 
     @GetMapping("/internal/chat")

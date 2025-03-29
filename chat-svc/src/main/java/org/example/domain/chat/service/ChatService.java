@@ -3,14 +3,15 @@ package org.example.domain.chat.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.application.chat.ChatMapper;
-import org.example.application.chat.dto.ChatDTO;
 import org.example.application.chat.dto.ChatParticipantsDTO;
+import org.example.application.chat.dto.ChatsResponse;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,5 +42,10 @@ public class ChatService {
     public ChatParticipantsDTO findChatParticipants(Long chatId) {
         var chatParticipants = chatParticipantRepository.findAllByChatId(chatId);
         return chatMapper.toChatParticipantsDTO(chatParticipants);
+    }
+
+    public ChatsResponse getChats(Long userId) {
+        List<Chat> chats = chatParticipantRepository.findAllChatsByUserId(userId);
+        return chatMapper.toChatResponse(chats);
     }
 }

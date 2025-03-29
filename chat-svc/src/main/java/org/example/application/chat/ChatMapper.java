@@ -3,6 +3,7 @@ package org.example.application.chat;
 import org.example.application.chat.dto.ChatDTO;
 import org.example.application.chat.dto.ChatParticipantsDTO;
 import org.example.application.chat.dto.ChatRequest;
+import org.example.application.chat.dto.ChatsResponse;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.mapstruct.Mapper;
@@ -27,4 +28,17 @@ public interface ChatMapper {
                 .map(ChatParticipant::getUserId)
                 .collect(Collectors.toSet());
     }
+
+    @Mapping(source = "chats", target = "chats", qualifiedByName = "toChatDTOs")
+    ChatsResponse toChatResponse(List<Chat> chats);
+
+    @Named("toChatDTOs")
+    default List<ChatDTO> toChatDTOs(List<Chat> chats) {
+        return chats.stream()
+                .map(this::toChatDTO)
+                .toList();
+    }
+
+    @Mapping(source = "chats", target = "chats", qualifiedByName = "toChatDTOs")
+    ChatDTO toChatDTO(Chat chat);
 }
