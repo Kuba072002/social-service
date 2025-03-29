@@ -1,7 +1,7 @@
 package org.example.domain.chat;
 
 import lombok.RequiredArgsConstructor;
-import org.example.application.dto.ChatDTO;
+import org.example.application.dto.ChatParticipantsDTO;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 public class ChatFacade {
     private final ChatService chatService;
 
-    @Cacheable("chats")
-    public ChatDTO getChat(Long chatId) {
+    @Cacheable("chatParticipants")
+    public ChatParticipantsDTO getChat(Long chatId) {
         return chatService.getChat(chatId);
     }
 }

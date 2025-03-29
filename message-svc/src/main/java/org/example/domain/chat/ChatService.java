@@ -1,7 +1,7 @@
 package org.example.domain.chat;
 
-import org.example.application.dto.ChatDTO;
+import org.example.application.dto.ChatParticipantsDTO;
 
 public interface ChatService {
-    ChatDTO getChat(Long chatId);
+    ChatParticipantsDTO getChat(Long chatId);
 }

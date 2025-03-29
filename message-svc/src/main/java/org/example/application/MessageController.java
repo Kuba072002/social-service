@@ -1,26 +1,40 @@
 package org.example.application;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
 import org.example.domain.message.Message;
 import org.example.domain.message.MessageFacade;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
+import java.time.Instant;
+import java.util.List;
+
+import static org.springframework.http.HttpStatus.CREATED;
+
+@RestController
 @RequiredArgsConstructor
 public class MessageController {
     private final MessageFacade messageFacade;
-    private final SimpMessagingTemplate messagingTemplate;
 
-    @MessageMapping("/message")
-    public void createMessage(Message message) {
-        var userIdsToNotify = messageFacade.createMessage(message);
+    @PostMapping("/message")
+    public ResponseEntity<Void> createMessage(
+            @RequestHeader(name = "userId") Long senderId,
+            @RequestBody @Valid MessageDTO messageDTO
+    ) {
+        messageFacade.createMessage(senderId, messageDTO);
+        return ResponseEntity.status(CREATED).build();
+    }
 
-        userIdsToNotify.forEach(userId ->
-                messagingTemplate.convertAndSendToUser(
-                        userId.toString(), "/queue/messages", message
-                )
-        );
+    @GetMapping("/message")
+    public ResponseEntity<List<Message>> getMessages(
+            @RequestHeader(name = "userId") Long senderId,
+            @RequestParam Long chatId,
+            @RequestParam(required = false) Instant from,
+            @RequestParam(required = false) Instant to,
+            @RequestParam(required = false) @Max(100) Integer limit
+    ) {
+        return ResponseEntity.ok(messageFacade.getMessages(senderId, chatId, from,to,limit));
     }
 }
