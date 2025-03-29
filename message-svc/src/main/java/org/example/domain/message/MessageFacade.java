@@ -35,7 +35,7 @@ public class MessageFacade {
     }
 
     private void validateRequester(Long chatId, Long senderId) {
-        var chatParticipants = chatFacade.getChat(chatId);
+        var chatParticipants = chatFacade.findChatParticipants(chatId);
         chatParticipants.userIds().stream()
                 .filter(p -> p.equals(senderId))
                 .findFirst()

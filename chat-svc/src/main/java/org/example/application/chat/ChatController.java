@@ -2,7 +2,7 @@ package org.example.application.chat;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.application.chat.dto.ChatDTO;
+import org.example.application.chat.dto.ChatParticipantsDTO;
 import org.example.application.chat.dto.ChatRequest;
 import org.example.domain.chat.service.ChatService;
 import org.springframework.http.ResponseEntity;
@@ -25,8 +25,8 @@ public class ChatController {
     }
 
     @GetMapping("/internal/chat")
-    public ResponseEntity<ChatDTO> getChatParticipants(@RequestParam Long chatId) {
+    public ResponseEntity<ChatParticipantsDTO> findChatParticipants(@RequestParam Long chatId) {
         return ResponseEntity.ok()
-                .body(chatService.getChat(chatId));
+                .body(chatService.findChatParticipants(chatId));
     }
 }

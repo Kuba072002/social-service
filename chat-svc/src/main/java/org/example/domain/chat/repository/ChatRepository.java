@@ -6,18 +6,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ChatRepository extends JpaRepository<Chat, Long> {
-    @Query("""
-                SELECT c,cp
-                FROM Chat c
-                JOIN ChatParticipant cp ON c.id = cp1.chat.id
-                WHERE c.id = :chatId
-            """)
-    Optional<Chat> findChat(@Param("chatId") Long chatId);
-
     @Query("""
                 SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END
                 FROM Chat c

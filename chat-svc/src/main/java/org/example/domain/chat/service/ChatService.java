@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.application.chat.ChatMapper;
 import org.example.application.chat.dto.ChatDTO;
+import org.example.application.chat.dto.ChatParticipantsDTO;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.repository.ChatParticipantRepository;
@@ -32,14 +33,13 @@ public class ChatService {
                 .map(id -> new ChatParticipant(chat, id))
                 .collect(Collectors.toList());
 
-        chatParticipants.add( new ChatParticipant(chat, userId));
+        chatParticipants.add(new ChatParticipant(chat, userId));
         chatParticipantRepository.saveAll(chatParticipants);
         return chat;
     }
 
-    public ChatDTO getChat(Long chatId) {
-        return chatRepository.findChat(chatId)
-                .map(chatMapper::toChatDTO)
-                .orElseThrow(() -> new RuntimeException("Chat not exists."));
+    public ChatParticipantsDTO findChatParticipants(Long chatId) {
+        var chatParticipants = chatParticipantRepository.findAllByChatId(chatId);
+        return chatMapper.toChatParticipantsDTO(chatParticipants);
     }
 }

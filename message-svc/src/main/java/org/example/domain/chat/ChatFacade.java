@@ -11,7 +11,7 @@ public class ChatFacade {
     private final ChatService chatService;
 
     @Cacheable("chatParticipants")
-    public ChatParticipantsDTO getChat(Long chatId) {
-        return chatService.getChat(chatId);
+    public ChatParticipantsDTO findChatParticipants(Long chatId) {
+        return chatService.findChatParticipants(chatId);
     }
 }
