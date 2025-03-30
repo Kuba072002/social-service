@@ -9,6 +9,7 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
+        <module>shared-lib</module>
         <module>user-svc</module>
         <module>chat-svc</module>
         <module>message-svc</module>

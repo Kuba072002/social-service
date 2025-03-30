@@ -1,9 +1,9 @@
 package org.example.application.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.ApplicationException;
 import org.example.application.dto.SignUpRequest;
-import org.example.application.exception.ApplicationException;
-import org.example.comon.CustomErrorMessage;
+import org.example.comon.CustomUserErrorMessage;
 import org.example.domain.entity.User;
 import org.example.domain.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,13 +28,13 @@ public class CreateUserService {
 
     private void validateIfPasswordMatch(String password, String confirmPassword) {
         if (!password.equals(confirmPassword)) {
-            throw new ApplicationException(CustomErrorMessage.CONFIRM_PASSWORD_DO_NOT_MATCH);
+            throw new ApplicationException(CustomUserErrorMessage.CONFIRM_PASSWORD_DO_NOT_MATCH);
         }
     }
 
     private void validateIfUserExists(String userName, String email) {
         if (userService.validateIfExists(userName, email)) {
-            throw new ApplicationException(CustomErrorMessage.USER_ALREADY_EXISTS);
+            throw new ApplicationException(CustomUserErrorMessage.USER_ALREADY_EXISTS);
         }
     }
 

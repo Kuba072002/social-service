@@ -1,13 +1,13 @@
 package org.example.domain.user;
 
 import lombok.RequiredArgsConstructor;
-import org.example.application.exception.ApplicationException;
+import org.example.ApplicationException;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.example.common.CustomErrorMessage.NOT_VALID_USERS;
+import static org.example.common.CustomChatErrorMessage.NOT_VALID_USERS;
 
 @Component
 @RequiredArgsConstructor

@@ -1,8 +1,8 @@
 package org.example.domain.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.application.exception.ApplicationException;
-import org.example.comon.CustomErrorMessage;
+import org.example.ApplicationException;
+import org.example.comon.CustomUserErrorMessage;
 import org.example.domain.entity.User;
 import org.example.domain.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -28,12 +28,12 @@ public class UserService {
     public User getUser(String email, String password) {
         return userRepository.findByEmail(email)
                 .filter(user -> passwordEncoder.matches(password, user.getPassword()))
-                .orElseThrow(() -> new ApplicationException(CustomErrorMessage.INVALID_AUTH_DATA));
+                .orElseThrow(() -> new ApplicationException(CustomUserErrorMessage.INVALID_AUTH_DATA));
     }
 
     public User getUser(String userName) {
         return userRepository.findByUserName(userName)
-                .orElseThrow(() -> new ApplicationException(CustomErrorMessage.USER_NOT_EXISTS));
+                .orElseThrow(() -> new ApplicationException(CustomUserErrorMessage.USER_NOT_EXISTS));
     }
 
     public Collection<User> getUsers(Set<Long> userIds) {

@@ -2,8 +2,8 @@ package org.example.application.chat;
 
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+import org.example.ApplicationException;
 import org.example.application.chat.dto.ChatRequest;
-import org.example.application.exception.ApplicationException;
 import org.example.domain.chat.service.ChatService;
 import org.example.domain.user.UserFacade;
 import org.springframework.stereotype.Service;
@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.example.common.CustomErrorMessage.*;
+import static org.example.BasicCustomErrorMessage.INVALID_DATA;
+import static org.example.common.CustomChatErrorMessage.PRIVATE_CHAT_ALREADY_EXISTS;
+import static org.example.common.CustomChatErrorMessage.REQUEST_GROUP_VALIDATION_NOT_EXISTS;
 
 @Service
 @RequiredArgsConstructor

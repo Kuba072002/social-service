@@ -1,4 +1,4 @@
-package org.example.application.exception;
+package org.example;
 
 public record ServiceResponse(String message) {
 }
