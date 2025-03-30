@@ -7,11 +7,8 @@ import org.example.application.chat.dto.ChatsResponse;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Mapper
@@ -19,26 +16,17 @@ public interface ChatMapper {
 
     Chat toChat(ChatRequest chatRequest);
 
-    @Mapping(source = "chatParticipants", target = "userIds", qualifiedByName = "toUserIds")
-    ChatParticipantsDTO toChatParticipantsDTO(List<ChatParticipant> chatParticipants);
-
-    @Named("toUserIds")
-    default Set<Long> toUserIds(List<ChatParticipant> chatParticipants) {
-        return chatParticipants.stream()
+    default ChatParticipantsDTO toChatParticipantsDTO(List<ChatParticipant> chatParticipants) {
+        return new ChatParticipantsDTO(chatParticipants.stream()
                 .map(ChatParticipant::getUserId)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toSet()));
     }
 
-    @Mapping(source = "chats", target = "chats", qualifiedByName = "toChatDTOs")
-    ChatsResponse toChatResponse(List<Chat> chats);
-
-    @Named("toChatDTOs")
-    default List<ChatDTO> toChatDTOs(List<Chat> chats) {
-        return chats.stream()
+    default ChatsResponse toChatResponse(List<Chat> chats) {
+        return new ChatsResponse(chats.stream()
                 .map(this::toChatDTO)
-                .toList();
+                .toList());
     }
 
-    @Mapping(source = "chats", target = "chats", qualifiedByName = "toChatDTOs")
     ChatDTO toChatDTO(Chat chat);
 }

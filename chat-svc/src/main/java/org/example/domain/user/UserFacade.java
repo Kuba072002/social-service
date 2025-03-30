@@ -13,7 +13,7 @@ public class UserFacade {
     public void validateUsers(Set<Long> userIds){
         var users = userService.getUsers(userIds);
         if (users.size() != userIds.size()){
-            throw new RuntimeException();
+            throw new RuntimeException("Some users are invalid");
         }
     }
 }

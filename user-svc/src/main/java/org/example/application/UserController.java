@@ -1,6 +1,7 @@
 package org.example.application;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.example.application.dto.SignInRequest;
 import org.example.application.dto.SignUpRequest;
@@ -43,8 +44,8 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/internal/users")
-    public ResponseEntity<Set<UserDTO>> getUsers(@RequestParam Set<Long> userIds) {
+    @PostMapping("/internal/users")
+    public ResponseEntity<Set<UserDTO>> getUsers(@RequestBody @NotEmpty Set<Long> userIds) {
         var response = userMapper.toUserDTOs(userService.getUsers(userIds));
         return ResponseEntity.ok(response);
     }

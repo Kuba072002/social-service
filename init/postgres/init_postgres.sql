@@ -1,2 +1,2 @@
 CREATE SCHEMA IF NOT EXISTS "user_schema";
-CREATE SCHEMA IF NOT EXISTS "message_schema";
+CREATE SCHEMA IF NOT EXISTS "chat_schema";

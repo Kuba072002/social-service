@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Table(name = "chats",
         indexes = {
-                @Index(columnList = "char_id")
+                @Index(columnList = "id")
         }
 )
 @Data
@@ -26,9 +26,9 @@ public class Chat {
     private Long id;
     private String name;
     private String imageUrl;
-    private boolean isPrivate;
+    private Boolean isPrivate;
     @CreatedDate
     private Instant createdAt;
-    @OneToMany(mappedBy = "chat")
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ChatParticipant> participants;
 }

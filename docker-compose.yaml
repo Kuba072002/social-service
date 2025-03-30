@@ -11,11 +11,11 @@ services:
 
   postgresql_database:
     image: postgres:17.4
-    container_name: user_db
+    container_name: postgresql_db
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=user_db
+      - POSTGRES_DB=social_db
     volumes:
       - ./init/postgres:/docker-entrypoint-initdb.d
     ports:

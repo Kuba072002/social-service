@@ -9,6 +9,7 @@ public record ChatRequest(
         @Null(groups = PrivateChatGroup.class)
         String name,
         String imageUrl,
+        @NotNull
         Boolean isPrivate,
         @NotEmpty
         @Size(max = 20, groups = GroupChatGroup.class)

@@ -24,7 +24,7 @@ public class ChatParticipant {
     @GeneratedValue
     private Long id;
     @ManyToOne
-    @JoinColumn(name = "id", nullable = false)
+    @JoinColumn(name = "chat_id", nullable = false)
     private Chat chat;
     private Long userId;
     @CreatedDate
