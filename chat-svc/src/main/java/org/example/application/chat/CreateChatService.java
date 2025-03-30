@@ -3,12 +3,15 @@ package org.example.application.chat;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.example.application.chat.dto.ChatRequest;
+import org.example.application.exception.ApplicationException;
 import org.example.domain.chat.service.ChatService;
 import org.example.domain.user.UserFacade;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.Optional;
+
+import static org.example.common.CustomErrorMessage.*;
 
 @Service
 @RequiredArgsConstructor
@@ -31,7 +34,7 @@ public class CreateChatService {
     private void validateIfPrivateChatAlreadyExists(Long user1Id, Long user2Id) {
         var exists = chatService.checkIfPrivateChatExists(user1Id, user2Id);
         if (exists) {
-            throw new RuntimeException("Private chat already exists");
+            throw new ApplicationException(PRIVATE_CHAT_ALREADY_EXISTS);
         }
     }
 
@@ -43,9 +46,9 @@ public class CreateChatService {
         var validationResult = Optional.ofNullable(chatRequest.isPrivate())
                 .map(validationGroups::get)
                 .map(validationGroup -> validator.validate(chatRequest, validationGroup))
-                .orElseThrow(() -> new RuntimeException("Request group validation not exist"));
+                .orElseThrow(() -> new ApplicationException(REQUEST_GROUP_VALIDATION_NOT_EXISTS));
         if (!validationResult.isEmpty()) {
-            throw new RuntimeException("Request validation failed " + validationResult);
+            throw new ApplicationException(INVALID_DATA.formatted(validationResult));
         }
     }
 }

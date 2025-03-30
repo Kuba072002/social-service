@@ -1,18 +1,13 @@
 package org.example.application.exception;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import static org.example.comon.CustomErrorMessage.INVALID_DATA;
-
+import static org.example.common.CustomErrorMessage.INVALID_DATA;
 
 @ControllerAdvice
 public class WebExceptionHandler {
@@ -43,4 +38,5 @@ public class WebExceptionHandler {
         return ResponseEntity.status(e.getStatusCode())
                 .body(new ServiceResponse("Unknown server error."));
     }
+
 }
