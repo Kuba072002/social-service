@@ -6,6 +6,8 @@ import org.example.domain.user.UserService;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
@@ -26,6 +28,7 @@ public class UserServiceConfiguration {
         return RestClient.builder()
                 .baseUrl(url)
                 .requestInterceptor(interceptor)
+                .requestFactory(getClientHttpRequestFactory())
                 .build();
     }
 
@@ -34,5 +37,12 @@ public class UserServiceConfiguration {
         HttpServiceProxyFactory httpServiceProxyFactory =
                 HttpServiceProxyFactory.builderFor(RestClientAdapter.create(userRestClient)).build();
         return httpServiceProxyFactory.createClient(UserService.class);
+    }
+
+    private ClientHttpRequestFactory getClientHttpRequestFactory() {
+        HttpComponentsClientHttpRequestFactory clientHttpRequestFactory =
+                new HttpComponentsClientHttpRequestFactory();
+        clientHttpRequestFactory.setConnectionRequestTimeout(connectionTimeout);
+        return clientHttpRequestFactory;
     }
 }
