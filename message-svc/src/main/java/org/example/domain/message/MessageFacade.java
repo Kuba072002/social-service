@@ -1,6 +1,7 @@
 package org.example.domain.message;
 
 import lombok.RequiredArgsConstructor;
+import org.example.ApplicationException;
 import org.example.application.MessageDTO;
 import org.example.domain.chat.ChatFacade;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,6 +9,9 @@ import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.List;
+
+import static org.example.common.MessageApplicationError.FROM_GREATER_THAN_TO;
+import static org.example.common.MessageApplicationError.NOT_INVOLVED_REQUESTER;
 
 @Component
 @RequiredArgsConstructor
@@ -34,16 +38,16 @@ public class MessageFacade {
         return messageRepository.findAllByChatIdAndCreatedAtGreaterThan(chatId, from, to, limit);
     }
 
-    private void validateRequester(Long chatId, Long senderId) {
+    private void validateRequester(Long chatId, Long requesterId) {
         var chatParticipants = chatFacade.findChatParticipants(chatId);
         chatParticipants.userIds().stream()
-                .filter(p -> p.equals(senderId))
+                .filter(p -> p.equals(requesterId))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("Sender not involved in chat"));
+                .orElseThrow(() -> new ApplicationException(NOT_INVOLVED_REQUESTER));
     }
 
     private void validateQueryParams(Instant from, Instant to) {
-        if (from.isAfter(to)) throw new RuntimeException("From cannot be greater than to.");
+        if (from.isAfter(to)) throw new ApplicationException(FROM_GREATER_THAN_TO);
     }
 
 }

@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
-import static org.example.BasicCustomErrorMessage.INVALID_DATA;
+import static org.example.BasicApplicationError.INVALID_DATA;
 
 @ControllerAdvice
 public class WebExceptionHandler {
@@ -21,8 +21,8 @@ public class WebExceptionHandler {
 
     @ExceptionHandler(ApplicationException.class)
     public ResponseEntity<ServiceResponse> handleApplicationException(ApplicationException e) {
-        return ResponseEntity.status(e.getErrorMessage().getStatus())
-                .body(new ServiceResponse(e.getErrorMessage().getMessage()));
+        return ResponseEntity.status(e.getApplicationError().getStatus())
+                .body(new ServiceResponse(e.getApplicationError().getMessage()));
     }
 
     @ExceptionHandler(HttpClientErrorException.class)

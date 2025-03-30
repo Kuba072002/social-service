@@ -2,13 +2,13 @@ package org.example;
 
 
 public class ApplicationException extends RuntimeException {
-    private final CustomErrorMessage errorMessage;
+    private final ApplicationError applicationError;
 
-    public ApplicationException(CustomErrorMessage errorMessage) {
-        this.errorMessage = errorMessage;
+    public ApplicationException(ApplicationError applicationError) {
+        this.applicationError = applicationError;
     }
 
-    public CustomErrorMessage getErrorMessage() {
-        return errorMessage;
+    public ApplicationError getApplicationError() {
+        return applicationError;
     }
 }

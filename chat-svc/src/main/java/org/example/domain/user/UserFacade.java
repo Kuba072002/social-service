@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.example.common.CustomChatErrorMessage.NOT_VALID_USERS;
+import static org.example.common.ChatApplicationError.NOT_VALID_USERS;
 
 @Component
 @RequiredArgsConstructor

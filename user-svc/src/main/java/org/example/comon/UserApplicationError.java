@@ -1,13 +1,13 @@
 package org.example.comon;
 
 import lombok.Getter;
-import org.example.CustomErrorMessage;
+import org.example.ApplicationError;
 import org.springframework.http.HttpStatus;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Getter
-public enum CustomUserErrorMessage implements CustomErrorMessage {
+public enum UserApplicationError implements ApplicationError {
     USER_ALREADY_EXISTS(BAD_REQUEST, "User already exists."),
     CONFIRM_PASSWORD_DO_NOT_MATCH(BAD_REQUEST, "Confirm password do not match."),
     INVALID_AUTH_DATA(BAD_REQUEST, "Invalid authentication data."),
@@ -17,7 +17,7 @@ public enum CustomUserErrorMessage implements CustomErrorMessage {
     private final HttpStatus status;
     private final String message;
 
-    CustomUserErrorMessage(HttpStatus status, String message) {
+    UserApplicationError(HttpStatus status, String message) {
         this.status = status;
         this.message = message;
     }
