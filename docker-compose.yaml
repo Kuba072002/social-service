@@ -20,3 +20,30 @@ services:
       - ./init/postgres:/docker-entrypoint-initdb.d
     ports:
       - "5432:5432"
+
+  cassandra:
+    image: bitnami/cassandra
+    container_name: cassandra-container
+    restart: always
+    ports:
+      - "7000:7000"
+      - "9042:9042"
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+      - ./init/cassandra:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:latest
+    container_name: redis-container
+    restart: always
+    ports:
+      - "6379:6379"
+    command: [ "redis-server", "--appendonly", "yes" ]
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
+    driver: local
+  cassandra_data:
+    driver: local
