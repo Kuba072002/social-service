@@ -6,8 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.data.annotation.CreatedDate;
 
 import java.time.Instant;
 
@@ -33,7 +33,7 @@ public class User {
     private String imageUrl;
     @UpdateTimestamp
     private Instant updatedAt;
-    @CreatedDate
+    @CreationTimestamp
     private Instant createdAt;
 
 }

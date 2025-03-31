@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 
@@ -27,7 +27,7 @@ public class ChatParticipant {
     @JoinColumn(name = "chat_id", nullable = false)
     private Chat chat;
     private Long userId;
-    @CreatedDate
+    @CreationTimestamp
     private Instant joinedAt;
 
     public ChatParticipant(Chat chat, Long userId) {

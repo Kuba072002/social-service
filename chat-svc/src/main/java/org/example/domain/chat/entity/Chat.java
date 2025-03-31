@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.util.List;
@@ -27,7 +27,7 @@ public class Chat {
     private String name;
     private String imageUrl;
     private Boolean isPrivate;
-    @CreatedDate
+    @CreationTimestamp
     private Instant createdAt;
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ChatParticipant> participants;
