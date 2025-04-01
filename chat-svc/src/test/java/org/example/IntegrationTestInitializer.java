@@ -16,7 +16,6 @@ public class IntegrationTestInitializer implements ApplicationContextInitializer
 
     @Override
     public void initialize(ConfigurableApplicationContext applicationContext) {
-        System.out.println("porta: "+WIREMOCK.port());
         TestPropertyValues.of(
                 "spring.datasource.driver-class-name=",
                 "spring.jpa.properties.hibernate.dialect=",

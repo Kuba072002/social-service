@@ -21,16 +21,16 @@ services:
     ports:
       - "5432:5432"
 
-  cassandra:
-    image: bitnami/cassandra
-    container_name: cassandra-container
+  scylla:
+    image: bitnami/scylladb:6.2.3
+    container_name: scylla_db
     restart: always
     ports:
       - "7000:7000"
       - "9042:9042"
     volumes:
-      - cassandra_data:/var/lib/cassandra
-      - ./init/cassandra:/docker-entrypoint-initdb.d
+      - scylla_data:/var/lib/scylla
+      - ./init/scylla:/docker-entrypoint-initdb.d
 
   redis:
     image: redis:latest
@@ -45,5 +45,5 @@ services:
 volumes:
   redis_data:
     driver: local
-  cassandra_data:
+  scylla_data:
     driver: local

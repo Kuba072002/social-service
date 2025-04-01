@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ChatRepository extends JpaRepository<Chat, Long> {
     @Query("""
-                SELECT CASE WHEN COUNT(c) = 2 THEN true ELSE false END
+                SELECT CASE WHEN COUNT(c) >= 2 THEN true ELSE false END
                 FROM Chat c
                 JOIN ChatParticipant cp ON cp.chat.id = c.id
                 WHERE c.isPrivate = true
