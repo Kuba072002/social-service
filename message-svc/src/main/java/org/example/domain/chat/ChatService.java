@@ -7,6 +7,6 @@ import org.springframework.web.service.annotation.HttpExchange;
 
 @HttpExchange(accept = "application/json", contentType = "application/json")
 public interface ChatService {
-    @GetExchange("/internal/chat")
+    @GetExchange("/internal/chats")
     ChatParticipantsDTO findChatParticipants(@RequestParam Long chatId);
 }

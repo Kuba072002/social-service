@@ -17,7 +17,7 @@ public class ChatController {
     private final CreateChatService createChatService;
     private final ChatService chatService;
 
-    @PostMapping("/chat")
+    @PostMapping("/chats")
     public ResponseEntity<Long> createChat(
             @RequestHeader Long userId,
             @RequestBody @Valid ChatRequest chatRequest) {
@@ -25,14 +25,14 @@ public class ChatController {
                 .body(createChatService.create(userId, chatRequest));
     }
 
-    @GetMapping("/chat")
+    @GetMapping("/chats")
     public ResponseEntity<ChatsResponse> getUserChats(
             @RequestHeader Long userId
     ) {
         return ResponseEntity.ok(chatService.getChats(userId));
     }
 
-    @GetMapping("/internal/chat")
+    @GetMapping("/internal/chats")
     public ResponseEntity<ChatParticipantsDTO> findChatParticipants(@RequestParam Long chatId) {
         return ResponseEntity.ok()
                 .body(chatService.findChatParticipants(chatId));

@@ -18,7 +18,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class MessageController {
     private final MessageFacade messageFacade;
 
-    @PostMapping("/message")
+    @PostMapping("/messages")
     public ResponseEntity<Void> createMessage(
             @RequestHeader(name = "userId") Long senderId,
             @RequestBody @Valid MessageDTO messageDTO
@@ -27,7 +27,7 @@ public class MessageController {
         return ResponseEntity.status(CREATED).build();
     }
 
-    @GetMapping("/message")
+    @GetMapping("/messages")
     public ResponseEntity<List<Message>> getMessages(
             @RequestHeader(name = "userId") Long senderId,
             @RequestParam Long chatId,
