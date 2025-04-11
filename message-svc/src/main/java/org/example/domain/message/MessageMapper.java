@@ -1,6 +1,6 @@
 package org.example.domain.message;
 
-import org.example.application.MessageDTO;
+import org.example.application.message.MessageDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

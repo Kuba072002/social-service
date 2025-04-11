@@ -1,4 +1,4 @@
-package org.example.application;
+package org.example.application.message;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;

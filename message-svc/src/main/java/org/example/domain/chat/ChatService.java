@@ -1,6 +1,6 @@
 package org.example.domain.chat;
 
-import org.example.application.dto.ChatParticipantsDTO;
+import org.example.application.chat.ChatParticipantsDTO;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;

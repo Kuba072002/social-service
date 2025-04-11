@@ -1,4 +1,4 @@
-package org.example.application.dto;
+package org.example.application.chat;
 
 import java.io.Serializable;
 import java.util.Set;

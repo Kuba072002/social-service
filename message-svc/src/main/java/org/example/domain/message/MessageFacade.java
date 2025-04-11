@@ -2,7 +2,7 @@ package org.example.domain.message;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
-import org.example.application.MessageDTO;
+import org.example.application.message.MessageDTO;
 import org.example.domain.chat.ChatFacade;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -42,7 +42,7 @@ public class MessageFacade {
     private void validateRequester(Long chatId, Long requesterId) {
         var chatParticipants = chatFacade.findChatParticipants(chatId);
         chatParticipants.userIds().stream()
-                .filter(p -> p.equals(requesterId))
+                .filter(participant -> participant.equals(requesterId))
                 .findFirst()
                 .orElseThrow(() -> new ApplicationException(NOT_INVOLVED_REQUESTER));
     }
