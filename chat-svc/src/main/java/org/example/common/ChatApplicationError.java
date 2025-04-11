@@ -10,7 +10,10 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 public enum ChatApplicationError implements ApplicationError {
     NOT_VALID_USERS(BAD_REQUEST, "Invalid users: %s"),
     PRIVATE_CHAT_ALREADY_EXISTS(BAD_REQUEST, "Private chat already exists."),
-    REQUEST_GROUP_VALIDATION_NOT_EXISTS(BAD_REQUEST, "Request group validation not exists.");
+    REQUEST_GROUP_VALIDATION_NOT_EXISTS(BAD_REQUEST, "Request group validation not exists."),
+    CHAT_NOT_EXISTS(BAD_REQUEST, "Chat not exists."),
+    USER_IS_NOT_ADMIN(BAD_REQUEST, "User is not admin."),
+    CHAT_PARTICIPANTS_ALREADY_EXISTS(BAD_REQUEST, "Chat participants already exists.");
 
     private final HttpStatus status;
     private String message;

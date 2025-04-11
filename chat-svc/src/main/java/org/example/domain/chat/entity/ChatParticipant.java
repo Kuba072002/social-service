@@ -27,11 +27,18 @@ public class ChatParticipant {
     @JoinColumn(name = "chat_id", nullable = false)
     private Chat chat;
     private Long userId;
+    private String role;
     @CreationTimestamp
     private Instant joinedAt;
 
     public ChatParticipant(Chat chat, Long userId) {
         this.chat = chat;
         this.userId = userId;
+    }
+
+    public ChatParticipant(Chat chat, Long userId, String role) {
+        this.chat = chat;
+        this.userId = userId;
+        this.role = role;
     }
 }

@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface ChatRepository extends JpaRepository<Chat, Long> {
     @Query("""
@@ -16,4 +18,7 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
                 AND cp.userId IN (:user1Id, :user2Id)
             """)
     boolean existsPrivateChat(@Param("user1Id") Long user1Id, @Param("user2Id") Long user2Id);
+
+    @Query("SELECT c FROM Chat c LEFT JOIN FETCH c.participants WHERE c.id = :chatId")
+    Optional<Chat> findChatWithParticipantsById(@Param("chatId") Long chatId);
 }
