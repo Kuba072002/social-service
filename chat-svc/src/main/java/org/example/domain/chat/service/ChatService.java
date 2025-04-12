@@ -41,6 +41,10 @@ public class ChatService {
                 .map(id -> new ChatParticipant(chat, id))
                 .collect(Collectors.toList());
 
+        if (chat.getIsPrivate()){
+            chatParticipants.getFirst().setRole(ADMIN_ROLE);
+        }
+
         chatParticipants.add(new ChatParticipant(chat, userId, ADMIN_ROLE));
         chatParticipantRepository.saveAll(chatParticipants);
 

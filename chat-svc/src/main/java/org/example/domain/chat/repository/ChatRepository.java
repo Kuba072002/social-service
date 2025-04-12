@@ -10,13 +10,16 @@ import java.util.Optional;
 
 @Repository
 public interface ChatRepository extends JpaRepository<Chat, Long> {
-    @Query("""
-                SELECT CASE WHEN COUNT(c) >= 2 THEN true ELSE false END
-                FROM Chat c
-                JOIN ChatParticipant cp ON cp.chat.id = c.id
-                WHERE c.isPrivate = true
-                AND cp.userId IN (:user1Id, :user2Id)
-            """)
+
+    @Query(value = """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM chat_schema.chats c
+                    JOIN chat_schema.chat_participants cp1 ON cp1.chat_id = c.id AND cp1.user_id = :user1Id
+                    JOIN chat_schema.chat_participants cp2 ON cp2.chat_id = c.id AND cp2.user_id = :user2Id
+                    WHERE c.is_private = true
+                )
+            """, nativeQuery = true)
     boolean existsPrivateChat(@Param("user1Id") Long user1Id, @Param("user2Id") Long user2Id);
 
     @Query("SELECT c FROM Chat c LEFT JOIN FETCH c.participants WHERE c.id = :chatId")

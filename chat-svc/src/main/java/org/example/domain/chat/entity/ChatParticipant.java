@@ -11,9 +11,8 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "chat_participants",
-        indexes = {
-                @Index(columnList = "user_id")
-        }
+        indexes = @Index(columnList = "user_id"),
+        uniqueConstraints = @UniqueConstraint(columnNames = {"chat_id", "user_id"})
 )
 @Data
 @NoArgsConstructor

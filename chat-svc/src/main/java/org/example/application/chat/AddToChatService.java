@@ -20,13 +20,20 @@ public class AddToChatService {
     public void addToChat(Long userId, AddToChatRequest request) {
         var chat = chatService.findChatWithParticipants(request.chatId())
                 .orElseThrow(() -> new ApplicationException(CHAT_NOT_EXISTS));
-        if (!validateIfUserIsAdmin(userId,chat)){
+        validate(userId, request.userIds(), chat);
+        chatService.addToChat(userId, chat, request.userIds());
+    }
+
+    private void validate(Long userId, Set<Long> userIds, Chat chat) {
+        if (chat.getIsPrivate()) {
+            throw new ApplicationException(CANNOT_ADD_TO_PRIVATE_CHAT);
+        }
+        if (!validateIfUserIsAdmin(userId, chat)) {
             throw new ApplicationException(USER_IS_NOT_ADMIN);
         }
-        if (checkIfAnyParticipantAlreadyExists(request.userIds(), chat)) {
+        if (checkIfAnyParticipantAlreadyExists(userIds, chat)) {
             throw new ApplicationException(CHAT_PARTICIPANTS_ALREADY_EXISTS);
         }
-        chatService.addToChat(userId, chat, request.userIds());
     }
 
     private boolean checkIfAnyParticipantAlreadyExists(Set<Long> userIds, Chat chat) {
