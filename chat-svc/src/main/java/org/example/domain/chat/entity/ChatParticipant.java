@@ -28,6 +28,7 @@ public class ChatParticipant {
     private Chat chat;
     private Long userId;
     private String role;
+    private Instant lastReadAt;
     @CreationTimestamp
     private Instant joinedAt;
 

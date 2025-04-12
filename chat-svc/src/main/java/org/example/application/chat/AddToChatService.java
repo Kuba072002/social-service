@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
 import org.example.application.chat.dto.AddToChatRequest;
 import org.example.domain.chat.entity.Chat;
-import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.service.ChatService;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +20,7 @@ public class AddToChatService {
     public void addToChat(Long userId, AddToChatRequest request) {
         var chat = chatService.findChatWithParticipants(request.chatId())
                 .orElseThrow(() -> new ApplicationException(CHAT_NOT_EXISTS));
-        if (validateIfUserIsAdmin(userId,chat)){
+        if (!validateIfUserIsAdmin(userId,chat)){
             throw new ApplicationException(USER_IS_NOT_ADMIN);
         }
         if (checkIfAnyParticipantAlreadyExists(request.userIds(), chat)) {
