@@ -22,8 +22,8 @@ public class ChatParticipant {
     @Id
     @GeneratedValue
     private Long id;
-    @ManyToOne
-    @JoinColumn(name = "chat_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_id", referencedColumnName = "id", nullable = false)
     private Chat chat;
     private Long userId;
     private String role;

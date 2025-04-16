@@ -12,7 +12,6 @@ import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,7 +40,7 @@ public class ChatService {
                 .map(id -> new ChatParticipant(chat, id))
                 .collect(Collectors.toList());
 
-        if (chat.getIsPrivate()){
+        if (chat.getIsPrivate()) {
             chatParticipants.getFirst().setRole(ADMIN_ROLE);
         }
 
@@ -49,7 +48,7 @@ public class ChatService {
         chatParticipantRepository.saveAll(chatParticipants);
 
         userIds.add(userId);
-        chatEventPublisher.sendEvent(new ChatEvent(CREATE.name(),chat.getId(),userIds));
+        chatEventPublisher.sendEvent(new ChatEvent(CREATE.name(), chat.getId(), userIds));
         return chat;
     }
 
@@ -60,7 +59,7 @@ public class ChatService {
                 .toList();
         chatParticipantRepository.saveAll(chatParticipants);
         userIds.add(userId);
-        chatEventPublisher.sendEvent(new ChatEvent(ADD_PARTICIPANTS.name(),chat.getId(),userIds));
+        chatEventPublisher.sendEvent(new ChatEvent(ADD_PARTICIPANTS.name(), chat.getId(), userIds));
     }
 
     public Optional<Chat> findChatWithParticipants(Long chatId) {
@@ -73,7 +72,7 @@ public class ChatService {
     }
 
     public ChatsResponse getChats(Long userId) {
-        List<Chat> chats = chatParticipantRepository.findAllChatsByUserId(userId);
-        return chatMapper.toChatResponse(chats);
+        var userChats = chatParticipantRepository.findChatParticipantsWithChatsByUserId(userId);
+        return chatMapper.toChatResponse(userChats);
     }
 }

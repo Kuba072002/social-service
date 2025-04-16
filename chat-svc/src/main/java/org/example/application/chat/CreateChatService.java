@@ -12,8 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.example.BasicApplicationError.INVALID_DATA;
-import static org.example.common.ChatApplicationError.PRIVATE_CHAT_ALREADY_EXISTS;
-import static org.example.common.ChatApplicationError.REQUEST_GROUP_VALIDATION_NOT_EXISTS;
+import static org.example.common.ChatApplicationError.*;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +23,9 @@ public class CreateChatService {
     private final ChatMapper chatMapper;
 
     public Long create(Long userId, ChatRequest chatRequest) {
+        if (chatRequest.userIds().contains(userId)){
+            throw new ApplicationException(CANNOT_ADD_YOURSELF_TO_CHAT);
+        }
         validateRequest(chatRequest);
         userFacade.validateUsers(chatRequest.userIds());
         if (chatRequest.isPrivate())

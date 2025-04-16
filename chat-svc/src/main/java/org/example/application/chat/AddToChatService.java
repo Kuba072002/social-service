@@ -18,6 +18,9 @@ public class AddToChatService {
     private final ChatService chatService;
 
     public void addToChat(Long userId, AddToChatRequest request) {
+        if (request.userIds().contains(userId)){
+            throw new ApplicationException(CANNOT_ADD_YOURSELF_TO_CHAT);
+        }
         var chat = chatService.findChatWithParticipants(request.chatId())
                 .orElseThrow(() -> new ApplicationException(CHAT_NOT_EXISTS));
         validate(userId, request.userIds(), chat);

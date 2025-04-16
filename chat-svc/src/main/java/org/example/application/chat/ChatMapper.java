@@ -8,6 +8,7 @@ import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.mapstruct.Mapper;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,11 +23,11 @@ public interface ChatMapper {
                 .collect(Collectors.toSet()));
     }
 
-    default ChatsResponse toChatResponse(List<Chat> chats) {
+    default ChatsResponse toChatResponse(List<ChatParticipant> chats) {
         return new ChatsResponse(chats.stream()
-                .map(this::toChatDTO)
+                .map(cp -> toChatDTO(cp.getChat(), cp.getLastReadAt()))
                 .toList());
     }
 
-    ChatDTO toChatDTO(Chat chat);
+    ChatDTO toChatDTO(Chat chat, Instant lastReadAt);
 }
