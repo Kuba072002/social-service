@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface ChatParticipantRepository extends JpaRepository<ChatParticipant, Long> {
 
-    @Query("SELECT cp FROM ChatParticipant cp WHERE cp.chat.id =:chatId")
+    @Query("SELECT cp FROM ChatParticipant cp WHERE cp.chat.id = :chatId")
     List<ChatParticipant> findAllByChatId(Long chatId);
 
     @Query("SELECT cp FROM ChatParticipant cp LEFT JOIN FETCH cp.chat WHERE cp.userId = :userId")

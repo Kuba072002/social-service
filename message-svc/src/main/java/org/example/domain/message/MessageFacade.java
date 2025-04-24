@@ -40,8 +40,8 @@ public class MessageFacade {
     }
 
     private void validateRequester(Long chatId, Long requesterId) {
-        var chatParticipants = chatFacade.findChatParticipants(chatId);
-        chatParticipants.userIds().stream()
+        var chatParticipantIds = chatFacade.findChatParticipants(chatId);
+        chatParticipantIds.stream()
                 .filter(participant -> participant.equals(requesterId))
                 .findFirst()
                 .orElseThrow(() -> new ApplicationException(NOT_INVOLVED_REQUESTER));

@@ -1,31 +1,28 @@
-package org.example.domain.chat.service;
+package org.example.domain.chat;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.example.application.chat.ChatMapper;
-import org.example.application.chat.dto.ChatParticipantsDTO;
-import org.example.application.chat.dto.ChatsResponse;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
-import org.example.domain.chat.event.ChatEvent;
 import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;
+import org.example.domain.event.ChatEvent;
+import org.example.domain.event.ChatEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.example.common.Constants.ADMIN_ROLE;
-import static org.example.domain.chat.event.ChatEventType.ADD_PARTICIPANTS;
-import static org.example.domain.chat.event.ChatEventType.CREATE;
 
 @Service
 @RequiredArgsConstructor
-public class ChatService {
+public class ChatFacade {
     private final ChatRepository chatRepository;
     private final ChatParticipantRepository chatParticipantRepository;
-    private final ChatMapper chatMapper;
+
     private final ChatEventPublisher chatEventPublisher;
 
     public boolean checkIfPrivateChatExists(Long user1Id, Long user2Id) {
@@ -33,46 +30,38 @@ public class ChatService {
     }
 
     @Transactional
-    public Chat createChat(Long userId, Chat chat, Set<Long> userIds) {
-        chatRepository.save(chat);
-
+    public void createChat(Long userId, Chat chat, Set<Long> userIds) {
         var chatParticipants = userIds.stream()
                 .map(id -> new ChatParticipant(chat, id))
                 .collect(Collectors.toList());
-
         if (chat.getIsPrivate()) {
             chatParticipants.getFirst().setRole(ADMIN_ROLE);
         }
-
         chatParticipants.add(new ChatParticipant(chat, userId, ADMIN_ROLE));
-        chatParticipantRepository.saveAll(chatParticipants);
+        chat.setParticipants(chatParticipants);
 
-        userIds.add(userId);
-        chatEventPublisher.sendEvent(new ChatEvent(CREATE.name(), chat.getId(), userIds));
-        return chat;
+        chatRepository.save(chat);
+        chatEventPublisher.sendEvent(ChatEvent.createEvent(chat));
     }
 
     @Transactional
-    public void addToChat(Long userId, Chat chat, Set<Long> userIds) {
+    public void addToChat(Chat chat, Set<Long> userIds) {
         var chatParticipants = userIds.stream()
                 .map(id -> new ChatParticipant(chat, id))
                 .toList();
         chatParticipantRepository.saveAll(chatParticipants);
-        userIds.add(userId);
-        chatEventPublisher.sendEvent(new ChatEvent(ADD_PARTICIPANTS.name(), chat.getId(), userIds));
+        chatEventPublisher.sendEvent(ChatEvent.addParticipantsEvent(chat.getId(), chatParticipants));
     }
 
     public Optional<Chat> findChatWithParticipants(Long chatId) {
         return chatRepository.findChatWithParticipantsById(chatId);
     }
 
-    public ChatParticipantsDTO findChatParticipants(Long chatId) {
-        var chatParticipants = chatParticipantRepository.findAllByChatId(chatId);
-        return chatMapper.toChatParticipantsDTO(chatParticipants);
+    public List<ChatParticipant> findChatParticipants(Long chatId) {
+        return chatParticipantRepository.findAllByChatId(chatId);
     }
 
-    public ChatsResponse getChats(Long userId) {
-        var userChats = chatParticipantRepository.findChatParticipantsWithChatsByUserId(userId);
-        return chatMapper.toChatResponse(userChats);
+    public List<ChatParticipant> getChats(Long userId) {
+        return chatParticipantRepository.findChatParticipantsWithChatsByUserId(userId);
     }
 }

@@ -1,4 +1,4 @@
-package org.example.domain.chat.event;
+package org.example.domain.event;
 
 public enum ChatEventType {
     CREATE,

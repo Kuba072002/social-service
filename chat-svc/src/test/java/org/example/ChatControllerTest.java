@@ -5,9 +5,9 @@ import org.example.application.chat.dto.ChatParticipantsDTO;
 import org.example.application.chat.dto.ChatRequest;
 import org.example.application.chat.dto.ChatsResponse;
 import org.example.domain.chat.entity.Chat;
+import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;
-import org.example.domain.chat.service.ChatService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +18,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ContextConfiguration;
 import wiremock.org.apache.commons.lang3.RandomUtils;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -31,8 +32,6 @@ import static org.example.TestUtils.mockGetUsers;
 public class ChatControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
-    @Autowired
-    private ChatService chatService;
     @Autowired
     private ChatRepository chatRepository;
     @Autowired
@@ -55,7 +54,7 @@ public class ChatControllerTest {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("userId", String.valueOf(senderId));
-        var result = restTemplate.postForEntity("/chat",
+        var result = restTemplate.postForEntity("/chats",
                 new HttpEntity<>(chatRequest, headers),
                 Long.class
         );
@@ -80,7 +79,7 @@ public class ChatControllerTest {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("userId", String.valueOf(senderId));
-        var result = restTemplate.postForEntity("/chat",
+        var result = restTemplate.postForEntity("/chats",
                 new HttpEntity<>(chatRequest, headers),
                 Long.class
         );
@@ -103,22 +102,28 @@ public class ChatControllerTest {
                             .imageUrl(randomAlphabetic(12))
                             .isPrivate(false)
                             .build();
-                    var userIds = IntStream.range(0, RandomUtils.nextInt(0, 10))
-                            .mapToObj(j -> RandomUtils.nextLong())
-                            .collect(Collectors.toSet());
-                    chatService.createChat(senderId, chat, userIds);
+                    var participants = IntStream.range(0, RandomUtils.nextInt(0, 10))
+                            .mapToObj(j -> new ChatParticipant(chat, RandomUtils.nextLong()))
+                            .collect(Collectors.toList());
+                    participants.add(new ChatParticipant(chat, senderId));
+                    chat.setParticipants(participants);
+                    chatRepository.save(chat);
                 });
         IntStream.range(0, numberOfPrivateChats)
                 .forEach(i -> {
                     Chat chat = Chat.builder()
                             .isPrivate(true)
                             .build();
-                    chatService.createChat(senderId, chat, Set.of(RandomUtils.nextLong()));
+                    chat.setParticipants(List.of(
+                            new ChatParticipant(chat, RandomUtils.nextLong()),
+                            new ChatParticipant(chat, senderId)
+                    ));
+                    chatRepository.save(chat);
                 });
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("userId", String.valueOf(senderId));
-        var result = restTemplate.exchange("/chat",
+        var result = restTemplate.exchange("/chats",
                 HttpMethod.GET,
                 new HttpEntity<>(null, headers),
                 ChatsResponse.class
@@ -145,9 +150,12 @@ public class ChatControllerTest {
         var userIds = IntStream.range(0, RandomUtils.nextInt(0, numberOfParticipants))
                 .mapToObj(j -> RandomUtils.nextLong())
                 .collect(Collectors.toSet());
-        chatService.createChat(senderId, chat, userIds);
+        var participants = userIds.stream().map(uId -> new ChatParticipant(chat, uId)).collect(Collectors.toList());
+        participants.add(new ChatParticipant(chat, senderId));
+        chat.setParticipants(participants);
+        chatRepository.save(chat);
 
-        var result = restTemplate.getForEntity("/internal/chat?chatId=" + chat.getId(),
+        var result = restTemplate.getForEntity("/internal/chats/participants/ids?chatId=" + chat.getId(),
                 ChatParticipantsDTO.class
         );
         assert result.getBody() != null;

@@ -2,13 +2,16 @@ package org.example.application.chat;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.application.chat.dto.ChatParticipantsDTO;
 import org.example.application.chat.dto.ChatRequest;
 import org.example.application.chat.dto.ChatsResponse;
 import org.example.application.chat.dto.AddToChatRequest;
-import org.example.domain.chat.service.ChatService;
+import org.example.application.chat.dto.ParticipantDTO;
+import org.example.domain.chat.ChatFacade;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Set;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
@@ -17,7 +20,9 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class ChatController {
     private final CreateChatService createChatService;
     private final AddToChatService addToChatService;
-    private final ChatService chatService;
+    private final ChatFacade chatFacade;
+    private final GetChatParticipantsService getChatParticipantsService;
+    private final ChatResponseMapper chatResponseMapper;
 
     @PostMapping("/chats")
     public ResponseEntity<Long> createChat(
@@ -41,12 +46,21 @@ public class ChatController {
     public ResponseEntity<ChatsResponse> getUserChats(
             @RequestHeader Long userId
     ) {
-        return ResponseEntity.ok(chatService.getChats(userId));
+        var response = chatResponseMapper.toChatResponse(chatFacade.getChats(userId));
+        return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/internal/chats")
-    public ResponseEntity<ChatParticipantsDTO> findChatParticipants(@RequestParam Long chatId) {
+    @GetMapping("/chats/{id}/participants")
+    public ResponseEntity<List<ParticipantDTO>> getChatParticipants(
+            @RequestHeader Long userId,
+            @RequestParam Long chatId
+    ) {
+        return ResponseEntity.ok(getChatParticipantsService.get(userId,chatId));
+    }
+
+    @GetMapping("/internal/chats/participants/ids")
+    public ResponseEntity<Set<Long>> getChatParticipantsIds(@RequestParam Long chatId) {
         return ResponseEntity.ok()
-                .body(chatService.findChatParticipants(chatId));
+                .body(getChatParticipantsService.getIds(chatId));
     }
 }
