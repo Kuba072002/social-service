@@ -3,6 +3,7 @@ package org.example.application.message;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import lombok.RequiredArgsConstructor;
+import org.example.application.dto.MessageDTO;
 import org.example.domain.message.Message;
 import org.example.domain.message.MessageFacade;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,6 @@ public class MessageController {
             @RequestParam(required = false) Instant to,
             @RequestParam(required = false) @Max(100) Integer limit
     ) {
-        return ResponseEntity.ok(messageFacade.getMessages(senderId, chatId, from,to,limit));
+        return ResponseEntity.ok(messageFacade.getMessages(senderId, chatId, from, to, limit));
     }
 }

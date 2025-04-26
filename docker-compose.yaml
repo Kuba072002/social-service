@@ -49,12 +49,15 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+      - "61613:61613"
+      - "15674:15674"
     environment:
       RABBITMQ_DEFAULT_USER: rabbit
       RABBITMQ_DEFAULT_PASS: rabbit
     volumes:
       - ./init/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
       - ./init/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
+      - ./init/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
 
 volumes:
   redis_data:

@@ -1,4 +1,4 @@
-package org.example.application.message;
+package org.example.application.dto;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
