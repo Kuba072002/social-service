@@ -1,6 +1,8 @@
 {
   "vhosts": [
-    { "name": "my_vhost" }
+    {
+      "name": "my_vhost"
+    }
   ],
   "users": [
     {
@@ -21,6 +23,11 @@
   "queues": [
     {
       "name": "chat_events_queue",
+      "vhost": "my_vhost",
+      "durable": true
+    },
+    {
+      "name": "message_events_queue",
       "vhost": "my_vhost",
       "durable": true
     }

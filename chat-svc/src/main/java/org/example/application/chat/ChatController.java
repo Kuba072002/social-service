@@ -1,10 +1,11 @@
 package org.example.application.chat;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.example.application.chat.dto.AddToChatRequest;
 import org.example.application.chat.dto.ChatRequest;
 import org.example.application.chat.dto.ChatsResponse;
-import org.example.application.chat.dto.AddToChatRequest;
 import org.example.application.chat.dto.ParticipantDTO;
 import org.example.domain.chat.ChatFacade;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,7 @@ import java.util.Set;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
+@CrossOrigin
 @RestController
 @RequiredArgsConstructor
 public class ChatController {
@@ -44,18 +46,20 @@ public class ChatController {
 
     @GetMapping("/chats")
     public ResponseEntity<ChatsResponse> getUserChats(
-            @RequestHeader Long userId
+            @RequestHeader Long userId,
+            @RequestParam(required = false) @Min(0) Integer pageNumber,
+            @RequestParam(required = false) @Min(1) Integer pageSize
     ) {
-        var response = chatResponseMapper.toChatResponse(chatFacade.getChats(userId));
+        var response = chatResponseMapper.toChatResponse(chatFacade.getChats(userId, pageNumber, pageSize));
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/chats/{id}/participants")
+    @GetMapping("/chats/{chatId}/participants")
     public ResponseEntity<List<ParticipantDTO>> getChatParticipants(
             @RequestHeader Long userId,
-            @RequestParam Long chatId
+            @PathVariable Long chatId
     ) {
-        return ResponseEntity.ok(getChatParticipantsService.get(userId,chatId));
+        return ResponseEntity.ok(getChatParticipantsService.get(userId, chatId));
     }
 
     @GetMapping("/internal/chats/participants/ids")

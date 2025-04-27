@@ -7,9 +7,12 @@ import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;
 import org.example.domain.event.ChatEvent;
 import org.example.domain.event.ChatEventPublisher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -54,14 +57,24 @@ public class ChatFacade {
     }
 
     public Optional<Chat> findChatWithParticipants(Long chatId) {
-        return chatRepository.findChatWithParticipantsById(chatId);
+        return chatRepository.findById(chatId);
     }
 
     public List<ChatParticipant> findChatParticipants(Long chatId) {
-        return chatParticipantRepository.findAllByChatId(chatId);
+        return chatParticipantRepository.findByChat_Id(chatId);
     }
 
-    public List<ChatParticipant> getChats(Long userId) {
-        return chatParticipantRepository.findChatParticipantsWithChatsByUserId(userId);
+    public List<ChatParticipant> getChats(Long userId, Integer pageNumber, Integer pageSize) {
+        PageRequest pageRequest = PageRequest.of(
+                pageNumber != null ? pageNumber : 0,
+                pageSize != null ? pageSize : 20,
+                Sort.by(Sort.Direction.DESC, "chat.lastMessageAt")
+        );
+        return chatParticipantRepository.findByUserId(userId, pageRequest);
+    }
+
+    @Transactional
+    public void updateLastMessageAt(Long chatId, Instant lastMessageAt) {
+        chatRepository.updateLastMessageAt(chatId, lastMessageAt);
     }
 }

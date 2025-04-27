@@ -11,6 +11,7 @@ public record ChatDTO(
         @JsonInclude(JsonInclude.Include.NON_NULL)
         String imageUrl,
         Boolean isPrivate,
-        Instant lastReadAt
+        Instant lastReadAt,
+        Instant lastMessageAt
 ) {
 }

@@ -5,7 +5,6 @@ import org.example.ApplicationException;
 import org.example.application.dto.MessageDTO;
 import org.example.domain.chat.ChatFacade;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -22,7 +21,7 @@ public class MessageFacade {
     private final ChatFacade chatFacade;
     private final MessageMapper messageMapper;
     private final MessageRepository messageRepository;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final MessagePublisher messagePublisher;
     @Value("${message.query.default.limit}")
     private Integer defaultLimit;
 
@@ -31,7 +30,7 @@ public class MessageFacade {
         validateRequester(chatParticipantIds, senderId);
         var message = messageMapper.toMessage(senderId, messageDTO);
         messageRepository.save(message);
-        sendMessageToUsers(chatParticipantIds, message);
+        messagePublisher.publish(chatParticipantIds, message);
     }
 
     public List<Message> getMessages(Long userId, Long chatId, Instant from, Instant to, Integer limit) {
@@ -42,12 +41,6 @@ public class MessageFacade {
         validateRequester(findChatParticipantIds(chatId), userId);
 
         return messageRepository.findAllByChatIdAndCreatedAtBetween(chatId, from, to, limit);
-    }
-
-    private void sendMessageToUsers(Set<Long> chatParticipantIds, Message message) {
-        chatParticipantIds.forEach(userId ->
-                messagingTemplate.convertAndSend("/topic/" + userId, message)
-        );
     }
 
     private void validateRequester(Set<Long> chatParticipantIds, Long requesterId) {

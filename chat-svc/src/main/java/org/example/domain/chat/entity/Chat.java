@@ -11,11 +11,7 @@ import java.time.Instant;
 import java.util.List;
 
 @Entity
-@Table(name = "chats",
-        indexes = {
-                @Index(columnList = "id")
-        }
-)
+@Table(name = "chats")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -27,6 +23,7 @@ public class Chat {
     private String name;
     private String imageUrl;
     private Boolean isPrivate;
+    private Instant lastMessageAt;
     @CreationTimestamp
     private Instant createdAt;
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)

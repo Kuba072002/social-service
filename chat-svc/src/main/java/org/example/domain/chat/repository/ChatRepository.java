@@ -1,11 +1,14 @@
 package org.example.domain.chat.repository;
 
 import org.example.domain.chat.entity.Chat;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.Optional;
 
 @Repository
@@ -22,6 +25,10 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
             """, nativeQuery = true)
     boolean existsPrivateChat(@Param("user1Id") Long user1Id, @Param("user2Id") Long user2Id);
 
-    @Query("SELECT c FROM Chat c LEFT JOIN FETCH c.participants WHERE c.id = :chatId")
-    Optional<Chat> findChatWithParticipantsById(@Param("chatId") Long chatId);
+    @EntityGraph(attributePaths = "participants")
+    Optional<Chat> findById(Long chatId);
+
+    @Modifying
+    @Query("UPDATE Chat c SET c.lastMessageAt = :lastMessageAt WHERE c.id = :id")
+    void updateLastMessageAt(@Param("id") Long id, @Param("lastMessageAt") Instant lastMessageAt);
 }
