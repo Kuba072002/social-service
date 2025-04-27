@@ -77,4 +77,17 @@ public class ChatFacade {
     public void updateLastMessageAt(Long chatId, Instant lastMessageAt) {
         chatRepository.updateLastMessageAt(chatId, lastMessageAt);
     }
+
+    @Transactional
+    public void updateLastReadAt(Long chatId,Long userId, Instant lastReadAt) {
+        chatParticipantRepository.updateLastReadAt(chatId, userId,lastReadAt);
+    }
+
+    public Optional<ChatParticipant> getChatParticipant(Long chatId, Long userId){
+        return chatParticipantRepository.findByChatIdAndUserId(chatId,userId);
+    }
+
+    public void save(ChatParticipant chatParticipant){
+        chatParticipantRepository.save(chatParticipant);
+    }
 }

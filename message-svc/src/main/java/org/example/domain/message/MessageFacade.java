@@ -40,7 +40,11 @@ public class MessageFacade {
         validateQueryParams(from, to);
         validateRequester(findChatParticipantIds(chatId), userId);
 
-        return messageRepository.findAllByChatIdAndCreatedAtBetween(chatId, from, to, limit);
+        var messages = messageRepository.findAllByChatIdAndCreatedAtBetween(chatId, from, to, limit);
+        if (!messages.isEmpty()) {
+            messagePublisher.publish(userId, chatId, messages.getFirst().getCreatedAt());
+        }
+        return messages;
     }
 
     private void validateRequester(Set<Long> chatParticipantIds, Long requesterId) {

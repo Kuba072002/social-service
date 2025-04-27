@@ -11,10 +11,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class MessageEventListener {
     private final ChatFacade chatFacade;
+    private final static String POST_EVENT_TYPE = "POST";
+    private final static String GET_EVENT_TYPE = "GET";
 
     @RabbitListener(queues = "${message.events.queue.rabbit}")
     public void process(MessageEvent messageEvent) {
-        log.info("Processing message event for chat: {}", messageEvent.chatId());
-        chatFacade.updateLastMessageAt(messageEvent.chatId(),messageEvent.messageCreatedAt());
+        log.info("Processing message event for chat: {} , with type: {}", messageEvent.chatId(), messageEvent.type());
+        switch (messageEvent.type()) {
+            case POST_EVENT_TYPE ->
+                    chatFacade.updateLastMessageAt(messageEvent.chatId(), messageEvent.lastMessageCreatedAt());
+            case GET_EVENT_TYPE ->
+                    chatFacade.updateLastReadAt(messageEvent.chatId(), messageEvent.userId(), messageEvent.lastReadAt());
+        }
     }
 }

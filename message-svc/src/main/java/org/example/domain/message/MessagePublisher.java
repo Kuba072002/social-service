@@ -7,6 +7,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Set;
 
 @Service
@@ -23,7 +24,13 @@ public class MessagePublisher {
             if (message.getSenderId().equals(userId)) return;
             messagingTemplate.convertAndSend("/topic/" + userId, message);
         });
-        var event = new MessageEvent(message.getChatId(), message.getCreatedAt());
+        var event = MessageEvent.createMessageEvent(message.getChatId(), message.getCreatedAt());
+        rabbitTemplate.convertAndSend(queueName, event);
+    }
+
+    @Async("asyncExecutor")
+    public void publish(Long userId, Long chatId, Instant lastReadAt) {
+        var event = MessageEvent.createMessageEvent(chatId, userId, lastReadAt);
         rabbitTemplate.convertAndSend(queueName, event);
     }
 }

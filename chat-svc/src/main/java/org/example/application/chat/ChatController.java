@@ -3,10 +3,7 @@ package org.example.application.chat;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import org.example.application.chat.dto.AddToChatRequest;
-import org.example.application.chat.dto.ChatRequest;
-import org.example.application.chat.dto.ChatsResponse;
-import org.example.application.chat.dto.ParticipantDTO;
+import org.example.application.chat.dto.*;
 import org.example.domain.chat.ChatFacade;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +21,7 @@ public class ChatController {
     private final AddToChatService addToChatService;
     private final ChatFacade chatFacade;
     private final GetChatParticipantsService getChatParticipantsService;
+    private final UpdateChatReadAtService updateChatReadAtService;
     private final ChatResponseMapper chatResponseMapper;
 
     @PostMapping("/chats")
@@ -60,6 +58,15 @@ public class ChatController {
             @PathVariable Long chatId
     ) {
         return ResponseEntity.ok(getChatParticipantsService.get(userId, chatId));
+    }
+
+    @PutMapping("/chats/{chatId}/participants")
+    public ResponseEntity<Void> updateLastReadAt(
+            @RequestHeader Long userId,
+            @RequestBody UpdateChatReadAtRequest updateChatReadAtRequest
+    ) {
+        updateChatReadAtService.update(userId,updateChatReadAtRequest);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/internal/chats/participants/ids")

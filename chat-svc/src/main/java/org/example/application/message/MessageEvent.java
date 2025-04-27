@@ -3,7 +3,10 @@ package org.example.application.message;
 import java.time.Instant;
 
 public record MessageEvent(
+        String type,
         Long chatId,
-        Instant messageCreatedAt
+        Instant lastMessageCreatedAt,
+        Long userId,
+        Instant lastReadAt
 ) {
 }
