@@ -1,6 +1,7 @@
-package org.example.domain.message;
+package org.example.domain.message.event;
 
 import lombok.RequiredArgsConstructor;
+import org.example.domain.message.Message;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;

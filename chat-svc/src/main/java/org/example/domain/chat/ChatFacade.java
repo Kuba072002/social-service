@@ -38,7 +38,7 @@ public class ChatFacade {
                 .map(id -> new ChatParticipant(chat, id))
                 .collect(Collectors.toList());
         if (chat.getIsPrivate()) {
-            chatParticipants.getFirst().setRole(ADMIN_ROLE);
+            chatParticipants.get(0).setRole(ADMIN_ROLE);
         }
         chatParticipants.add(new ChatParticipant(chat, userId, ADMIN_ROLE));
         chat.setParticipants(chatParticipants);
@@ -79,15 +79,15 @@ public class ChatFacade {
     }
 
     @Transactional
-    public void updateLastReadAt(Long chatId,Long userId, Instant lastReadAt) {
-        chatParticipantRepository.updateLastReadAt(chatId, userId,lastReadAt);
+    public void updateLastReadAt(Long chatId, Long userId, Instant lastReadAt) {
+        chatParticipantRepository.updateLastReadAt(chatId, userId, lastReadAt);
     }
 
-    public Optional<ChatParticipant> getChatParticipant(Long chatId, Long userId){
-        return chatParticipantRepository.findByChatIdAndUserId(chatId,userId);
+    public Optional<ChatParticipant> getChatParticipant(Long chatId, Long userId) {
+        return chatParticipantRepository.findByChatIdAndUserId(chatId, userId);
     }
 
-    public void save(ChatParticipant chatParticipant){
+    public void save(ChatParticipant chatParticipant) {
         chatParticipantRepository.save(chatParticipant);
     }
 }
