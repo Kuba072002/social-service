@@ -14,13 +14,13 @@ import java.util.Set;
 public class MessageFacade {
     private final MessageRepository messageRepository;
     private final MessagePublisher messagePublisher;
-//    private final StorageService storageService;
+    private final StorageService storageService;
 
     public void createMessage(Set<Long> chatParticipantIds, Message message, MultipartFile multipartFile) {
-//        if (multipartFile != null) {
-//            var fileUrl = storageService.storeFile(multipartFile);
-//            message.setMediaContent(fileUrl);
-//        }
+        if (multipartFile != null) {
+            var fileUrl = storageService.storeFile(multipartFile);
+            message.setMediaContent(fileUrl);
+        }
         messageRepository.save(message);
         messagePublisher.publish(chatParticipantIds, message);
     }
