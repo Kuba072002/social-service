@@ -34,11 +34,13 @@ public class ChatParticipant {
     public ChatParticipant(Chat chat, Long userId) {
         this.chat = chat;
         this.userId = userId;
+        this.lastReadAt = Instant.now();
     }
 
     public ChatParticipant(Chat chat, Long userId, String role) {
         this.chat = chat;
         this.userId = userId;
         this.role = role;
+        this.lastReadAt = Instant.now();
     }
 }

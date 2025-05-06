@@ -1,4 +1,4 @@
-package org.example.domain.message.event;
+package org.example.application.message.event;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
@@ -16,7 +16,7 @@ public record MessageEvent(
         @JsonInclude(JsonInclude.Include.NON_NULL)
         Instant lastReadAt
 ) {
-    public static MessageEvent createMessageEvent(Long chatId, Instant lastMessageCreatedAt) {
+    public static MessageEvent createPostMessageEvent(Long chatId, Instant lastMessageCreatedAt) {
         return MessageEvent.builder()
                 .type("POST")
                 .chatId(chatId)
@@ -24,7 +24,7 @@ public record MessageEvent(
                 .build();
     }
 
-    public static MessageEvent createMessageEvent(Long chatId, Long userId, Instant lastReadAt) {
+    public static MessageEvent createGetMessageEvent(Long chatId, Long userId, Instant lastReadAt) {
         return MessageEvent.builder()
                 .type("GET")
                 .chatId(chatId)

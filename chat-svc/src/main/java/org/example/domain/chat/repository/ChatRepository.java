@@ -29,6 +29,6 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     Optional<Chat> findById(Long chatId);
 
     @Modifying
-    @Query("UPDATE Chat c SET c.lastMessageAt = :lastMessageAt WHERE c.id = :id")
+    @Query("UPDATE Chat c SET c.lastMessageAt = :lastMessageAt WHERE c.id = :id AND c.lastMessageAt < :lastMessageAt")
     void updateLastMessageAt(@Param("id") Long id, @Param("lastMessageAt") Instant lastMessageAt);
 }
