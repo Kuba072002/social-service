@@ -1,8 +1,10 @@
 package org.example;
 
 import org.example.application.dto.SignInRequest;
+import org.example.application.dto.SignInResponse;
 import org.example.application.dto.SignUpRequest;
 import org.example.application.dto.UserDTO;
+import org.example.application.service.UserMapper;
 import org.example.domain.entity.User;
 import org.example.domain.repository.UserRepository;
 import org.junit.jupiter.api.Assertions;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,19 +34,17 @@ public class UserControllerTest {
     private UserRepository userRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserMapper userMapper;
+
 
     @Test
     void shouldCreateUser() {
         var password = randomAlphabetic(12);
         var userName = randomAlphabetic(12);
-        var request = new SignUpRequest(
-                userName,
-                userName + "@mail.com",
-                password,
-                password
-        );
+        var request = new SignUpRequest(userName, userName + "@mail.com", password, password);
 
-        var response = restTemplate.postForEntity("/signup", request, Void.class);
+        var response = restTemplate.postForEntity("/signUp", request, Void.class);
 
         Assertions.assertEquals(201, response.getStatusCode().value());
         var user = userRepository.findByUserName(request.userName());
@@ -57,11 +58,11 @@ public class UserControllerTest {
         userRepository.save(user);
 
         var request = new SignInRequest(user.getEmail(), password);
-        var response = restTemplate.postForEntity("/signIn", request, User.class);
+        var response = restTemplate.postForEntity("/signIn", request, SignInResponse.class);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertNotNull(response.getBody());
-        Assertions.assertEquals(user, response.getBody());
+        Assertions.assertEquals(userMapper.toUserDTO(user), response.getBody().user());
     }
 
     @Test
@@ -69,8 +70,7 @@ public class UserControllerTest {
         var user = createUser();
         userRepository.save(user);
 
-        var response = restTemplate.getForEntity(
-                "/users?userName=" + user.getUserName(), UserDTO.class);
+        var response = restTemplate.getForEntity("/users?userName=" + user.getUserName(), UserDTO.class);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertNotNull(response.getBody());
@@ -84,10 +84,11 @@ public class UserControllerTest {
         var user2 = createUser();
         userRepository.saveAll(List.of(user1, user2));
 
+        HttpEntity<Set<Long>> request = new HttpEntity<>(Set.of(user1.getId(), user2.getId()));
         ResponseEntity<Set<UserDTO>> response = restTemplate.exchange(
-                "/internal/users?userIds=" + user1.getId() + "," + +user2.getId(),
-                HttpMethod.GET,
-                null,
+                "/internal/users",
+                HttpMethod.POST,
+                request,
                 new ParameterizedTypeReference<>() {
                 });
 
@@ -105,10 +106,6 @@ public class UserControllerTest {
 
     private User createUser(String password) {
         var userName = randomAlphabetic(12);
-        return User.builder()
-                .userName(userName)
-                .email(userName + "@mail.com")
-                .password(password)
-                .build();
+        return User.builder().userName(userName).email(userName + "@mail.com").password(password).build();
     }
 }

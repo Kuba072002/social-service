@@ -19,8 +19,8 @@ public class IntegrationTestInitializer implements ApplicationContextInitializer
         TestPropertyValues.of(
                 "spring.datasource.driver-class-name=",
                 "spring.jpa.properties.hibernate.dialect=",
-                "spring.jpa.properties.hibernate.default_schema=",
-                "spring.datasource.url=jdbc:h2:mem:public",
+                "spring.jpa.properties.hibernate.default_schema=chat_schema",
+                "spring.datasource.url=jdbc:h2:mem:public;INIT=CREATE SCHEMA IF NOT EXISTS chat_schema",
                 "spring.datasource.driverClassName=org.h2.Driver",
                 "spring.datasource.username=sa",
                 "spring.datasource.password=password",

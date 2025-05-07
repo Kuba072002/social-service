@@ -1,7 +1,6 @@
 package org.example;
 
 import org.example.application.chat.dto.ChatDTO;
-import org.example.application.chat.dto.ChatParticipantsDTO;
 import org.example.application.chat.dto.ChatRequest;
 import org.example.application.chat.dto.ChatsResponse;
 import org.example.domain.chat.entity.Chat;
@@ -12,9 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import wiremock.org.apache.commons.lang3.RandomUtils;
 
@@ -155,16 +156,19 @@ public class ChatControllerTest {
         chat.setParticipants(participants);
         chatRepository.save(chat);
 
-        var result = restTemplate.getForEntity("/internal/chats/participants/ids?chatId=" + chat.getId(),
-                ChatParticipantsDTO.class
-        );
+        ResponseEntity<Set<Long>> result = restTemplate.exchange(
+                "/internal/chats/participants/ids?chatId=" + chat.getId(),
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {
+                });
         assert result.getBody() != null;
 
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
 
         userIds.add(senderId);
-        assertThat(result.getBody().userIds()).hasSize(userIds.size());
-        assertThat(result.getBody().userIds())
+        assertThat(result.getBody()).hasSize(userIds.size());
+        assertThat(result.getBody())
                 .containsExactlyInAnyOrderElementsOf(userIds);
     }
 
