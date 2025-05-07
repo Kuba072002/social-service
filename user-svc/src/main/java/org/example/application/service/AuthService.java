@@ -37,13 +37,14 @@ public class AuthService {
         var user = userService.findByEmail(email)
                 .filter(u -> passwordEncoder.matches(password, u.getPassword()))
                 .orElseThrow(() -> new ApplicationException(UserApplicationError.INVALID_AUTH_DATA));
-        var token = generateToken(user.getUserName());
+        var token = generateToken(user.getId(), user.getUserName());
         return new SignInResponse(userMapper.toUserDTO(user), token);
     }
 
-    public String generateToken(String username) {
+    public String generateToken(Long userId, String userName) {
         return Jwts.builder()
-                .subject(username)
+                .subject(userId.toString())
+                .claim("userName", userName)
                 .issuedAt(new Date())
                 .expiration(new Date((new Date()).getTime() + jwtExpirationMillis))
                 .signWith(key)

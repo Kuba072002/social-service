@@ -13,6 +13,7 @@
         <module>user-svc</module>
         <module>chat-svc</module>
         <module>message-svc</module>
+        <module>gateway-svc</module>
     </modules>
 
     <properties>
