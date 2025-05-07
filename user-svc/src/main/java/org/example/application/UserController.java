@@ -4,13 +4,12 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.example.application.dto.SignInRequest;
+import org.example.application.dto.SignInResponse;
 import org.example.application.dto.SignUpRequest;
 import org.example.application.dto.UserDTO;
 import org.example.application.service.AuthService;
 import org.example.application.service.CreateUserService;
-import org.example.application.service.UserMapper;
-import org.example.domain.entity.User;
-import org.example.domain.service.UserService;
+import org.example.application.service.GetUserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,8 +23,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class UserController {
     private final CreateUserService createUserService;
     private final AuthService authService;
-    private final UserService userService;
-    private final UserMapper userMapper;
+    private final GetUserService getUserService;
 
     @PostMapping("/signUp")
     public ResponseEntity<Void> register(@RequestBody @Valid SignUpRequest signUpRequest) {
@@ -34,20 +32,20 @@ public class UserController {
     }
 
     @PostMapping("/signIn")
-    public ResponseEntity<User> login(@RequestBody @Valid SignInRequest signInRequest) {
-        var user = authService.authUser(signInRequest.email(), signInRequest.password());
-        return ResponseEntity.ok(user);
+    public ResponseEntity<SignInResponse> login(@RequestBody @Valid SignInRequest signInRequest) {
+        var response = authService.authUser(signInRequest.email(), signInRequest.password());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/users")
     public ResponseEntity<UserDTO> getUser(@RequestParam String userName) {
-        var response = userMapper.toUserDTO(userService.getUser(userName));
+        var response = getUserService.get(userName);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/internal/users")
-    public ResponseEntity<Set<UserDTO>> getUsers(@RequestBody @NotEmpty Set<Long> userIds) {
-        var response = userMapper.toUserDTOs(userService.getUsers(userIds));
+    public ResponseEntity<Set<UserDTO>> findUsers(@RequestBody @NotEmpty Set<Long> userIds) {
+        var response = getUserService.find(userIds);
         return ResponseEntity.ok(response);
     }
 }
