@@ -38,7 +38,7 @@ public class ChatFacade {
                 .map(id -> new ChatParticipant(chat, id))
                 .collect(Collectors.toList());
         if (chat.getIsPrivate()) {
-            chatParticipants.get(0).setRole(ADMIN_ROLE);
+            chatParticipants.getFirst().setRole(ADMIN_ROLE);
         }
         chatParticipants.add(new ChatParticipant(chat, userId, ADMIN_ROLE));
         chat.setParticipants(chatParticipants);

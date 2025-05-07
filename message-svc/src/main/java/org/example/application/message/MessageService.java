@@ -49,7 +49,7 @@ public class MessageService {
 
         var messages = messageFacade.getMessages(chatId, from, to, limit);
         if (!messages.isEmpty()) {
-            var event = MessageEvent.createGetMessageEvent(chatId, userId, messages.get(0).getCreatedAt());
+            var event = MessageEvent.createGetMessageEvent(chatId, userId, messages.getFirst().getCreatedAt());
             messagePublisher.publish(event);
         }
         return messages;
