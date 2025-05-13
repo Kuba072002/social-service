@@ -10,7 +10,6 @@ import org.example.domain.message.Message;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.util.List;
@@ -28,18 +27,7 @@ public class MessageController {
             @RequestHeader(name = "userId") Long senderId,
             @RequestBody @Valid MessageDTO messageDTO
     ) {
-        messageService.createMessage(senderId, messageDTO, null);
-        return ResponseEntity.status(CREATED).build();
-    }
-
-    @PostMapping(value = "/messages/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> createMessageWithImage(
-            @RequestHeader(name = "userId") Long senderId,
-            @RequestHeader(name = "chatId") Long chatId,
-            @RequestPart("file") MultipartFile multipartFile
-    ) {
-        MessageDTO messageDTO = new MessageDTO(chatId, null);
-        messageService.createMessage(senderId, messageDTO, multipartFile);
+        messageService.createMessage(senderId, messageDTO);
         return ResponseEntity.status(CREATED).build();
     }
 

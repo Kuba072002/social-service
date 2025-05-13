@@ -10,7 +10,6 @@ import org.example.domain.message.Message;
 import org.example.domain.message.MessageFacade;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -31,12 +30,12 @@ public class MessageService {
     @Value("${message.query.default.limit}")
     private Integer defaultLimit;
 
-    public void createMessage(Long senderId, MessageDTO messageDTO, MultipartFile multipartFile) {
+    public void createMessage(Long senderId, MessageDTO messageDTO) {
         var chatParticipantIds = findChatParticipantIds(messageDTO.chatId());
         validateRequester(chatParticipantIds, senderId);
 
         var message = messageMapper.toMessage(senderId, messageDTO);
-        messageFacade.createMessage(message, multipartFile);
+        messageFacade.createMessage(message);
         messagePublisher.broadcastMessageAndPublishEvent(chatParticipantIds, message);
     }
 
