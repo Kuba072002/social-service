@@ -5,8 +5,6 @@ import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;
-import org.example.domain.event.ChatEvent;
-import org.example.domain.event.ChatEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -26,13 +24,10 @@ public class ChatFacade {
     private final ChatRepository chatRepository;
     private final ChatParticipantRepository chatParticipantRepository;
 
-    private final ChatEventPublisher chatEventPublisher;
-
     public boolean checkIfPrivateChatExists(Long user1Id, Long user2Id) {
         return chatRepository.existsPrivateChat(user1Id, user2Id);
     }
 
-    @Transactional
     public void createChat(Long userId, Chat chat, Set<Long> userIds) {
         var chatParticipants = userIds.stream()
                 .map(id -> new ChatParticipant(chat, id))
@@ -44,16 +39,10 @@ public class ChatFacade {
         chat.setParticipants(chatParticipants);
 
         chatRepository.save(chat);
-        chatEventPublisher.sendEvent(ChatEvent.createEvent(chat));
     }
 
-    @Transactional
-    public void addToChat(Chat chat, Set<Long> userIds) {
-        var chatParticipants = userIds.stream()
-                .map(id -> new ChatParticipant(chat, id))
-                .toList();
+    public void saveParticipants(List<ChatParticipant> chatParticipants) {
         chatParticipantRepository.saveAll(chatParticipants);
-        chatEventPublisher.sendEvent(ChatEvent.addParticipantsEvent(chat.getId(), chatParticipants));
     }
 
     public Optional<Chat> findChatWithParticipants(Long chatId) {
@@ -66,9 +55,7 @@ public class ChatFacade {
 
     public List<ChatParticipant> getChats(Long userId, Integer pageNumber, Integer pageSize) {
         PageRequest pageRequest = PageRequest.of(
-                pageNumber != null ? pageNumber : 0,
-                pageSize != null ? pageSize : 20,
-                Sort.by(Sort.Direction.DESC, "chat.lastMessageAt")
+                pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "chat.lastMessageAt")
         );
         return chatParticipantRepository.findByUserId(userId, pageRequest);
     }

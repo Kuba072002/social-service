@@ -1,4 +1,4 @@
-package org.example.application.chat;
+package org.example.application.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;

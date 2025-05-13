@@ -1,12 +1,16 @@
-package org.example.application.chat;
+package org.example.application.chat.service;
 
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
 import org.example.application.chat.dto.ChatRequest;
+import org.example.application.chat.service.mapper.ChatMapper;
 import org.example.domain.chat.ChatFacade;
+import org.example.domain.event.ChatEvent;
+import org.example.domain.event.ChatEventPublisher;
 import org.example.domain.user.UserFacade;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.Optional;
@@ -21,16 +25,23 @@ public class CreateChatService {
     private final Validator validator;
     private final ChatFacade chatFacade;
     private final ChatMapper chatMapper;
+    private final ChatEventPublisher chatEventPublisher;
 
+    @Transactional
     public Long create(Long userId, ChatRequest chatRequest) {
+        validate(userId, chatRequest);
+        var chat = chatMapper.toChat(chatRequest);
+        chatFacade.createChat(userId, chat, chatRequest.userIds());
+        chatEventPublisher.sendEvent(ChatEvent.createEvent(chat));
+        return chat.getId();
+    }
+
+    private void validate(Long userId, ChatRequest chatRequest) {
         validateRequest(userId, chatRequest);
         userFacade.validateUsers(chatRequest.userIds());
         if (chatRequest.isPrivate()) {
             validateIfPrivateChatAlreadyExists(userId, chatRequest.userIds().iterator().next());
         }
-        var chat = chatMapper.toChat(chatRequest);
-        chatFacade.createChat(userId, chat, chatRequest.userIds());
-        return chat.getId();
     }
 
     private void validateIfPrivateChatAlreadyExists(Long user1Id, Long user2Id) {

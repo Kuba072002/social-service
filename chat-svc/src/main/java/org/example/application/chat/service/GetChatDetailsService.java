@@ -1,11 +1,14 @@
-package org.example.application.chat;
+package org.example.application.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
+import org.example.application.chat.dto.ChatsResponse;
 import org.example.application.chat.dto.ParticipantDTO;
+import org.example.application.chat.service.mapper.ChatResponseMapper;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.user.UserFacade;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,12 +20,23 @@ import static org.example.common.ChatApplicationError.USER_DOES_NOT_BELONG_TO_CH
 
 @Service
 @RequiredArgsConstructor
-public class GetChatParticipantsService {
+public class GetChatDetailsService {
     private final ChatFacade chatFacade;
     private final UserFacade userFacade;
     private final ChatResponseMapper chatResponseMapper;
+    @Value("${default.chat.page.size}")
+    private Integer defaultPageSize;
 
-    public List<ParticipantDTO> get(Long userId, Long chatId) {
+    public ChatsResponse getChats(Long userId, Integer pageNumber, Integer pageSize) {
+        var chats = chatFacade.getChats(
+                userId,
+                pageNumber != null ? pageNumber : 0,
+                pageSize != null ? pageSize : defaultPageSize
+        );
+        return chatResponseMapper.toChatResponse(chats);
+    }
+
+    public List<ParticipantDTO> getParticipants(Long userId, Long chatId) {
         var participants = getParticipants(chatId);
         var ids = participants.stream()
                 .map(ChatParticipant::getUserId)
@@ -39,7 +53,7 @@ public class GetChatParticipantsService {
                 .toList();
     }
 
-    public Set<Long> getIds(Long chatId) {
+    public Set<Long> getParticipantIds(Long chatId) {
         return getParticipants(chatId).stream()
                 .map(ChatParticipant::getUserId)
                 .collect(Collectors.toSet());

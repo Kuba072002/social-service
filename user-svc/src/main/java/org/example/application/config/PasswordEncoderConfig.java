@@ -1,4 +1,4 @@
-package org.example.application.configuration;
+package org.example.application.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,7 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class PasswordEncoderConfig {
 
     @Bean
-    public PasswordEncoder encoder(){
+    public PasswordEncoder encoder() {
         return Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
     }
 

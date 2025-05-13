@@ -1,4 +1,4 @@
-package org.example.application.chat;
+package org.example.application.chat.service.mapper;
 
 import org.example.application.chat.dto.ChatDTO;
 import org.example.application.chat.dto.ChatsResponse;

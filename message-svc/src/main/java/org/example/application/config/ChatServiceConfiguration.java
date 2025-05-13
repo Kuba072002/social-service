@@ -24,7 +24,7 @@ public class ChatServiceConfiguration {
     private Duration connectionTimeout;
 
     @Bean
-    public RestClient userRestClient(LogbookClientHttpRequestInterceptor interceptor) {
+    public RestClient chatRestClient(LogbookClientHttpRequestInterceptor interceptor) {
         return RestClient.builder()
                 .baseUrl(url)
                 .requestInterceptor(interceptor)
@@ -33,9 +33,9 @@ public class ChatServiceConfiguration {
     }
 
     @Bean
-    public ChatService userClient(RestClient userRestClient) {
+    public ChatService chatClient(RestClient chatRestClient) {
         HttpServiceProxyFactory httpServiceProxyFactory =
-                HttpServiceProxyFactory.builderFor(RestClientAdapter.create(userRestClient)).build();
+                HttpServiceProxyFactory.builderFor(RestClientAdapter.create(chatRestClient)).build();
         return httpServiceProxyFactory.createClient(ChatService.class);
     }
 
