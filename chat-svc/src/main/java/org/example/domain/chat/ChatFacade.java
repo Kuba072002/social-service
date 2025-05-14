@@ -77,4 +77,8 @@ public class ChatFacade {
     public void save(ChatParticipant chatParticipant) {
         chatParticipantRepository.save(chatParticipant);
     }
+
+    public void delete(Long chatId) {
+        chatRepository.deleteById(chatId);
+    }
 }

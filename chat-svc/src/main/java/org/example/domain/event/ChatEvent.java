@@ -3,6 +3,7 @@ package org.example.domain.event;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,6 +31,14 @@ public record ChatEvent(
                 participants.stream()
                         .map(ChatParticipant::getUserId)
                         .collect(Collectors.toSet())
+        );
+    }
+
+    public static ChatEvent deleteEvent(Long chatId) {
+        return new ChatEvent(
+                ChatEventType.DELETE.name(),
+                chatId,
+                Collections.emptySet()
         );
     }
 }

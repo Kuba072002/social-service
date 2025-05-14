@@ -5,9 +5,9 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.example.application.chat.dto.*;
 import org.example.application.chat.service.AddToChatService;
+import org.example.application.chat.service.ChatManagementService;
 import org.example.application.chat.service.CreateChatService;
 import org.example.application.chat.service.GetChatDetailsService;
-import org.example.application.chat.service.UpdateChatReadAtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +23,7 @@ public class ChatController {
     private final CreateChatService createChatService;
     private final AddToChatService addToChatService;
     private final GetChatDetailsService getChatDetailsService;
-    private final UpdateChatReadAtService updateChatReadAtService;
+    private final ChatManagementService chatManagementService;
 
     @PostMapping("/chats")
     public ResponseEntity<Long> createChat(
@@ -63,9 +63,19 @@ public class ChatController {
     @PutMapping("/chats/{chatId}/participants")
     public ResponseEntity<Void> updateLastReadAt(
             @RequestHeader Long userId,
-            @RequestBody UpdateChatReadAtRequest updateChatReadAtRequest
+            @PathVariable Long chatId,
+            @RequestBody UpdateChatReadAtRequest request
     ) {
-        updateChatReadAtService.update(userId, updateChatReadAtRequest);
+        chatManagementService.updateLastReadAt(userId, chatId, request.lastReadAt());
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/chats/{chatId}")
+    public ResponseEntity<Void> deleteChat(
+            @RequestHeader Long userId,
+            @PathVariable Long chatId
+    ) {
+        chatManagementService.delete(userId, chatId);
         return ResponseEntity.ok().build();
     }
 

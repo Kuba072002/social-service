@@ -12,4 +12,6 @@ import java.util.UUID;
 public interface MessageRepository extends ListCrudRepository<Message, UUID> {
     @Query("SELECT * FROM messages WHERE chat_id = ?0 AND created_at >= ?1 AND created_at <= ?2 LIMIT ?3")
     List<Message> findAllByChatIdAndCreatedAtBetween(Long chatId, Instant from, Instant to, int limit);
+
+    void deleteByChatId(Long chatId);
 }

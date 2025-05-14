@@ -21,4 +21,8 @@ public class MessageFacade {
         return messageRepository.findAllByChatIdAndCreatedAtBetween(chatId, from, to, limit);
     }
 
+    public void delete(Long chatId) {
+        messageRepository.deleteByChatId(chatId);
+    }
+
 }
