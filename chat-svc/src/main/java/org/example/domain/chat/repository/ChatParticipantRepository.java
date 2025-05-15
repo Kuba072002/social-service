@@ -10,16 +10,19 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ChatParticipantRepository extends JpaRepository<ChatParticipant, Long> {
 
-    List<ChatParticipant> findByChat_Id(Long chatId);
+    List<ChatParticipant> findByChatId(Long chatId);
+
+    List<ChatParticipant> findAllByChatIdIn(Collection<Long> chatIds);
 
     @EntityGraph(attributePaths = "chat")
-    List<ChatParticipant> findByUserId(Long userId, Pageable pageable);
+    List<ChatParticipant> findByUserIdAndChat_IsPrivate(Long userId, Boolean isPrivate, Pageable pageable);
 
     Optional<ChatParticipant> findByChatIdAndUserId(Long chatId, Long userId);
 

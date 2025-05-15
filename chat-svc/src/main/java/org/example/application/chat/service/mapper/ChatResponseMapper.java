@@ -14,13 +14,22 @@ import java.util.List;
 
 @Mapper
 public interface ChatResponseMapper {
-    default ChatsResponse toChatResponse(List<ChatParticipant> chats) {
+    default ChatsResponse toChatsResponse(List<ChatParticipant> chats) {
         return new ChatsResponse(chats.stream()
                 .map(cp -> toChatDTO(cp.getChat(), cp.getLastReadAt()))
                 .toList());
     }
 
     ChatDTO toChatDTO(Chat chat, Instant lastReadAt);
+
+    @Mapping(source = "chatParticipant.chat.id", target = "id")
+    @Mapping(source = "userDTO.userName", target = "name")
+    @Mapping(source = "userDTO.imageUrl", target = "imageUrl")
+    @Mapping(source = "userDTO.id", target = "userId")
+    @Mapping(source = "chatParticipant.chat.isPrivate", target = "isPrivate")
+    @Mapping(source = "chatParticipant.lastReadAt", target = "lastReadAt")
+    @Mapping(source = "chatParticipant.chat.lastMessageAt", target = "lastMessageAt")
+    ChatDTO toChatDTO(ChatParticipant chatParticipant, UserDTO userDTO);
 
     @Mapping(source = "chatParticipant.userId", target = "userId")
     @Mapping(source = "userDTO.userName", target = "userName")

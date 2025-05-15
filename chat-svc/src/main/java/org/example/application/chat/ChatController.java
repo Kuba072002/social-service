@@ -46,10 +46,11 @@ public class ChatController {
     @GetMapping("/chats")
     public ResponseEntity<ChatsResponse> getUserChats(
             @RequestHeader Long userId,
+            @RequestParam(required = false) boolean isPrivate,
             @RequestParam(required = false) @Min(0) Integer pageNumber,
             @RequestParam(required = false) @Min(1) Integer pageSize
     ) {
-        return ResponseEntity.ok(getChatDetailsService.getChats(userId, pageNumber, pageSize));
+        return ResponseEntity.ok(getChatDetailsService.getChats(userId, isPrivate, pageNumber, pageSize));
     }
 
     @GetMapping("/chats/{chatId}/participants")

@@ -27,13 +27,34 @@ public class GetChatDetailsService {
     @Value("${default.chat.page.size}")
     private Integer defaultPageSize;
 
-    public ChatsResponse getChats(Long userId, Integer pageNumber, Integer pageSize) {
-        var chats = chatFacade.getChats(
+    public ChatsResponse getChats(Long userId, boolean isPrivate, Integer pageNumber, Integer pageSize) {
+        var participantsWithChats = chatFacade.getParticipantsWithChats(
                 userId,
+                isPrivate,
                 pageNumber != null ? pageNumber : 0,
                 pageSize != null ? pageSize : defaultPageSize
         );
-        return chatResponseMapper.toChatResponse(chats);
+        if (!isPrivate) {
+            return chatResponseMapper.toChatsResponse(participantsWithChats);
+        }
+        var chatIds = participantsWithChats.stream()
+                .map(ChatParticipant::getChatId)
+                .toList();
+        var otherParticipantsWithChatId = chatFacade.findParticipants(chatIds)
+                .stream()
+                .filter(cp -> !cp.getUserId().equals(userId))
+                .collect(Collectors.toMap(
+                        ChatParticipant::getChatId,
+                        ChatParticipant::getUserId
+                ));
+        var usersMap = userFacade.getUsersMap(otherParticipantsWithChatId.values());
+        var chatDTOs = participantsWithChats.stream()
+                .map(cp -> {
+                    var otherUserId = otherParticipantsWithChatId.get(cp.getChatId());
+                    var userDTO = usersMap.get(otherUserId);
+                    return chatResponseMapper.toChatDTO(cp, userDTO);
+                }).toList();
+        return new ChatsResponse(chatDTOs);
     }
 
     public List<ParticipantDTO> getParticipants(Long userId, Long chatId) {

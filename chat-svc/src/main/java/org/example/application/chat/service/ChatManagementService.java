@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 
 import static org.example.common.ChatApplicationError.USER_DOES_NOT_BELONG_TO_CHAT;
+import static org.example.common.ChatApplicationError.USER_IS_NOT_ADMIN;
+import static org.example.common.Constants.ADMIN_ROLE;
 
 @Service
 @RequiredArgsConstructor
@@ -30,8 +32,11 @@ public class ChatManagementService {
 
     @Transactional
     public void delete(Long userId, Long chatId) {
-        chatFacade.getChatParticipant(chatId, userId)
+        var participant = chatFacade.getChatParticipant(chatId, userId)
                 .orElseThrow(() -> new ApplicationException(USER_DOES_NOT_BELONG_TO_CHAT));
+        if (!participant.getRole().equals(ADMIN_ROLE)) {
+            throw new ApplicationException(USER_IS_NOT_ADMIN);
+        }
         chatFacade.delete(chatId);
         chatEventPublisher.sendEvent(ChatEvent.deleteEvent(chatId));
     }

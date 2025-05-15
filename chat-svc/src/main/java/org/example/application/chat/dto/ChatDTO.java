@@ -10,6 +10,8 @@ public record ChatDTO(
         String name,
         @JsonInclude(JsonInclude.Include.NON_NULL)
         String imageUrl,
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        Long userId,
         Boolean isPrivate,
         Instant lastReadAt,
         Instant lastMessageAt

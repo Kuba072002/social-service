@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -27,7 +28,7 @@ public class UserFacade {
         }
     }
 
-    public Map<Long, UserDTO> getUsersMap(Set<Long> userIds) {
+    public Map<Long, UserDTO> getUsersMap(Collection<Long> userIds) {
         return userService.getUsers(userIds).stream()
                 .collect(Collectors.toMap(UserDTO::id, Function.identity()));
     }

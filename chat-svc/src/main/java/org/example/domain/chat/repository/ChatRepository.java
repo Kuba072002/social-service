@@ -26,7 +26,7 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     boolean existsPrivateChat(@Param("user1Id") Long user1Id, @Param("user2Id") Long user2Id);
 
     @EntityGraph(attributePaths = "participants")
-    Optional<Chat> findById(Long chatId);
+    Optional<Chat> findWithParticipantsById(Long chatId);
 
     @Modifying
     @Query("UPDATE Chat c SET c.lastMessageAt = :lastMessageAt WHERE c.id = :id AND c.lastMessageAt < :lastMessageAt")

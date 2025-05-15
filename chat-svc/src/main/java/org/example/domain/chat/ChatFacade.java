@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -46,18 +47,22 @@ public class ChatFacade {
     }
 
     public Optional<Chat> findChatWithParticipants(Long chatId) {
-        return chatRepository.findById(chatId);
+        return chatRepository.findWithParticipantsById(chatId);
     }
 
     public List<ChatParticipant> findChatParticipants(Long chatId) {
-        return chatParticipantRepository.findByChat_Id(chatId);
+        return chatParticipantRepository.findByChatId(chatId);
     }
 
-    public List<ChatParticipant> getChats(Long userId, Integer pageNumber, Integer pageSize) {
+    public List<ChatParticipant> getParticipantsWithChats(Long userId, Boolean isPrivate, Integer pageNumber, Integer pageSize) {
         PageRequest pageRequest = PageRequest.of(
                 pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "chat.lastMessageAt")
         );
-        return chatParticipantRepository.findByUserId(userId, pageRequest);
+        return chatParticipantRepository.findByUserIdAndChat_IsPrivate(userId, isPrivate, pageRequest);
+    }
+
+    public List<ChatParticipant> findParticipants(Collection<Long> chatIds) {
+        return chatParticipantRepository.findAllByChatIdIn(chatIds);
     }
 
     @Transactional

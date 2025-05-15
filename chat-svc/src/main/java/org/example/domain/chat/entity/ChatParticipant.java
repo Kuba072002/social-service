@@ -25,6 +25,8 @@ public class ChatParticipant {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_id", referencedColumnName = "id", nullable = false)
     private Chat chat;
+    @Column(name = "chat_id", insertable = false, updatable = false)
+    private Long chatId;
     private Long userId;
     private String role;
     private Instant lastReadAt;
