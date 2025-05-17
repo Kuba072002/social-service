@@ -10,12 +10,12 @@ COPY ./shared-lib /app/shared-lib
 WORKDIR /app/shared-lib
 RUN mvn clean install -DskipTests
 
-# Copy user-svc
+# Copy chat-svc
 WORKDIR /app
-COPY ./user-svc /app/user-svc
+COPY ./chat-svc /app/chat-svc
 
-# Build user-svc
-WORKDIR /app/user-svc
+# Build chat-svc
+WORKDIR /app/chat-svc
 RUN mvn clean package -DskipTests
 
 #run
@@ -23,8 +23,8 @@ FROM eclipse-temurin:23-jre-alpine
 
 WORKDIR /app
 
-COPY --from=build /app/user-svc/target/*.jar /app/user-svc.jar
+COPY --from=build /app/chat-svc/target/*.jar /app/chat-svc.jar
 
 EXPOSE 8081
 
-CMD ["java", "-jar", "user-svc.jar"]
+CMD ["java", "-jar", "chat-svc.jar"]

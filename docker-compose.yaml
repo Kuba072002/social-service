@@ -1,13 +1,50 @@
 services:
+  gateway-svc:
+    build:
+      context: ./gateway-svc
+      dockerfile: /Dockerfile
+    container_name: gateway-svc
+    environment:
+      - USER_SERVICE_URL=http://user-svc:8081/user-svc
+      - CHAT_SERVICE_URL=http://chat-svc:8082/chat-svc
+      - MESSAGE_SERVICE_URL=http://message-svc:8083/message-svc
+    ports:
+      - "8080:8080"
+
   user-svc:
     build:
-      context: ./user-svc
-      dockerfile: /Dockerfile
+      context: .
+      dockerfile: ./user-svc/Dockerfile
     container_name: user-svc
     environment:
       - DB_HOST=postgresql_database
     ports:
       - "8081:8081"
+
+  chat-svc:
+    build:
+      context: .
+      dockerfile: ./chat-svc/Dockerfile
+    container_name: chat-svc
+    environment:
+      - DB_HOST=postgresql_database
+      - USER_SERVICE_URL=http://user-svc:8081/user-svc/
+      - SPRING_RABBITMQ_HOST=rabbitmq
+    ports:
+      - "8082:8082"
+
+  message-svc:
+    build:
+      context: .
+      dockerfile: ./message-svc/Dockerfile
+    container_name: message-svc
+    environment:
+      - SPRING_CASSANDRA_CONTACT-POINTS=scylla
+      - CHAT_SERVICE_URL=http://chat-svc:8082/chat-svc/
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_DATA_REDIS_HOST=redis
+    ports:
+      - "8083:8083"
 
   postgresql_database:
     image: postgres:17.4
@@ -38,7 +75,7 @@ services:
     restart: always
     ports:
       - "6379:6379"
-    command: [ "redis-server", "--appendonly", "yes" ]
+    command: [ "redis-server", "--appendonly", "yes", "--requirepass", "redis_password" ]
     volumes:
       - redis_data:/data
 

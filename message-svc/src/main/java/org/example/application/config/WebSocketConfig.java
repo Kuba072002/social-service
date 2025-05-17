@@ -10,6 +10,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+    @Value("${spring.rabbitmq.host:localhost}")
+    private String relayHost;
     @Value("${stomp.rabbitmq.port:61613}")
     private String rabbitmqPort;
     @Value("${spring.rabbitmq.virtual-host:my_vhost}")
@@ -22,6 +24,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.enableStompBrokerRelay("/topic", "/queue", "/exchange", "/amq/queue")
+                .setRelayHost(relayHost)
                 .setRelayPort(Integer.parseInt(rabbitmqPort))
                 .setVirtualHost(virtualHost)
                 .setClientLogin(rabbitmqUsername)
