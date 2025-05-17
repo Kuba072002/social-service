@@ -1,12 +1,16 @@
 package org.example.application.dto;
 
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.time.Instant;
 
 public record MessageDTO(
-        @NotNull
         Long chatId,
-        @NotEmpty
-        String content
+        Long senderId,
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        String content,
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        String mediaContent,
+        Instant createdAt
 ) {
 }

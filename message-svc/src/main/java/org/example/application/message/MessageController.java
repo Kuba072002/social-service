@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.RequiredArgsConstructor;
 import org.example.application.dto.MessageDTO;
-import org.example.domain.message.Message;
+import org.example.application.dto.MessageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,14 +25,14 @@ public class MessageController {
     @PostMapping(value = "/messages", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> createMessage(
             @RequestHeader(name = "userId") Long senderId,
-            @RequestBody @Valid MessageDTO messageDTO
+            @RequestBody @Valid MessageRequest messageRequest
     ) {
-        messageService.createMessage(senderId, messageDTO);
+        messageService.createMessage(senderId, messageRequest);
         return ResponseEntity.status(CREATED).build();
     }
 
     @GetMapping("/messages")
-    public ResponseEntity<List<Message>> getMessages(
+    public ResponseEntity<List<MessageDTO>> getMessages(
             @RequestHeader(name = "userId") Long senderId,
             @RequestParam Long chatId,
             @RequestParam(required = false) @Valid @Past Instant from,

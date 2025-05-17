@@ -3,10 +3,10 @@ package org.example.application.message;
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
 import org.example.application.dto.MessageDTO;
+import org.example.application.dto.MessageRequest;
 import org.example.application.message.event.MessageEvent;
 import org.example.application.message.event.MessagePublisher;
 import org.example.domain.chat.ChatFacade;
-import org.example.domain.message.Message;
 import org.example.domain.message.MessageFacade;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -30,16 +30,16 @@ public class MessageService {
     @Value("${message.query.default.limit}")
     private Integer defaultLimit;
 
-    public void createMessage(Long senderId, MessageDTO messageDTO) {
-        var chatParticipantIds = findChatParticipantIds(messageDTO.chatId());
+    public void createMessage(Long senderId, MessageRequest messageRequest) {
+        var chatParticipantIds = findChatParticipantIds(messageRequest.chatId());
         validateRequester(chatParticipantIds, senderId);
 
-        var message = messageMapper.toMessage(senderId, messageDTO);
+        var message = messageMapper.toMessage(senderId, messageRequest);
         messageFacade.createMessage(message);
         messagePublisher.broadcastMessageAndPublishEvent(chatParticipantIds, message);
     }
 
-    public List<Message> getMessages(Long userId, Long chatId, Instant from, Instant to, Integer limit) {
+    public List<MessageDTO> getMessages(Long userId, Long chatId, Instant from, Instant to, Integer limit) {
         if (to == null) to = Instant.now();
         if (from == null) from = Instant.now().minus(Duration.ofDays(365));
         if (limit == null) limit = defaultLimit;
@@ -51,7 +51,9 @@ public class MessageService {
             var event = MessageEvent.createGetMessageEvent(chatId, userId, messages.getFirst().getCreatedAt());
             messagePublisher.publish(event);
         }
-        return messages;
+        return messages.stream()
+                .map(messageMapper::toMessageDTO)
+                .toList();
     }
 
     private void validateRequester(Set<Long> chatParticipantIds, Long requesterId) {
