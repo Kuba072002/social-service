@@ -2,7 +2,7 @@ package org.example.application.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
-import org.example.application.chat.dto.AddToChatRequest;
+import org.example.application.chat.service.mapper.ChatMapper;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
@@ -12,7 +12,9 @@ import org.example.domain.user.UserFacade;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.example.common.ChatApplicationError.*;
 import static org.example.common.Constants.ADMIN_ROLE;
@@ -23,36 +25,36 @@ public class AddToChatService {
     private final ChatFacade chatFacade;
     private final UserFacade userFacade;
     private final ChatEventPublisher chatEventPublisher;
+    private final ChatMapper chatMapper;
 
     @Transactional
-    public void addToChat(Long userId, AddToChatRequest request) {
-        var chat = validateAndGetChat(userId, request);
-        var chatParticipants = request.userIds().stream()
-                .map(id -> new ChatParticipant(chat, id))
-                .toList();
+    public void addToChat(Long userId, Long chatId, Set<Long> userIds) {
+        if (userIds.contains(userId)) {
+            throw new ApplicationException(CANNOT_ADD_YOURSELF_TO_CHAT);
+        }
+        var chat = chatFacade.findChatWithParticipants(chatId)
+                .orElseThrow(() -> new ApplicationException(CHAT_NOT_EXISTS));
+        validate(userId, chat, userIds);
+        var chatParticipants = chatMapper.toChatParticipants(userIds, chat);
         chatFacade.saveParticipants(chatParticipants);
         chatEventPublisher.sendEvent(ChatEvent.addParticipantsEvent(chat.getId(), chatParticipants));
     }
 
-    private Chat validateAndGetChat(Long userId, AddToChatRequest request) {
-        if (request.userIds().contains(userId)) {
-            throw new ApplicationException(CANNOT_ADD_YOURSELF_TO_CHAT);
-        }
-        var chat = chatFacade.findChatWithParticipants(request.chatId())
-                .orElseThrow(() -> new ApplicationException(CHAT_NOT_EXISTS));
+    private void validate(Long userId, Chat chat, Set<Long> userIds) {
         if (chat.getIsPrivate()) {
             throw new ApplicationException(CANNOT_ADD_TO_PRIVATE_CHAT);
         }
         validateIfUserIsAdmin(userId, chat);
-        checkIfAnyParticipantAlreadyExists(request.userIds(), chat);
-        userFacade.validateUsers(request.userIds());
-        return chat;
+        checkIfAnyParticipantAlreadyExists(userIds, chat.getParticipants());
+        userFacade.validateUsers(userIds);
     }
 
-    private void checkIfAnyParticipantAlreadyExists(Set<Long> userIds, Chat chat) {
-        var anyParticipantAlreadyExists = chat.getParticipants().stream()
-                .anyMatch(chatParticipant ->
-                        userIds.contains(chatParticipant.getUserId()));
+    private void checkIfAnyParticipantAlreadyExists(Set<Long> userIds, List<ChatParticipant> chatParticipants) {
+        var existedParticipantIds = chatParticipants.stream()
+                .map(ChatParticipant::getUserId)
+                .collect(Collectors.toSet());
+        var anyParticipantAlreadyExists = userIds.stream()
+                .anyMatch(existedParticipantIds::contains);
         if (anyParticipantAlreadyExists) {
             throw new ApplicationException(CHAT_PARTICIPANTS_ALREADY_EXISTS);
         }

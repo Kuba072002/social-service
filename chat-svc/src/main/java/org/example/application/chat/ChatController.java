@@ -2,8 +2,12 @@ package org.example.application.chat;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
-import org.example.application.chat.dto.*;
+import org.example.application.chat.dto.ChatRequest;
+import org.example.application.chat.dto.ChatsResponse;
+import org.example.application.chat.dto.ParticipantDTO;
+import org.example.application.chat.dto.UpdateChatReadAtRequest;
 import org.example.application.chat.service.AddToChatService;
 import org.example.application.chat.service.ChatManagementService;
 import org.example.application.chat.service.CreateChatService;
@@ -34,12 +38,22 @@ public class ChatController {
                 .body(createChatService.create(userId, chatRequest));
     }
 
-    @PutMapping("/chats")
+    @PutMapping("/chats/{chatId}/participants")
     public ResponseEntity<Void> addToChat(
             @RequestHeader Long userId,
-            @RequestBody @Valid AddToChatRequest addToChatRequest
+            @PathVariable Long chatId,
+            @RequestBody @Valid @NotEmpty Set<Long> userIds
     ) {
-        addToChatService.addToChat(userId, addToChatRequest);
+        addToChatService.addToChat(userId, chatId, userIds);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/chats/{chatId}/participants")
+    public ResponseEntity<Void> deleteParticipant(
+            @RequestHeader Long userId,
+            @PathVariable Long chatId
+    ) {
+        chatManagementService.deleteParticipant(userId, chatId);
         return ResponseEntity.ok().build();
     }
 
@@ -61,7 +75,7 @@ public class ChatController {
         return ResponseEntity.ok(getChatDetailsService.getParticipants(userId, chatId));
     }
 
-    @PutMapping("/chats/{chatId}/participants")
+    @PutMapping("/chats/{chatId}/participants/last_read_at")
     public ResponseEntity<Void> updateLastReadAt(
             @RequestHeader Long userId,
             @PathVariable Long chatId,

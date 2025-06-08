@@ -6,6 +6,8 @@ import org.example.ApplicationException;
 import org.example.application.chat.dto.ChatRequest;
 import org.example.application.chat.service.mapper.ChatMapper;
 import org.example.domain.chat.ChatFacade;
+import org.example.domain.chat.entity.Chat;
+import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.event.ChatEvent;
 import org.example.domain.event.ChatEventPublisher;
 import org.example.domain.user.UserFacade;
@@ -17,6 +19,7 @@ import java.util.Optional;
 
 import static org.example.BasicApplicationError.INVALID_DATA;
 import static org.example.common.ChatApplicationError.*;
+import static org.example.common.Constants.ADMIN_ROLE;
 
 @Service
 @RequiredArgsConstructor
@@ -30,10 +33,21 @@ public class CreateChatService {
     @Transactional
     public Long create(Long userId, ChatRequest chatRequest) {
         validate(userId, chatRequest);
-        var chat = chatMapper.toChat(chatRequest);
-        chatFacade.createChat(userId, chat, chatRequest.userIds());
+        var chat = prepareChatWithParticipants(userId, chatRequest);
+        chatFacade.createChat(chat);
         chatEventPublisher.sendEvent(ChatEvent.createEvent(chat));
         return chat.getId();
+    }
+
+    private Chat prepareChatWithParticipants(Long userId, ChatRequest chatRequest) {
+        var chat = chatMapper.toChat(chatRequest);
+        var chatParticipants = chatMapper.toChatParticipants(chatRequest.userIds(), chat);
+        if (chat.getIsPrivate()) {
+            chatParticipants.getFirst().setRole(ADMIN_ROLE);
+        }
+        chatParticipants.add(new ChatParticipant(chat, userId, ADMIN_ROLE));
+        chat.setParticipants(chatParticipants);
+        return chat;
     }
 
     private void validate(Long userId, ChatRequest chatRequest) {

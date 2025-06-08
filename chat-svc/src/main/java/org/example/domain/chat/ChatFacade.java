@@ -14,10 +14,6 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static org.example.common.Constants.ADMIN_ROLE;
 
 @Service
 @RequiredArgsConstructor
@@ -29,16 +25,7 @@ public class ChatFacade {
         return chatRepository.existsPrivateChat(user1Id, user2Id);
     }
 
-    public void createChat(Long userId, Chat chat, Set<Long> userIds) {
-        var chatParticipants = userIds.stream()
-                .map(id -> new ChatParticipant(chat, id))
-                .collect(Collectors.toList());
-        if (chat.getIsPrivate()) {
-            chatParticipants.getFirst().setRole(ADMIN_ROLE);
-        }
-        chatParticipants.add(new ChatParticipant(chat, userId, ADMIN_ROLE));
-        chat.setParticipants(chatParticipants);
-
+    public void createChat(Chat chat) {
         chatRepository.save(chat);
     }
 
@@ -54,7 +41,7 @@ public class ChatFacade {
         return chatParticipantRepository.findByChatId(chatId);
     }
 
-    public List<ChatParticipant> getParticipantsWithChats(Long userId, Boolean isPrivate, Integer pageNumber, Integer pageSize) {
+    public List<ChatParticipant> findUserChatParticipants(Long userId, Boolean isPrivate, Integer pageNumber, Integer pageSize) {
         PageRequest pageRequest = PageRequest.of(
                 pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "chat.lastMessageAt")
         );
@@ -85,5 +72,9 @@ public class ChatFacade {
 
     public void delete(Long chatId) {
         chatRepository.deleteById(chatId);
+    }
+
+    public void delete(ChatParticipant chatParticipant) {
+        chatParticipantRepository.delete(chatParticipant);
     }
 }

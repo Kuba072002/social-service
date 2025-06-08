@@ -10,8 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 
-import static org.example.common.ChatApplicationError.USER_DOES_NOT_BELONG_TO_CHAT;
-import static org.example.common.ChatApplicationError.USER_IS_NOT_ADMIN;
+import static org.example.common.ChatApplicationError.*;
+import static org.example.common.ChatApplicationError.CANNOT_DELETE_FROM_PRIVATE_CHAT;
 import static org.example.common.Constants.ADMIN_ROLE;
 
 @Service
@@ -39,5 +39,18 @@ public class ChatManagementService {
         }
         chatFacade.delete(chatId);
         chatEventPublisher.sendEvent(ChatEvent.deleteEvent(chatId));
+    }
+
+    public void deleteParticipant(Long userId, Long chatId) {
+        var chat = chatFacade.findChatWithParticipants(chatId)
+                .orElseThrow(() -> new ApplicationException(CHAT_NOT_EXISTS));
+        var chatParticipant = chat.getParticipants().stream()
+                .filter(participant -> participant.getUserId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new ApplicationException(USER_DOES_NOT_BELONG_TO_CHAT));
+        if (chat.getIsPrivate()) {
+            throw new ApplicationException(CANNOT_DELETE_FROM_PRIVATE_CHAT);
+        }
+        chatFacade.delete(chatParticipant);
     }
 }

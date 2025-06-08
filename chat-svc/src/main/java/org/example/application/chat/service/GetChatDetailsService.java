@@ -28,16 +28,16 @@ public class GetChatDetailsService {
     private Integer defaultPageSize;
 
     public ChatsResponse getChats(Long userId, boolean isPrivate, Integer pageNumber, Integer pageSize) {
-        var participantsWithChats = chatFacade.getParticipantsWithChats(
+        var userChatParticipation = chatFacade.findUserChatParticipants(
                 userId,
                 isPrivate,
                 pageNumber != null ? pageNumber : 0,
                 pageSize != null ? pageSize : defaultPageSize
         );
         if (!isPrivate) {
-            return chatResponseMapper.toChatsResponse(participantsWithChats);
+            return chatResponseMapper.toChatsResponse(userChatParticipation);
         }
-        var chatIds = participantsWithChats.stream()
+        var chatIds = userChatParticipation.stream()
                 .map(ChatParticipant::getChatId)
                 .toList();
         var otherParticipantsWithChatId = chatFacade.findParticipants(chatIds)
@@ -48,7 +48,7 @@ public class GetChatDetailsService {
                         ChatParticipant::getUserId
                 ));
         var usersMap = userFacade.getUsersMap(otherParticipantsWithChatId.values());
-        var chatDTOs = participantsWithChats.stream()
+        var chatDTOs = userChatParticipation.stream()
                 .map(cp -> {
                     var otherUserId = otherParticipantsWithChatId.get(cp.getChatId());
                     var userDTO = usersMap.get(otherUserId);
