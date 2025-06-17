@@ -10,6 +10,7 @@ import org.example.application.dto.MessageEditRequest;
 import org.example.application.dto.MessageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -21,6 +22,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 @CrossOrigin
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class MessageController {
     private final MessageService messageService;
 
@@ -37,9 +39,9 @@ public class MessageController {
     public ResponseEntity<List<MessageDTO>> getMessages(
             @RequestHeader(name = "userId") Long senderId,
             @RequestParam Long chatId,
-            @RequestParam(required = false) @Valid @Past Instant from,
-            @RequestParam(required = false) @Valid @PastOrPresent Instant to,
-            @RequestParam(required = false) @Valid @Max(100) Integer limit
+            @RequestParam(required = false) @Past Instant from,
+            @RequestParam(required = false) @PastOrPresent Instant to,
+            @RequestParam(required = false) @Max(100) Integer limit
     ) {
         return ResponseEntity.ok(messageService.getMessages(senderId, chatId, from, to, limit));
     }
@@ -59,7 +61,7 @@ public class MessageController {
             @RequestParam Long chatId,
             @RequestParam UUID messageId
     ) {
-        messageService.deleteMessage(senderId, chatId,messageId);
+        messageService.deleteMessage(senderId, chatId, messageId);
         return ResponseEntity.ok().build();
     }
 }

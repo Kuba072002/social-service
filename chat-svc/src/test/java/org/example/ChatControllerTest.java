@@ -1,12 +1,12 @@
 package org.example;
 
-import org.example.application.chat.dto.ChatDTO;
 import org.example.application.chat.dto.ChatRequest;
-import org.example.application.chat.dto.ChatsResponse;
 import org.example.domain.chat.entity.Chat;
+import org.example.domain.chat.entity.ChatDetail;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;
+import org.example.domain.event.ChatEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,6 +17,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import wiremock.org.apache.commons.lang3.RandomUtils;
 
 import java.util.List;
@@ -37,6 +38,8 @@ public class ChatControllerTest {
     private ChatRepository chatRepository;
     @Autowired
     private ChatParticipantRepository chatParticipantRepository;
+    @MockitoBean
+    private ChatEventPublisher chatEventPublisher;
 
     @Test
     public void shouldCreateChatWhenRequested() {
@@ -124,18 +127,17 @@ public class ChatControllerTest {
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("userId", String.valueOf(senderId));
-        var result = restTemplate.exchange("/chats",
+        ResponseEntity<List<ChatDetail>> result = restTemplate.exchange("/chats?isPrivate=false",
                 HttpMethod.GET,
                 new HttpEntity<>(null, headers),
-                ChatsResponse.class
-        );
+                new ParameterizedTypeReference<>() {
+                });
+
         assert result.getBody() != null;
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
-        assertThat(result.getBody().chats())
-                .hasSize(numberOfGroupChats + numberOfPrivateChats);
-        assertThat(result.getBody().chats().stream().filter(ChatDTO::isPrivate).count())
-                .isEqualTo(numberOfPrivateChats);
-        assertThat(result.getBody().chats().stream().filter(c -> !c.isPrivate()).count())
+        assertThat(result.getBody())
+                .hasSize(numberOfGroupChats);
+        assertThat(result.getBody().stream().filter(c -> !c.getIsPrivate()).count())
                 .isEqualTo(numberOfGroupChats);
     }
 

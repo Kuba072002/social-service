@@ -1,5 +1,6 @@
 package org.example;
 
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -14,6 +15,13 @@ public class WebExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ServiceResponse> handleValidationExceptions(MethodArgumentNotValidException e) {
+        return ResponseEntity.status(INVALID_DATA.getStatus())
+                .body(new ServiceResponse(INVALID_DATA.getMessage().formatted(e.getMessage())));
+
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ServiceResponse> handleValidationExceptions(ConstraintViolationException e) {
         return ResponseEntity.status(INVALID_DATA.getStatus())
                 .body(new ServiceResponse(INVALID_DATA.getMessage().formatted(e.getMessage())));
 

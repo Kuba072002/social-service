@@ -5,14 +5,15 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.example.application.chat.dto.ChatRequest;
-import org.example.application.chat.dto.ChatsResponse;
 import org.example.application.chat.dto.ParticipantDTO;
 import org.example.application.chat.dto.UpdateChatReadAtRequest;
 import org.example.application.chat.service.AddToChatService;
 import org.example.application.chat.service.ChatManagementService;
 import org.example.application.chat.service.CreateChatService;
-import org.example.application.chat.service.GetChatDetailsService;
+import org.example.application.chat.service.GetChatService;
+import org.example.domain.chat.entity.ChatDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,10 +24,11 @@ import static org.springframework.http.HttpStatus.CREATED;
 @CrossOrigin
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class ChatController {
     private final CreateChatService createChatService;
     private final AddToChatService addToChatService;
-    private final GetChatDetailsService getChatDetailsService;
+    private final GetChatService getChatService;
     private final ChatManagementService chatManagementService;
 
     @PostMapping("/chats")
@@ -58,13 +60,13 @@ public class ChatController {
     }
 
     @GetMapping("/chats")
-    public ResponseEntity<ChatsResponse> getUserChats(
+    public ResponseEntity<List<ChatDetail>> getUserChats(
             @RequestHeader Long userId,
             @RequestParam(required = false) boolean isPrivate,
-            @RequestParam(required = false) @Min(0) Integer pageNumber,
+            @RequestParam(required = false) @Min(1) Integer pageNumber,
             @RequestParam(required = false) @Min(1) Integer pageSize
     ) {
-        return ResponseEntity.ok(getChatDetailsService.getChats(userId, isPrivate, pageNumber, pageSize));
+        return ResponseEntity.ok(getChatService.getChats(userId, isPrivate, pageNumber, pageSize));
     }
 
     @GetMapping("/chats/{chatId}/participants")
@@ -72,7 +74,7 @@ public class ChatController {
             @RequestHeader Long userId,
             @PathVariable Long chatId
     ) {
-        return ResponseEntity.ok(getChatDetailsService.getParticipants(userId, chatId));
+        return ResponseEntity.ok(getChatService.getParticipants(userId, chatId));
     }
 
     @PutMapping("/chats/{chatId}/participants/last_read_at")
@@ -97,6 +99,6 @@ public class ChatController {
     @GetMapping("/internal/chats/participants/ids")
     public ResponseEntity<Set<Long>> getChatParticipantsIds(@RequestParam Long chatId) {
         return ResponseEntity.ok()
-                .body(getChatDetailsService.getParticipantIds(chatId));
+                .body(getChatService.getParticipantIds(chatId));
     }
 }

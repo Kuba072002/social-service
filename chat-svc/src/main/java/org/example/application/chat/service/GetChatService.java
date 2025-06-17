@@ -2,10 +2,10 @@ package org.example.application.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
-import org.example.application.chat.dto.ChatsResponse;
 import org.example.application.chat.dto.ParticipantDTO;
 import org.example.application.chat.service.mapper.ChatResponseMapper;
 import org.example.domain.chat.ChatFacade;
+import org.example.domain.chat.entity.ChatDetail;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.user.UserFacade;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,41 +20,31 @@ import static org.example.common.ChatApplicationError.USER_DOES_NOT_BELONG_TO_CH
 
 @Service
 @RequiredArgsConstructor
-public class GetChatDetailsService {
+public class GetChatService {
     private final ChatFacade chatFacade;
     private final UserFacade userFacade;
     private final ChatResponseMapper chatResponseMapper;
     @Value("${default.chat.page.size}")
     private Integer defaultPageSize;
 
-    public ChatsResponse getChats(Long userId, boolean isPrivate, Integer pageNumber, Integer pageSize) {
-        var userChatParticipation = chatFacade.findUserChatParticipants(
-                userId,
-                isPrivate,
-                pageNumber != null ? pageNumber : 0,
-                pageSize != null ? pageSize : defaultPageSize
-        );
+    public List<ChatDetail> getChats(Long userId, boolean isPrivate, Integer pageNumber, Integer pageSize) {
+        if (pageNumber == null) pageNumber = 1;
+        if (pageSize == null) pageSize = defaultPageSize;
         if (!isPrivate) {
-            return chatResponseMapper.toChatsResponse(userChatParticipation);
+            return chatFacade.findUserGroupChatDetails(userId, pageNumber, pageSize);
+        } else {
+            var chatDetails = chatFacade.findUserPrivateChatDetails(userId, pageNumber, pageSize);
+            var userIds = chatDetails.stream()
+                    .map(ChatDetail::getOtherUser)
+                    .collect(Collectors.toSet());
+            var usersMap = userFacade.getUsersMap(userIds);
+            chatDetails.forEach(chatDetail -> {
+                var userDTO = usersMap.get(chatDetail.getOtherUser());
+                chatDetail.setName(userDTO.userName());
+                chatDetail.setImageUrl(userDTO.imageUrl());
+            });
+            return chatDetails;
         }
-        var chatIds = userChatParticipation.stream()
-                .map(ChatParticipant::getChatId)
-                .toList();
-        var otherParticipantsWithChatId = chatFacade.findParticipants(chatIds)
-                .stream()
-                .filter(cp -> !cp.getUserId().equals(userId))
-                .collect(Collectors.toMap(
-                        ChatParticipant::getChatId,
-                        ChatParticipant::getUserId
-                ));
-        var usersMap = userFacade.getUsersMap(otherParticipantsWithChatId.values());
-        var chatDTOs = userChatParticipation.stream()
-                .map(cp -> {
-                    var otherUserId = otherParticipantsWithChatId.get(cp.getChatId());
-                    var userDTO = usersMap.get(otherUserId);
-                    return chatResponseMapper.toChatDTO(cp, userDTO);
-                }).toList();
-        return new ChatsResponse(chatDTOs);
     }
 
     public List<ParticipantDTO> getParticipants(Long userId, Long chatId) {

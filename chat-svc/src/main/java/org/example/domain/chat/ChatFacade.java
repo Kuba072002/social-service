@@ -2,11 +2,10 @@ package org.example.domain.chat;
 
 import lombok.RequiredArgsConstructor;
 import org.example.domain.chat.entity.Chat;
+import org.example.domain.chat.entity.ChatDetail;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,15 +40,14 @@ public class ChatFacade {
         return chatParticipantRepository.findByChatId(chatId);
     }
 
-    public List<ChatParticipant> findUserChatParticipants(Long userId, Boolean isPrivate, Integer pageNumber, Integer pageSize) {
-        PageRequest pageRequest = PageRequest.of(
-                pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "chat.lastMessageAt")
-        );
-        return chatParticipantRepository.findByUserIdAndChat_IsPrivate(userId, isPrivate, pageRequest);
+    public List<ChatDetail> findUserGroupChatDetails(Long userId, Integer pageNumber, Integer pageSize) {
+        int offset = (pageNumber - 1) * pageSize;
+        return chatParticipantRepository.findUserGroupChats(userId, offset, pageSize);
     }
 
-    public List<ChatParticipant> findParticipants(Collection<Long> chatIds) {
-        return chatParticipantRepository.findAllByChatIdIn(chatIds);
+    public List<ChatDetail> findUserPrivateChatDetails(Long userId, Integer pageNumber, Integer pageSize) {
+        int offset = (pageNumber - 1) * pageSize;
+        return chatParticipantRepository.findUserPrivateChats(userId, offset, pageSize);
     }
 
     @Transactional
