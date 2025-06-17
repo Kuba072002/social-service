@@ -8,11 +8,8 @@ import org.example.application.chat.service.mapper.ChatMapper;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
-import org.example.domain.event.ChatEvent;
-import org.example.domain.event.ChatEventPublisher;
 import org.example.domain.user.UserFacade;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 import java.util.Optional;
@@ -28,14 +25,11 @@ public class CreateChatService {
     private final Validator validator;
     private final ChatFacade chatFacade;
     private final ChatMapper chatMapper;
-    private final ChatEventPublisher chatEventPublisher;
 
-    @Transactional
     public Long create(Long userId, ChatRequest chatRequest) {
         validate(userId, chatRequest);
         var chat = prepareChatWithParticipants(userId, chatRequest);
         chatFacade.createChat(chat);
-        chatEventPublisher.sendEvent(ChatEvent.createEvent(chat));
         return chat.getId();
     }
 

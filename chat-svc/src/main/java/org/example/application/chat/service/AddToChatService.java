@@ -6,11 +6,8 @@ import org.example.application.chat.service.mapper.ChatMapper;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
-import org.example.domain.event.ChatEvent;
-import org.example.domain.event.ChatEventPublisher;
 import org.example.domain.user.UserFacade;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -24,10 +21,8 @@ import static org.example.common.Constants.ADMIN_ROLE;
 public class AddToChatService {
     private final ChatFacade chatFacade;
     private final UserFacade userFacade;
-    private final ChatEventPublisher chatEventPublisher;
     private final ChatMapper chatMapper;
 
-    @Transactional
     public void addToChat(Long userId, Long chatId, Set<Long> userIds) {
         if (userIds.contains(userId)) {
             throw new ApplicationException(CANNOT_ADD_YOURSELF_TO_CHAT);
@@ -36,8 +31,7 @@ public class AddToChatService {
                 .orElseThrow(() -> new ApplicationException(CHAT_NOT_EXISTS));
         validate(userId, chat, userIds);
         var chatParticipants = chatMapper.toChatParticipants(userIds, chat);
-        chatFacade.saveParticipants(chatParticipants);
-        chatEventPublisher.sendEvent(ChatEvent.addParticipantsEvent(chat.getId(), chatParticipants));
+        chatFacade.addParticipants(chat, chatParticipants);
     }
 
     private void validate(Long userId, Chat chat, Set<Long> userIds) {
