@@ -8,6 +8,8 @@ import org.mapstruct.Mapping;
 
 @Mapper
 public interface MessageMapper {
+
+    @Mapping(target = "messageId", expression = "java(com.github.f4b6a3.uuid.UuidCreator.getTimeOrderedEpoch())")
     @Mapping(target = "createdAt", expression = "java(java.time.Instant.now())")
     Message toMessage(Long senderId, MessageRequest messageRequest);
 

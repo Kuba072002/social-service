@@ -40,7 +40,7 @@ social-service/
 ├── chat-service/
 ├── message-service/
 ├── gateway-service/
-├── shared-lib
+├── shared-lib/
 └── docker-compose.yml
 ```
 

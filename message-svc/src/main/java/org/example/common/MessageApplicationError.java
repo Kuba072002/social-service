@@ -10,7 +10,8 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 public enum MessageApplicationError implements ApplicationError {
     NOT_INVOLVED_REQUESTER(BAD_REQUEST, "Requester is not involved in chat."),
     FROM_GREATER_THAN_TO(BAD_REQUEST, "From cannot be greater than to."),
-    CANNOT_STORE_FILE(BAD_REQUEST, "Cannot store file.");
+    MESSAGE_NOT_FOUND(BAD_REQUEST, "Message not found."),
+    SENDER_MISMATCH(BAD_REQUEST, "Sender of message mismatch.");
 
     private final HttpStatus status;
     private final String message;

@@ -11,6 +11,7 @@ import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 import org.springframework.data.cassandra.core.mapping.Table;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Table("messages")
 @Data
@@ -26,7 +27,8 @@ public class Message {
     private String content;
     @Column("media_content")
     private String mediaContent;
-    @PrimaryKeyColumn(name = "created_at", type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
+    @PrimaryKeyColumn(name = "message_id", type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
+    private UUID messageId;
     private Instant createdAt;
 
 }

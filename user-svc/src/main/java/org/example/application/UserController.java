@@ -25,13 +25,13 @@ public class UserController {
     private final AuthService authService;
     private final GetUserService getUserService;
 
-    @PostMapping("/signUp")
+    @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody @Valid SignUpRequest signUpRequest) {
         createUserService.createUser(signUpRequest);
         return ResponseEntity.status(CREATED).build();
     }
 
-    @PostMapping("/signIn")
+    @PostMapping("/login")
     public ResponseEntity<SignInResponse> login(@RequestBody @Valid SignInRequest signInRequest) {
         var response = authService.authUser(signInRequest.email(), signInRequest.password());
         return ResponseEntity.ok(response);

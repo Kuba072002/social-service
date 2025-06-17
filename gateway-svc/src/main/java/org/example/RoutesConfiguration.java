@@ -23,28 +23,21 @@ public class RoutesConfiguration {
     public RouteLocator routes(RouteLocatorBuilder builder) {
         return builder.routes()
                 .route("user-svc-route", r -> r
-                                .path("/user-svc/**")
-                                .and().not(rp -> rp.path("/user-svc/internal/**"))
-//                        .filters(f -> f.rewritePath("/user-svc/(?<segment>.*)", "/${segment}"))
-                                .uri(userServiceUrl)
+                        .path("/user-svc/**")
+                        .and().not(rp -> rp.path("/user-svc/internal/**"))
+                        .uri(userServiceUrl)
                 )
                 .route("chat-svc-route", r -> r
-                                .path("/chat-svc/**")
-                                .and().not(rp -> rp.path("/chat-svc/internal/**"))
-                                .filters(f -> f
-//                                .rewritePath("/chat-svc/(?<segment>.*)", "/${segment}")
-                                                .filter(authenticationFilter)
-                                )
-                                .uri(chatServiceUrl)
+                        .path("/chat-svc/**")
+                        .and().not(rp -> rp.path("/chat-svc/internal/**"))
+                        .filters(f -> f.filter(authenticationFilter))
+                        .uri(chatServiceUrl)
                 )
                 .route("message-svc-route", r -> r
-                                .path("/message-svc/**")
-                                .and().not(rp -> rp.path("/message-svc/internal/**"))
-                                .filters(f -> f
-//                                .rewritePath("/message-svc/(?<segment>.*)", "/${segment}")
-                                                .filter(authenticationFilter)
-                                )
-                                .uri(messageServiceUrl)
+                        .path("/message-svc/**")
+                        .and().not(rp -> rp.path("/message-svc/internal/**"))
+                        .filters(f -> f.filter(authenticationFilter))
+                        .uri(messageServiceUrl)
                 )
                 .build();
     }
