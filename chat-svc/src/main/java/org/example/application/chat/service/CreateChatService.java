@@ -61,7 +61,7 @@ public class CreateChatService {
 
     private void validateRequest(Long userId, ChatRequest chatRequest) {
         if (chatRequest.userIds().contains(userId)) {
-            throw new ApplicationException(CANNOT_ADD_YOURSELF_TO_CHAT);
+            throw new ApplicationException(REQUEST_CANNOT_CONTAIN_REQUESTER_ID);
         }
         var validationGroups = Map.of(
                 true, ChatRequest.PrivateChatGroup.class,

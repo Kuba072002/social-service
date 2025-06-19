@@ -26,7 +26,7 @@ public class MessagePublisher {
             if (message.getSenderId().equals(userId)) return;
             messagingTemplate.convertAndSend("/topic/" + userId, message);
         });
-        var event = MessageEvent.createPostMessageEvent(message.getChatId(), message.getCreatedAt());
+        var event = MessageEvent.post(message.getChatId(), message.getCreatedAt());
         publish(event);
     }
 

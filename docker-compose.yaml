@@ -43,6 +43,7 @@ services:
       - CHAT_SERVICE_URL=http://chat-svc:8082/chat-svc/
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_CASSANDRA_SCHEMA-ACTION=RECREATE
     ports:
       - "8083:8083"
 

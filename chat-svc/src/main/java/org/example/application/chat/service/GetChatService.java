@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.example.common.ChatApplicationError.PARTICIPANTS_LIST_FOR_CHAT_IS_EMPTY;
+import static org.example.common.ChatApplicationError.CHAT_NOT_EXISTS;
 import static org.example.common.ChatApplicationError.USER_DOES_NOT_BELONG_TO_CHAT;
 
 @Service
@@ -73,7 +73,7 @@ public class GetChatService {
     private List<ChatParticipant> getParticipants(Long chatId) {
         var participants = chatFacade.findChatParticipants(chatId);
         if (participants.isEmpty()) {
-            throw new ApplicationException(PARTICIPANTS_LIST_FOR_CHAT_IS_EMPTY);
+            throw new ApplicationException(CHAT_NOT_EXISTS);
         }
         return participants;
     }

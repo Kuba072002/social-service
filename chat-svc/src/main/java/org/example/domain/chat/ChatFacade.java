@@ -33,10 +33,16 @@ public class ChatFacade {
     }
 
     @Transactional
-    public void addParticipants(Chat chat, List<ChatParticipant> chatParticipants) {
-        chat.getParticipants().addAll(chatParticipants);
-        chatParticipantRepository.saveAll(chatParticipants);
-        chatEventPublisher.sendEvent(ChatEvent.modify(chat.getId(), chatParticipants));
+    public void modifyParticipants(
+            Chat chat,
+            List<ChatParticipant> newParticipants,
+            List<ChatParticipant> participantsToDelete
+    ) {
+        chat.getParticipants().removeAll(participantsToDelete);
+        chat.getParticipants().addAll(newParticipants);
+        chatParticipantRepository.saveAll(newParticipants);
+        chatParticipantRepository.deleteAll(participantsToDelete);
+        chatEventPublisher.sendEvent(ChatEvent.modify(chat.getId(), chat.getParticipants()));
     }
 
     public Optional<Chat> findChatWithParticipants(Long chatId) {
@@ -69,6 +75,10 @@ public class ChatFacade {
 
     public Optional<ChatParticipant> getChatParticipant(Long chatId, Long userId) {
         return chatParticipantRepository.findByChatIdAndUserId(chatId, userId);
+    }
+
+    public void save(Chat chat) {
+        chatRepository.save(chat);
     }
 
     public void save(ChatParticipant chatParticipant) {

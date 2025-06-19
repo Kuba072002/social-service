@@ -5,25 +5,13 @@ import org.example.ApplicationException;
 import org.example.domain.chat.ChatFacade;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
-
 import static org.example.common.ChatApplicationError.*;
 import static org.example.common.Constants.ADMIN_ROLE;
 
 @Service
 @RequiredArgsConstructor
-public class ChatManagementService {
+public class DeleteChatService {
     private final ChatFacade chatFacade;
-
-    public void updateLastReadAt(Long userId, Long chatId, Instant lastReadAt) {
-        var chatParticipant = chatFacade.getChatParticipant(chatId, userId)
-                .orElseThrow(() -> new ApplicationException(USER_DOES_NOT_BELONG_TO_CHAT));
-        if (chatParticipant.getLastReadAt() == null
-                || lastReadAt.isAfter(chatParticipant.getLastReadAt())) {
-            chatParticipant.setLastReadAt(lastReadAt);
-            chatFacade.save(chatParticipant);
-        }
-    }
 
     public void delete(Long userId, Long chatId) {
         var participant = chatFacade.getChatParticipant(chatId, userId)
@@ -42,7 +30,7 @@ public class ChatManagementService {
                 .findFirst()
                 .orElseThrow(() -> new ApplicationException(USER_DOES_NOT_BELONG_TO_CHAT));
         if (chat.getIsPrivate()) {
-            throw new ApplicationException(CANNOT_DELETE_FROM_PRIVATE_CHAT);
+            throw new ApplicationException(CANNOT_MODIFY_PRIVATE_CHAT);
         }
         chatFacade.deleteParticipant(chat, chatParticipant);
     }

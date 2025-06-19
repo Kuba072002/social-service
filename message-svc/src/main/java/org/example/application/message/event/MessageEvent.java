@@ -16,7 +16,7 @@ public record MessageEvent(
         @JsonInclude(JsonInclude.Include.NON_NULL)
         Instant lastReadAt
 ) {
-    public static MessageEvent createPostMessageEvent(Long chatId, Instant lastMessageCreatedAt) {
+    public static MessageEvent post(Long chatId, Instant lastMessageCreatedAt) {
         return MessageEvent.builder()
                 .type("POST")
                 .chatId(chatId)
@@ -24,7 +24,7 @@ public record MessageEvent(
                 .build();
     }
 
-    public static MessageEvent createGetMessageEvent(Long chatId, Long userId, Instant lastReadAt) {
+    public static MessageEvent get(Long chatId, Long userId, Instant lastReadAt) {
         return MessageEvent.builder()
                 .type("GET")
                 .chatId(chatId)

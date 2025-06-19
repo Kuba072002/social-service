@@ -2,15 +2,12 @@ package org.example.application.chat;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
-import org.example.application.chat.dto.ChatRequest;
-import org.example.application.chat.dto.ParticipantDTO;
-import org.example.application.chat.dto.UpdateChatReadAtRequest;
-import org.example.application.chat.service.AddToChatService;
-import org.example.application.chat.service.ChatManagementService;
+import org.example.application.chat.dto.*;
 import org.example.application.chat.service.CreateChatService;
+import org.example.application.chat.service.DeleteChatService;
 import org.example.application.chat.service.GetChatService;
+import org.example.application.chat.service.ModifyChatService;
 import org.example.domain.chat.entity.ChatDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -27,9 +24,9 @@ import static org.springframework.http.HttpStatus.CREATED;
 @Validated
 public class ChatController {
     private final CreateChatService createChatService;
-    private final AddToChatService addToChatService;
+    private final ModifyChatService modifyChatService;
     private final GetChatService getChatService;
-    private final ChatManagementService chatManagementService;
+    private final DeleteChatService deleteChatService;
 
     @PostMapping("/chats")
     public ResponseEntity<Long> createChat(
@@ -40,13 +37,23 @@ public class ChatController {
                 .body(createChatService.create(userId, chatRequest));
     }
 
-    @PutMapping("/chats/{chatId}/participants")
-    public ResponseEntity<Void> addToChat(
+    @PutMapping("/chats/{chatId}")
+    public ResponseEntity<Long> modifyChat(
             @RequestHeader Long userId,
             @PathVariable Long chatId,
-            @RequestBody @Valid @NotEmpty Set<Long> userIds
+            @RequestBody @Valid ModifyChatRequest modifyChatRequest
     ) {
-        addToChatService.addToChat(userId, chatId, userIds);
+        modifyChatService.modifyChat(userId, chatId, modifyChatRequest);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/chats/{chatId}/participants")
+    public ResponseEntity<Void> modifyChatParticipants(
+            @RequestHeader Long userId,
+            @PathVariable Long chatId,
+            @RequestBody @Valid ModifyChatParticipantsRequest modifyChatParticipantsRequest
+    ) {
+        modifyChatService.modifyChatParticipants(userId, chatId, modifyChatParticipantsRequest);
         return ResponseEntity.ok().build();
     }
 
@@ -55,7 +62,7 @@ public class ChatController {
             @RequestHeader Long userId,
             @PathVariable Long chatId
     ) {
-        chatManagementService.deleteParticipant(userId, chatId);
+        deleteChatService.deleteParticipant(userId, chatId);
         return ResponseEntity.ok().build();
     }
 
@@ -83,7 +90,7 @@ public class ChatController {
             @PathVariable Long chatId,
             @RequestBody UpdateChatReadAtRequest request
     ) {
-        chatManagementService.updateLastReadAt(userId, chatId, request.lastReadAt());
+        modifyChatService.updateLastReadAt(userId, chatId, request.lastReadAt());
         return ResponseEntity.ok().build();
     }
 
@@ -92,7 +99,7 @@ public class ChatController {
             @RequestHeader Long userId,
             @PathVariable Long chatId
     ) {
-        chatManagementService.delete(userId, chatId);
+        deleteChatService.delete(userId, chatId);
         return ResponseEntity.ok().build();
     }
 
