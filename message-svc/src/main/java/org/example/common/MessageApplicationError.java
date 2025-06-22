@@ -8,6 +8,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @Getter
 public enum MessageApplicationError implements ApplicationError {
+    INVALID_USER_HEADER(BAD_REQUEST, "Header is missing or invalid."),
     NOT_INVOLVED_REQUESTER(BAD_REQUEST, "Requester is not involved in chat."),
     FROM_GREATER_THAN_TO(BAD_REQUEST, "From cannot be greater than to."),
     MESSAGE_NOT_FOUND(BAD_REQUEST, "Message not found."),

@@ -39,6 +39,7 @@ services:
       dockerfile: ./message-svc/Dockerfile
     container_name: message-svc
     environment:
+      - USER_SERVICE_URL=http://user-svc:8081/user-svc/
       - SPRING_CASSANDRA_CONTACT-POINTS=scylla
       - CHAT_SERVICE_URL=http://chat-svc:8082/chat-svc/
       - SPRING_RABBITMQ_HOST=rabbitmq

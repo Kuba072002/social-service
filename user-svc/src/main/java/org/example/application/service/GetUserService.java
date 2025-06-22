@@ -21,6 +21,12 @@ public class GetUserService {
         return userMapper.toUserDTO(user);
     }
 
+    public UserDTO get(Long userId) {
+        var user = userService.findById(userId)
+                .orElseThrow(() -> new ApplicationException(UserApplicationError.USER_NOT_EXISTS));
+        return userMapper.toUserDTO(user);
+    }
+
     public Set<UserDTO> find(Set<Long> userIds) {
         return userMapper.toUserDTOs(userService.findByIds(userIds));
     }

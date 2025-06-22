@@ -43,6 +43,12 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/internal/users/{userId}")
+    public ResponseEntity<UserDTO> getUser(@PathVariable Long userId) {
+        var response = getUserService.get(userId);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/internal/users")
     public ResponseEntity<Set<UserDTO>> findUsers(@RequestBody @NotEmpty Set<Long> userIds) {
         var response = getUserService.find(userIds);

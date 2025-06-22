@@ -30,6 +30,10 @@ public class UserService {
         return userRepository.findByUserName(userName);
     }
 
+    public Optional<User> findById(Long userId) {
+        return userRepository.findById(userId);
+    }
+
     public Collection<User> findByIds(Set<Long> userIds) {
         return userRepository.findAllById(userIds);
     }

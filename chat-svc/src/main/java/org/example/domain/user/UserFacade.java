@@ -11,12 +11,18 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.Objects.isNull;
 import static org.example.common.ChatApplicationError.INVALID_USERS;
 
 @Component
 @RequiredArgsConstructor
 public class UserFacade {
     private final UserService userService;
+
+    public void validateUser(Long userId) {
+        if (isNull(userId)) return;
+        userService.getUser(userId);
+    }
 
     public void validateUsers(Set<Long> userIds) {
         var users = userService.getUsers(userIds);
