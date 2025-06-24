@@ -17,7 +17,7 @@ public class ChatEventListener {
     @RabbitListener(queues = "${chat.events.queue.rabbit}")
     public void process(ChatEvent chatEvent) {
         log.info("Processing chat event with type {}. for chat: {}", chatEvent.type(), chatEvent.chatId());
-        chatFacade.evictChatParticipants(chatEvent.chatId());
+//        chatFacade.evictChatParticipants(chatEvent.chatId());
         if (chatEvent.type().equals("DELETE")) {
             messageFacade.delete(chatEvent.chatId());
         }
