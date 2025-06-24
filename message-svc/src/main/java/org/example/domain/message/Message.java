@@ -25,6 +25,7 @@ public class Message {
     private UUID messageId;
     @Column(name = "sender_id")
     private Long senderId;
+    @Column(length = 2000)
     private String content;
     @Column(name = "media_content")
     private String mediaContent;

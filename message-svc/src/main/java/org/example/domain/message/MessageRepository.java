@@ -10,12 +10,13 @@ import java.util.UUID;
 
 @Repository
 public interface MessageRepository extends JpaRepository<Message, MessageId> {
-    @Query("""
+    @Query(value = """
             SELECT *
-            FROM messages
-            WHERE chat_id = ?0 AND message_id >= ?1 AND message_id <= ?2 LIMIT ?3
-            ORDER BY m.messageId DESC
-            """)
+            FROM message_schema.messages
+            WHERE chat_id = ?1 AND message_id >= ?2 AND message_id <= ?3
+            ORDER BY message_id DESC
+            LIMIT ?4
+            """, nativeQuery = true)
     List<Message> findAllByChatIdAndMessageIdBetween(Long chatId, UUID from, UUID to, int limit);
 
     Optional<Message> findByChatIdAndMessageId(Long chatId, UUID messageId);
