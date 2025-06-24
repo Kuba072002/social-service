@@ -1,8 +1,6 @@
 package org.example.domain.chat;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -11,12 +9,20 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class ChatFacade {
     private final ChatService chatService;
+    private final ChatRepository chatRepository;
 
     public Set<Long> findChatParticipants(Long chatId) {
-        return chatService.findChatParticipantIds(chatId);
+        return chatRepository.findById(chatId)
+                .map(chat -> chat.getUsers().getIds())
+                .orElseGet(() -> chatService.findChatParticipantIds(chatId));
     }
 
-//    @CacheEvict(value = "chatParticipantIds", key = "#chatId")
-//    public void evictChatParticipants(Long chatId) {
-//    }
+    public void save(Long chatId, Set<Long> userIds) {
+        var chat = new Chat(chatId, new Users(userIds));
+        chatRepository.save(chat);
+    }
+
+    public void delete(Long chatId) {
+        chatRepository.deleteById(chatId);
+    }
 }
