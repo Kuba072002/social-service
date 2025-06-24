@@ -38,7 +38,8 @@ public class MessageService {
 
         var message = messageMapper.toMessage(senderId, messageRequest);
         messageFacade.saveMessage(message);
-        messagePublisher.broadcastMessageAndPublishEvent(chatParticipantIds, message);
+        var event = MessageEvent.post(message.getChatId(), message.getCreatedAt(), chatParticipantIds);
+        messagePublisher.publish(event);
     }
 
     public void editMessage(Long senderId, MessageEditRequest messageEditRequest) {
