@@ -16,7 +16,7 @@ public class CreateUserService {
     private final UserMapper userMapper;
     private final UserService userService;
 
-    public void createUser(SignUpRequest signUpRequest) {
+    public Long createUser(SignUpRequest signUpRequest) {
         validateIfPasswordMatch(signUpRequest.password(), signUpRequest.confirmPassword());
         validateIfUserExists(signUpRequest.userName(), signUpRequest.email());
 
@@ -24,6 +24,7 @@ public class CreateUserService {
         User user = userMapper.toUser(signUpRequest, encodedPassword);
 
         userService.save(user);
+        return user.getId();
     }
 
     private void validateIfPasswordMatch(String password, String confirmPassword) {

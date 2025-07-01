@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 
 import java.time.Instant;
+import java.util.Set;
 
 @Builder
 public record MessageEvent(
@@ -14,13 +15,16 @@ public record MessageEvent(
         @JsonInclude(JsonInclude.Include.NON_NULL)
         Long userId,
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        Instant lastReadAt
+        Instant lastReadAt,
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        Set<Long> userIds
 ) {
-    public static MessageEvent post(Long chatId, Instant lastMessageCreatedAt) {
+    public static MessageEvent post(Long chatId, Instant lastMessageCreatedAt, Set<Long> userIds) {
         return MessageEvent.builder()
                 .type("POST")
                 .chatId(chatId)
                 .lastMessageCreatedAt(lastMessageCreatedAt)
+                .userIds(userIds)
                 .build();
     }
 

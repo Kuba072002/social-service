@@ -39,6 +39,7 @@ services:
       dockerfile: ./message-svc/Dockerfile
     container_name: message-svc
     environment:
+      - DB_HOST=postgresql_database
       - USER_SERVICE_URL=http://user-svc:8081/user-svc/
       - SPRING_CASSANDRA_CONTACT-POINTS=scylla
       - CHAT_SERVICE_URL=http://chat-svc:8082/chat-svc/
@@ -60,26 +61,15 @@ services:
     ports:
       - "5432:5432"
 
-  scylla:
-    image: bitnami/scylladb:6.2.3
-    container_name: scylla_db
-    restart: always
-    ports:
-      - "7000:7000"
-      - "9042:9042"
-    volumes:
-      - scylla_data:/var/lib/scylla
-      - ./init/scylla:/docker-entrypoint-initdb.d
-
-  redis:
-    image: redis:latest
-    container_name: redis-container
-    restart: always
-    ports:
-      - "6379:6379"
-    command: [ "redis-server", "--appendonly", "yes", "--requirepass", "redis_password" ]
-    volumes:
-      - redis_data:/data
+  #  redis:
+  #    image: redis:latest
+  #    container_name: redis-container
+  #    restart: always
+  #    ports:
+  #      - "6379:6379"
+  #    command: [ "redis-server", "--appendonly", "yes", "--requirepass", "redis_password" ]
+  #    volumes:
+  #      - redis_data:/data
 
   rabbitmq:
     image: rabbitmq:3.13-management

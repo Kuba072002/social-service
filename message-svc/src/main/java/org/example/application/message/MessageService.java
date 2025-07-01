@@ -32,13 +32,15 @@ public class MessageService {
     @Value("${message.query.default.limit}")
     private Integer defaultLimit;
 
-    public void createMessage(Long senderId, MessageRequest messageRequest) {
+    public UUID createMessage(Long senderId, MessageRequest messageRequest) {
         var chatParticipantIds = findChatParticipantIds(messageRequest.chatId());
         validateRequester(chatParticipantIds, senderId);
 
         var message = messageMapper.toMessage(senderId, messageRequest);
         messageFacade.saveMessage(message);
-        messagePublisher.broadcastMessageAndPublishEvent(chatParticipantIds, message);
+        var event = MessageEvent.post(message.getChatId(), message.getCreatedAt(), chatParticipantIds);
+        messagePublisher.publish(event);
+        return message.getMessageId();
     }
 
     public void editMessage(Long senderId, MessageEditRequest messageEditRequest) {

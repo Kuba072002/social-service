@@ -27,12 +27,12 @@ public class MessageController {
     private final MessageService messageService;
 
     @PostMapping(value = "/messages", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Void> createMessage(
+    public ResponseEntity<UUID> createMessage(
             @RequestHeader(name = "userId") Long senderId,
             @RequestBody @Valid MessageRequest messageRequest
     ) {
-        messageService.createMessage(senderId, messageRequest);
-        return ResponseEntity.status(CREATED).build();
+        return ResponseEntity.status(CREATED)
+                .body(messageService.createMessage(senderId, messageRequest));
     }
 
     @GetMapping("/messages")

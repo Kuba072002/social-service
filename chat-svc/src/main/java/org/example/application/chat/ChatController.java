@@ -38,7 +38,7 @@ public class ChatController {
     }
 
     @PutMapping("/chats/{chatId}")
-    public ResponseEntity<Long> modifyChat(
+    public ResponseEntity<Void> modifyChat(
             @RequestHeader Long userId,
             @PathVariable Long chatId,
             @RequestBody @Valid ModifyChatRequest modifyChatRequest
