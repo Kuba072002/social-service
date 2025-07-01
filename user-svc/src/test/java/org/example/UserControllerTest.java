@@ -44,11 +44,14 @@ public class UserControllerTest {
         var userName = randomAlphabetic(12);
         var request = new SignUpRequest(userName, userName + "@mail.com", password, password);
 
-        var response = restTemplate.postForEntity("/signUp", request, Void.class);
+        var response = restTemplate.postForEntity("/register", request, Long.class);
 
         Assertions.assertEquals(201, response.getStatusCode().value());
-        var user = userRepository.findByUserName(request.userName());
-        Assertions.assertNotNull(user);
+        assert response.getBody() != null;
+        var user = userRepository.findById(response.getBody());
+        assert user.isPresent();
+        assertThat(user.get().getUserName()).isEqualTo(request.userName());
+        assertThat(user.get().getEmail()).isEqualTo(request.email());
     }
 
     @Test
@@ -58,7 +61,7 @@ public class UserControllerTest {
         userRepository.save(user);
 
         var request = new SignInRequest(user.getEmail(), password);
-        var response = restTemplate.postForEntity("/signIn", request, SignInResponse.class);
+        var response = restTemplate.postForEntity("/login", request, SignInResponse.class);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertNotNull(response.getBody());
@@ -66,11 +69,34 @@ public class UserControllerTest {
     }
 
     @Test
+    void shouldGetUsersByUsername() {
+        var query = randomAlphabetic(5);
+        var user1 = createUser();
+        user1.setUserName(randomAlphabetic(3) + query + randomAlphabetic(12));
+        var user2 = createUser();
+        user2.setUserName(query + randomAlphabetic(7));
+        userRepository.saveAll(List.of(user1, user2));
+
+        ResponseEntity<List<UserDTO>> response = restTemplate.exchange(
+                "/users?userName=" + query,
+                HttpMethod.GET,
+                new HttpEntity<>(null),
+                new ParameterizedTypeReference<>() {
+                });
+
+        Assertions.assertEquals(200, response.getStatusCode().value());
+        Assertions.assertNotNull(response.getBody());
+        assertThat(response.getBody()).hasSize(2);
+        assertThat(response.getBody().stream().map(UserDTO::id).toList())
+                .containsExactlyInAnyOrderElementsOf(List.of(user1.getId(), user2.getId()));
+    }
+
+    @Test
     void shouldGetUser() {
         var user = createUser();
         userRepository.save(user);
 
-        var response = restTemplate.getForEntity("/users?userName=" + user.getUserName(), UserDTO.class);
+        var response = restTemplate.getForEntity("/internal/users/" + user.getId(), UserDTO.class);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertNotNull(response.getBody());

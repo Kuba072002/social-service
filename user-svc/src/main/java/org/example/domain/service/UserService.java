@@ -6,6 +6,7 @@ import org.example.domain.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -26,8 +27,8 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    public Optional<User> findByUserName(String userName) {
-        return userRepository.findByUserName(userName);
+    public List<User> findByUserName(String userName) {
+        return userRepository.findByUserNameContaining(userName);
     }
 
     public Optional<User> findById(Long userId) {

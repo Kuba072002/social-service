@@ -13,6 +13,7 @@ import org.example.application.service.GetUserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.springframework.http.HttpStatus.CREATED;
@@ -26,9 +27,9 @@ public class UserController {
     private final GetUserService getUserService;
 
     @PostMapping("/register")
-    public ResponseEntity<Void> register(@RequestBody @Valid SignUpRequest signUpRequest) {
-        createUserService.createUser(signUpRequest);
-        return ResponseEntity.status(CREATED).build();
+    public ResponseEntity<Long> register(@RequestBody @Valid SignUpRequest signUpRequest) {
+        return ResponseEntity.status(CREATED)
+                .body(createUserService.createUser(signUpRequest));
     }
 
     @PostMapping("/login")
@@ -38,7 +39,7 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<UserDTO> getUser(@RequestParam String userName) {
+    public ResponseEntity<List<UserDTO>> getUser(@RequestParam String userName) {
         var response = getUserService.get(userName);
         return ResponseEntity.ok(response);
     }
