@@ -1,8 +1,7 @@
 # 📱 Social service
 
 Aplikacja społecznościowa obsługująca wiadomości, czaty oraz użytkowników.
-Projekt oparty jest na architekturze mikroserwisów z wykorzystaniem Spring Boot i innych technologii takich jak
-PostgreSQL, Redis i ScyllaDB.
+Projekt oparty jest na architekturze mikroserwisów z wykorzystaniem Spring Boot i PostgreSQL.
 
 ## 🧩 Architektura
 
@@ -56,12 +55,8 @@ Redis – cachowanie danych o chatach
 
 ### 🗃️ Model danych
 
-- **ScyllaDB**
-
-Wysokowydajne przechowywanie wiadomości.
-
 - **PostgreSQL**
 
-Przechowywanie danych o użytkownikach i czatach.
+Przechowywanie danych o użytkownikach, czatach i wiadomościach.
 
 ![Model danych](./docs/db.png)
