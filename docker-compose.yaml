@@ -61,16 +61,6 @@ services:
     ports:
       - "5432:5432"
 
-  #  redis:
-  #    image: redis:latest
-  #    container_name: redis-container
-  #    restart: always
-  #    ports:
-  #      - "6379:6379"
-  #    command: [ "redis-server", "--appendonly", "yes", "--requirepass", "redis_password" ]
-  #    volumes:
-  #      - redis_data:/data
-
   rabbitmq:
     image: rabbitmq:3.13-management
     container_name: rabbitmq
@@ -87,9 +77,3 @@ services:
       - ./init/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
       - ./init/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
       - ./init/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
-
-volumes:
-  redis_data:
-    driver: local
-  scylla_data:
-    driver: local
