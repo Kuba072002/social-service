@@ -3,11 +3,13 @@ package org.example.application.service;
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
 import org.example.application.dto.SignUpRequest;
-import org.example.comon.UserApplicationError;
 import org.example.domain.entity.User;
 import org.example.domain.service.UserService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import static org.example.comon.UserApplicationError.CONFIRM_PASSWORD_DO_NOT_MATCH;
+import static org.example.comon.UserApplicationError.USER_ALREADY_EXISTS;
 
 @Service
 @RequiredArgsConstructor
@@ -29,13 +31,13 @@ public class CreateUserService {
 
     private void validateIfPasswordMatch(String password, String confirmPassword) {
         if (!password.equals(confirmPassword)) {
-            throw new ApplicationException(UserApplicationError.CONFIRM_PASSWORD_DO_NOT_MATCH);
+            throw new ApplicationException(CONFIRM_PASSWORD_DO_NOT_MATCH);
         }
     }
 
     private void validateIfUserExists(String userName, String email) {
         if (userService.validateIfExists(userName, email)) {
-            throw new ApplicationException(UserApplicationError.USER_ALREADY_EXISTS);
+            throw new ApplicationException(USER_ALREADY_EXISTS);
         }
     }
 

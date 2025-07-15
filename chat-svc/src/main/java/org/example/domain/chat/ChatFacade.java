@@ -40,8 +40,8 @@ public class ChatFacade {
     ) {
         chat.getParticipants().removeAll(participantsToDelete);
         chat.getParticipants().addAll(newParticipants);
-        chatParticipantRepository.saveAll(newParticipants);
         chatParticipantRepository.deleteAll(participantsToDelete);
+        chatParticipantRepository.saveAll(newParticipants);
         chatEventPublisher.sendEvent(ChatEvent.modify(chat.getId(), chat.getParticipants()));
     }
 

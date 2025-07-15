@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.example.ApplicationException;
 import org.example.ServiceResponse;
 import org.example.domain.user.UserFacade;
@@ -23,13 +24,14 @@ import static org.example.common.ChatApplicationError.INVALID_USER_HEADER;
 public class UserFilter extends OncePerRequestFilter {
     private final UserFacade userFacade;
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String USER_ID_HEADER = "userId";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         if (request.getRequestURI().startsWith("/chats")) {
             try {
-                String userIdHeader = request.getHeader("userId");
-                if (userIdHeader == null || userIdHeader.isBlank()) {
+                String userIdHeader = request.getHeader(USER_ID_HEADER);
+                if (StringUtils.isBlank(userIdHeader)) {
                     throw new ApplicationException(INVALID_USER_HEADER);
                 }
                 long userId = Long.parseLong(userIdHeader);
