@@ -1,6 +1,7 @@
 package org.example.application.chat.service;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.example.ApplicationException;
 import org.example.application.chat.dto.ModifyChatParticipantsRequest;
 import org.example.application.chat.dto.ModifyChatRequest;
@@ -36,7 +37,7 @@ public class ModifyChatService {
         validateRequestedParticipants(modifyRequest, chat.getParticipants());
         var newChatParticipants = chatMapper.toChatParticipants(modifyRequest.userIdsToAdd(), chat);
         var participantsToDelete = chat.getParticipants().stream()
-                .filter(cp -> modifyRequest.userIdsToDelete().contains(cp.getUserId()))
+                .filter(participant -> modifyRequest.userIdsToDelete().contains(participant.getUserId()))
                 .toList();
         chatFacade.modifyParticipants(chat, newChatParticipants, participantsToDelete);
     }
@@ -44,8 +45,7 @@ public class ModifyChatService {
     public void updateLastReadAt(Long userId, Long chatId, Instant lastReadAt) {
         var chatParticipant = chatFacade.getChatParticipant(chatId, userId)
                 .orElseThrow(() -> new ApplicationException(USER_DOES_NOT_BELONG_TO_CHAT));
-        if (chatParticipant.getLastReadAt() == null
-                || lastReadAt.isAfter(chatParticipant.getLastReadAt())) {
+        if (chatParticipant.getLastReadAt() == null || lastReadAt.isAfter(chatParticipant.getLastReadAt())) {
             chatParticipant.setLastReadAt(lastReadAt);
             chatFacade.save(chatParticipant);
         }
@@ -79,7 +79,7 @@ public class ModifyChatService {
     private void validateIfUserIsAdmin(Long userId, Chat chat) {
         var userIsAdmin = chat.getParticipants().stream()
                 .anyMatch(chatParticipant -> chatParticipant.getUserId().equals(userId)
-                        && chatParticipant.getRole().equals(ADMIN_ROLE));
+                        && StringUtils.equals(chatParticipant.getRole(), ADMIN_ROLE));
         if (!userIsAdmin) {
             throw new ApplicationException(USER_IS_NOT_ADMIN);
         }

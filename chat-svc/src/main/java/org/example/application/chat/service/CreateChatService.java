@@ -25,6 +25,10 @@ public class CreateChatService {
     private final Validator validator;
     private final ChatFacade chatFacade;
     private final ChatMapper chatMapper;
+    private final Map<Boolean, Class<?>> validationGroups = Map.of(
+            true, ChatRequest.PrivateChatGroup.class,
+            false, ChatRequest.GroupChatGroup.class
+    );
 
     public Long create(Long userId, ChatRequest chatRequest) {
         validate(userId, chatRequest);
@@ -63,10 +67,6 @@ public class CreateChatService {
         if (chatRequest.userIds().contains(userId)) {
             throw new ApplicationException(REQUEST_CANNOT_CONTAIN_REQUESTER_ID);
         }
-        var validationGroups = Map.of(
-                true, ChatRequest.PrivateChatGroup.class,
-                false, ChatRequest.GroupChatGroup.class
-        );
         var validationResult = Optional.ofNullable(chatRequest.isPrivate())
                 .map(validationGroups::get)
                 .map(validationGroup -> validator.validate(chatRequest, validationGroup))

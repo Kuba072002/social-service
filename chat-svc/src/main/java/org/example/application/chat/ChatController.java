@@ -88,7 +88,7 @@ public class ChatController {
     public ResponseEntity<Void> updateLastReadAt(
             @RequestHeader Long userId,
             @PathVariable Long chatId,
-            @RequestBody UpdateChatReadAtRequest request
+            @RequestBody @Valid UpdateChatReadAtRequest request
     ) {
         modifyChatService.updateLastReadAt(userId, chatId, request.lastReadAt());
         return ResponseEntity.ok().build();
