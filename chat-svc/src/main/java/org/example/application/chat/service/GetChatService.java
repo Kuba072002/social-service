@@ -49,13 +49,13 @@ public class GetChatService {
 
     public List<ParticipantDTO> getParticipants(Long userId, Long chatId) {
         var participants = getParticipants(chatId);
-        var ids = participants.stream()
+        var userIds = participants.stream()
                 .map(ChatParticipant::getUserId)
                 .collect(Collectors.toSet());
-        if (!ids.contains(userId)) {
+        if (!userIds.contains(userId)) {
             throw new ApplicationException(USER_DOES_NOT_BELONG_TO_CHAT);
         }
-        var usersMap = userFacade.getUsersMap(ids);
+        var usersMap = userFacade.getUsersMap(userIds);
         return participants.stream()
                 .map(chatParticipant -> {
                     var userDTO = usersMap.get(chatParticipant.getUserId());

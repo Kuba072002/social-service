@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -89,7 +90,7 @@ public class MessageService {
     private Message findMessageAndValidateSender(Long senderId, Long chatId, UUID messageId) {
         var message = messageFacade.find(chatId, messageId)
                 .orElseThrow(() -> new ApplicationException(MESSAGE_NOT_FOUND));
-        if (!message.getSenderId().equals(senderId)) {
+        if (!Objects.equals(message.getSenderId(), senderId)) {
             throw new ApplicationException(SENDER_MISMATCH);
         }
         return message;

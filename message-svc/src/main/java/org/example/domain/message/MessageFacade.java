@@ -21,9 +21,9 @@ public class MessageFacade {
     }
 
     public List<Message> getMessages(Long chatId, Instant from, Instant to, Integer limit) {
-        UUID fromUuid = UuidCreator.getTimeOrderedEpoch(from);
-        UUID toUuid = UuidCreator.getTimeOrderedEpoch(to);
-        return messageRepository.findAllByChatIdAndMessageIdBetween(chatId, fromUuid, toUuid, limit);
+        UUID fromUUID = UuidCreator.getTimeOrderedEpoch(from);
+        UUID toUUID = UuidCreator.getTimeOrderedEpoch(to);
+        return messageRepository.findAllByChatIdAndMessageIdBetween(chatId, fromUUID, toUUID, limit);
     }
 
     public Optional<Message> find(Long chatId, UUID messageId) {

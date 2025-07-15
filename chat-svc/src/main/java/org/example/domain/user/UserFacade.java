@@ -1,6 +1,7 @@
 package org.example.domain.user;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections.CollectionUtils;
 import org.example.ApplicationException;
 import org.springframework.stereotype.Component;
 
@@ -25,13 +26,12 @@ public class UserFacade {
     }
 
     public void validateUsers(Set<Long> userIds) {
-        var users = userService.getUsers(userIds);
-        if (users.size() != userIds.size()) {
-            var invalidUserIds = users.stream()
-                    .map(UserDTO::id)
-                    .collect(Collectors.toSet());
-            userIds.removeAll(invalidUserIds);
-            throw new ApplicationException(INVALID_USERS.formatted(userIds));
+        var fetchedUserIds = userService.getUsers(userIds).stream()
+                .map(UserDTO::id)
+                .collect(Collectors.toSet());
+        var invalidUserIds = CollectionUtils.removeAll(userIds, fetchedUserIds);
+        if (!invalidUserIds.isEmpty()) {
+            throw new ApplicationException(INVALID_USERS.formatted(invalidUserIds));
         }
     }
 
