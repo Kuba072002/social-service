@@ -1,10 +1,11 @@
 package org.example.application.chat.service;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.example.ApplicationException;
 import org.example.domain.chat.ChatFacade;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 import static org.example.common.ChatApplicationError.*;
 import static org.example.common.Constants.ADMIN_ROLE;
@@ -17,7 +18,7 @@ public class DeleteChatService {
     public void delete(Long userId, Long chatId) {
         var participant = chatFacade.getChatParticipant(chatId, userId)
                 .orElseThrow(() -> new ApplicationException(USER_DOES_NOT_BELONG_TO_CHAT));
-        if (!StringUtils.equals(participant.getRole(), ADMIN_ROLE)) {
+        if (!Objects.equals(participant.getRole(), ADMIN_ROLE)) {
             throw new ApplicationException(USER_IS_NOT_ADMIN);
         }
         chatFacade.delete(chatId);

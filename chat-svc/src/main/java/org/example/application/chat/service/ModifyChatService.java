@@ -1,7 +1,6 @@
 package org.example.application.chat.service;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.example.ApplicationException;
 import org.example.application.chat.dto.ModifyChatParticipantsRequest;
 import org.example.application.chat.dto.ModifyChatRequest;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.example.common.ChatApplicationError.*;
@@ -79,7 +79,7 @@ public class ModifyChatService {
     private void validateIfUserIsAdmin(Long userId, Chat chat) {
         var userIsAdmin = chat.getParticipants().stream()
                 .anyMatch(chatParticipant -> chatParticipant.getUserId().equals(userId)
-                        && StringUtils.equals(chatParticipant.getRole(), ADMIN_ROLE));
+                        && Objects.equals(chatParticipant.getRole(), ADMIN_ROLE));
         if (!userIsAdmin) {
             throw new ApplicationException(USER_IS_NOT_ADMIN);
         }

@@ -8,6 +8,7 @@ import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;
 import org.example.domain.event.ChatEvent;
 import org.example.domain.event.ChatEventPublisher;
+import org.example.domain.event.ChatEventType;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -77,7 +78,7 @@ public class ChatControllerTest {
                 .hasSize(numberOfParticipants + 1);
         Mockito.verify(chatEventPublisher, Mockito.times(1)).sendEvent(eventCaptor.capture());
         assertThat(eventCaptor.getValue().chatId()).isEqualTo(result.getBody());
-        assertThat(eventCaptor.getValue().type()).isEqualTo("CREATE");
+        assertThat(eventCaptor.getValue().type()).isEqualTo(ChatEventType.CREATE);
     }
 
     @Test
@@ -106,7 +107,7 @@ public class ChatControllerTest {
                 .hasSize(2);
         Mockito.verify(chatEventPublisher, Mockito.times(1)).sendEvent(eventCaptor.capture());
         assertThat(eventCaptor.getValue().chatId()).isEqualTo(result.getBody());
-        assertThat(eventCaptor.getValue().type()).isEqualTo("CREATE");
+        assertThat(eventCaptor.getValue().type()).isEqualTo(ChatEventType.CREATE);
     }
 
     @Test
@@ -267,7 +268,7 @@ public class ChatControllerTest {
         assertThat(modifiedParticipantIds).containsAll(userIdsToAdd);
         Mockito.verify(chatEventPublisher, Mockito.times(1)).sendEvent(eventCaptor.capture());
         assertThat(eventCaptor.getValue().chatId()).isEqualTo(chat.getId());
-        assertThat(eventCaptor.getValue().type()).isEqualTo("MODIFY");
+        assertThat(eventCaptor.getValue().type()).isEqualTo(ChatEventType.MODIFY);
     }
 
     @Test
@@ -305,7 +306,7 @@ public class ChatControllerTest {
         assertThat(modifiedParticipantIds).doesNotContain(senderId);
         Mockito.verify(chatEventPublisher, Mockito.times(1)).sendEvent(eventCaptor.capture());
         assertThat(eventCaptor.getValue().chatId()).isEqualTo(chat.getId());
-        assertThat(eventCaptor.getValue().type()).isEqualTo("MODIFY");
+        assertThat(eventCaptor.getValue().type()).isEqualTo(ChatEventType.MODIFY);
     }
 
     @Test
