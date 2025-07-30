@@ -1,4 +1,4 @@
-package org.example.application.dto;
+package org.example.dto.user;
 
 public record SignInResponse(
         UserDTO user,

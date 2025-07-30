@@ -5,15 +5,15 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.RequiredArgsConstructor;
-import org.example.application.dto.MessageDTO;
-import org.example.application.dto.MessageEditRequest;
-import org.example.application.dto.MessageRequest;
+import org.example.dto.message.MessageDTO;
+import org.example.dto.message.MessageEditRequest;
+import org.example.dto.message.MessageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,11 +39,17 @@ public class MessageController {
     public ResponseEntity<List<MessageDTO>> getMessages(
             @RequestHeader(name = "userId") Long senderId,
             @RequestParam Long chatId,
-            @RequestParam(required = false) @Past Instant from,
-            @RequestParam(required = false) @PastOrPresent Instant to,
+            @RequestParam(required = false) @Past OffsetDateTime from,
+            @RequestParam(required = false) @PastOrPresent OffsetDateTime to,
             @RequestParam(required = false) @Max(100) Integer limit
     ) {
-        return ResponseEntity.ok(messageService.getMessages(senderId, chatId, from, to, limit));
+        return ResponseEntity.ok(messageService.getMessages(
+                senderId,
+                chatId,
+                from == null ? null : from.toInstant(),
+                to == null ? null : to.toInstant(),
+                limit
+        ));
     }
 
     @PutMapping("/messages")

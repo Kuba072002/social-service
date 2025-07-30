@@ -1,5 +1,6 @@
 package org.example.domain.user;
 
+import org.example.dto.user.UserDTO;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.GetExchange;
@@ -13,6 +14,7 @@ import java.util.Set;
 public interface UserService {
     @GetExchange("/internal/users/{userId}")
     UserDTO getUser(@PathVariable Long userId);
+
     @PostExchange("/internal/users")
     Set<UserDTO> getUsers(@RequestBody Collection<Long> userIds);
 }

@@ -3,12 +3,11 @@ package org.example.application.chat;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
-import org.example.application.chat.dto.*;
 import org.example.application.chat.service.CreateChatService;
 import org.example.application.chat.service.DeleteChatService;
 import org.example.application.chat.service.GetChatService;
 import org.example.application.chat.service.ModifyChatService;
-import org.example.domain.chat.entity.ChatDetail;
+import org.example.dto.chat.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -90,7 +89,7 @@ public class ChatController {
             @PathVariable Long chatId,
             @RequestBody @Valid UpdateChatReadAtRequest request
     ) {
-        modifyChatService.updateLastReadAt(userId, chatId, request.lastReadAt());
+        modifyChatService.updateLastReadAt(userId, chatId, request.lastReadAt().toInstant());
         return ResponseEntity.ok().build();
     }
 

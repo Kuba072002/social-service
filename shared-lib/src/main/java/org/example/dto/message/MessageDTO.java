@@ -1,8 +1,8 @@
-package org.example.application.dto;
+package org.example.dto.message;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 public record MessageDTO(
@@ -13,6 +13,6 @@ public record MessageDTO(
         String content,
         @JsonInclude(JsonInclude.Include.NON_NULL)
         String mediaContent,
-        Instant createdAt
+        OffsetDateTime createdAt
 ) {
 }

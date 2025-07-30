@@ -1,12 +1,12 @@
 package org.example;
 
-import org.example.application.dto.SignInRequest;
-import org.example.application.dto.SignInResponse;
-import org.example.application.dto.SignUpRequest;
-import org.example.application.dto.UserDTO;
 import org.example.application.service.UserMapper;
 import org.example.domain.entity.User;
 import org.example.domain.repository.UserRepository;
+import org.example.dto.user.SignInRequest;
+import org.example.dto.user.SignInResponse;
+import org.example.dto.user.SignUpRequest;
+import org.example.dto.user.UserDTO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,11 +1,11 @@
-package org.example.application.chat.dto;
+package org.example.dto.chat;
 
 import jakarta.validation.constraints.NotNull;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 public record UpdateChatReadAtRequest(
         @NotNull
-        Instant lastReadAt
+        OffsetDateTime lastReadAt
 ) {
 }

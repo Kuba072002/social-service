@@ -3,12 +3,12 @@ package org.example.application.chat.service;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
-import org.example.application.chat.dto.ChatRequest;
 import org.example.application.chat.service.mapper.ChatMapper;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.user.UserFacade;
+import org.example.dto.chat.ChatRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;

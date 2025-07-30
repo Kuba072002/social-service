@@ -1,14 +1,13 @@
 package org.example;
 
-import org.example.application.chat.dto.*;
 import org.example.domain.chat.entity.Chat;
-import org.example.domain.chat.entity.ChatDetail;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;
 import org.example.domain.event.ChatEvent;
 import org.example.domain.event.ChatEventPublisher;
 import org.example.domain.event.ChatEventType;
+import org.example.dto.chat.*;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -25,6 +24,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import wiremock.org.apache.commons.lang3.RandomUtils;
 
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
@@ -137,7 +137,7 @@ public class ChatControllerTest {
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(result.getBody())
                 .hasSize(numberOfGroupChats);
-        assertThat(result.getBody().stream().filter(c -> !c.getIsPrivate()).count())
+        assertThat(result.getBody().stream().filter(c -> !c.getPrivate()).count())
                 .isEqualTo(numberOfGroupChats);
     }
 
@@ -175,7 +175,7 @@ public class ChatControllerTest {
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(result.getBody())
                 .hasSize(numberOfPrivateChats);
-        assertThat(result.getBody().stream().filter(ChatDetail::getIsPrivate).count())
+        assertThat(result.getBody().stream().filter(ChatDetail::getPrivate).count())
                 .isEqualTo(numberOfPrivateChats);
         var mapResponseChatIdOtherUserId = result.getBody()
                 .stream()
@@ -324,7 +324,7 @@ public class ChatControllerTest {
         ResponseEntity<Void> result = restTemplate.exchange(
                 "/chats/" + chat.getId() + "/participants/last_read_at",
                 HttpMethod.PUT,
-                new HttpEntity<>(new UpdateChatReadAtRequest(lastReadAt), headers),
+                new HttpEntity<>(new UpdateChatReadAtRequest(lastReadAt.atOffset(ZoneOffset.UTC)), headers),
                 Void.class);
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
 

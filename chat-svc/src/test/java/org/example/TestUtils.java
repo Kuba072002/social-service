@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
-import org.example.domain.user.UserDTO;
+import org.example.dto.user.UserDTO;
 import wiremock.org.apache.commons.lang3.RandomUtils;
 
 import java.util.List;

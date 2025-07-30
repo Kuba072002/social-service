@@ -3,7 +3,7 @@ package org.example;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import org.example.domain.user.UserDTO;
+import org.example.dto.user.UserDTO;
 
 import java.util.List;
 import java.util.Set;

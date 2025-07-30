@@ -1,4 +1,4 @@
-package org.example.domain.user;
+package org.example.dto.user;
 
 public record UserDTO(
         Long id,

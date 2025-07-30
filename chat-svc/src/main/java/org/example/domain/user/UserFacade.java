@@ -3,6 +3,7 @@ package org.example.domain.user;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections.CollectionUtils;
 import org.example.ApplicationException;
+import org.example.dto.user.UserDTO;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;

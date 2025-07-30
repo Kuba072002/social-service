@@ -1,14 +1,16 @@
-package org.example.application.dto;
+package org.example.dto.message;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
-public record MessageRequest(
+import java.util.UUID;
+
+public record MessageEditRequest(
         @NotNull
         Long chatId,
+        @NotNull
+        UUID messageId,
         @NotEmpty
-        @Size(max = 2000)
         String content
 ) {
 }

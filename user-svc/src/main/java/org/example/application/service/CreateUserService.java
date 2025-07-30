@@ -2,9 +2,9 @@ package org.example.application.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
-import org.example.application.dto.SignUpRequest;
 import org.example.domain.entity.User;
 import org.example.domain.service.UserService;
+import org.example.dto.user.SignUpRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

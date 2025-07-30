@@ -1,8 +1,8 @@
 package org.example.application.chat.service.mapper;
 
-import org.example.application.chat.dto.ParticipantDTO;
 import org.example.domain.chat.entity.ChatParticipant;
-import org.example.domain.user.UserDTO;
+import org.example.dto.chat.ParticipantDTO;
+import org.example.dto.user.UserDTO;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -13,6 +13,6 @@ public interface ChatResponseMapper {
     @Mapping(source = "userDTO.userName", target = "userName")
     @Mapping(source = "userDTO.imageUrl", target = "imageUrl")
     @Mapping(source = "chatParticipant.role", target = "role")
-    @Mapping(source = "chatParticipant.joinedAt", target = "joinedAt")
+    @Mapping(expression = "java(chatParticipant.getJoinedAt().atOffset(java.time.ZoneOffset.UTC))", target = "joinedAt")
     ParticipantDTO toParticipantDto(ChatParticipant chatParticipant, UserDTO userDTO);
 }

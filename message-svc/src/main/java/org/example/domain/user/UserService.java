@@ -1,5 +1,6 @@
 package org.example.domain.user;
 
+import org.example.dto.user.UserDTO;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.service.annotation.GetExchange;
 import org.springframework.web.service.annotation.HttpExchange;

@@ -2,8 +2,8 @@ package org.example.application.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
-import org.example.application.dto.UserDTO;
 import org.example.domain.service.UserService;
+import org.example.dto.user.UserDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

@@ -1,4 +1,4 @@
-package org.example.application.chat.dto;
+package org.example.dto.chat;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.AssertTrue;
@@ -11,7 +11,7 @@ public record ModifyChatParticipantsRequest(
 ) {
     @AssertTrue
     @JsonIgnore
-    public boolean oneSetIsNotEmpty(){
+    public boolean oneSetIsNotEmpty() {
         return !userIdsToAdd.isEmpty() || !userIdsToDelete.isEmpty();
     }
 }

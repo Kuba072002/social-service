@@ -1,7 +1,7 @@
 package org.example.domain.chat.repository;
 
-import org.example.domain.chat.entity.ChatDetail;
 import org.example.domain.chat.entity.ChatParticipant;
+import org.example.dto.chat.ChatDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

@@ -2,14 +2,14 @@ package org.example.application.message;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
-import org.example.application.dto.MessageDTO;
-import org.example.application.dto.MessageEditRequest;
-import org.example.application.dto.MessageRequest;
 import org.example.application.message.event.MessageEvent;
 import org.example.application.message.event.MessagePublisher;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.message.Message;
 import org.example.domain.message.MessageFacade;
+import org.example.dto.message.MessageDTO;
+import org.example.dto.message.MessageEditRequest;
+import org.example.dto.message.MessageRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 

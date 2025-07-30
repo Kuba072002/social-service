@@ -1,8 +1,8 @@
 package org.example.application.chat.service.mapper;
 
-import org.example.application.chat.dto.ChatRequest;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
+import org.example.dto.chat.ChatRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 

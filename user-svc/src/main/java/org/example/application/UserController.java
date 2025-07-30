@@ -3,13 +3,13 @@ package org.example.application;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
-import org.example.application.dto.SignInRequest;
-import org.example.application.dto.SignInResponse;
-import org.example.application.dto.SignUpRequest;
-import org.example.application.dto.UserDTO;
 import org.example.application.service.AuthService;
 import org.example.application.service.CreateUserService;
 import org.example.application.service.GetUserService;
+import org.example.dto.user.SignInRequest;
+import org.example.dto.user.SignInResponse;
+import org.example.dto.user.SignUpRequest;
+import org.example.dto.user.UserDTO;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

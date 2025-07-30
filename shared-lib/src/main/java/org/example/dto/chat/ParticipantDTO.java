@@ -1,12 +1,12 @@
-package org.example.application.chat.dto;
+package org.example.dto.chat;
 
-import java.time.Instant;
+import java.time.OffsetDateTime;
 
 public record ParticipantDTO(
         Long userId,
         String userName,
         String imageUrl,
         String role,
-        Instant joinedAt
+        OffsetDateTime joinedAt
 ) {
 }

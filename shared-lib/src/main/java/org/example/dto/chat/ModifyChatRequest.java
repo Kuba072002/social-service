@@ -1,4 +1,4 @@
-package org.example.application.chat.dto;
+package org.example.dto.chat;
 
 import jakarta.validation.constraints.NotEmpty;
 

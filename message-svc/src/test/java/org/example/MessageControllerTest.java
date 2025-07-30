@@ -1,8 +1,5 @@
 package org.example;
 
-import org.example.application.dto.MessageDTO;
-import org.example.application.dto.MessageEditRequest;
-import org.example.application.dto.MessageRequest;
 import org.example.application.message.MessageMapper;
 import org.example.application.message.event.MessageEvent;
 import org.example.application.message.event.MessagePublisher;
@@ -11,6 +8,9 @@ import org.example.domain.chat.ChatRepository;
 import org.example.domain.chat.Users;
 import org.example.domain.message.Message;
 import org.example.domain.message.MessageRepository;
+import org.example.dto.message.MessageDTO;
+import org.example.dto.message.MessageEditRequest;
+import org.example.dto.message.MessageRequest;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;

@@ -1,8 +1,8 @@
 package org.example.application.message;
 
-import org.example.application.dto.MessageDTO;
-import org.example.application.dto.MessageRequest;
 import org.example.domain.message.Message;
+import org.example.dto.message.MessageDTO;
+import org.example.dto.message.MessageRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -13,5 +13,6 @@ public interface MessageMapper {
     @Mapping(target = "createdAt", expression = "java(java.time.Instant.now())")
     Message toMessage(Long senderId, MessageRequest messageRequest);
 
+    @Mapping(target = "createdAt", expression = "java(message.getCreatedAt().atOffset(java.time.ZoneOffset.UTC))")
     MessageDTO toMessageDTO(Message message);
 }

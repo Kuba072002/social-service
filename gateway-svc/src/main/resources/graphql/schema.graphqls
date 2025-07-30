@@ -1,0 +1,121 @@
+scalar DateTime
+#scalar Upload
+#scalar UUID
+
+
+type Mutation {
+    register(signUpRequest: SignUpRequest!): ID!
+    login(signInRequest: SignInRequest!): SignInResponse!
+
+    createChat(chatRequest: ChatRequest!): ID!
+    modifyChat(chatId: ID!, modifyChatRequest: ModifyChatRequest!): Boolean!
+    modifyChatParticipants(chatId: ID!, participants: ModifyChatParticipantsRequest!): Boolean!
+    updateLastReadAt(chatId: ID!, request: UpdateChatReadAtRequest!): Boolean!
+    deleteChat(chatId: ID!): Boolean!
+    deleteParticipant(chatId: ID!): Boolean!
+
+    createMessage(messageRequest: MessageRequest!): ID!
+    editMessage(messageEditRequest: MessageEditRequest!): Boolean!
+    deleteMessage(chatId: ID!, messageId: ID!): Boolean!
+}
+
+type Query {
+    users(userName: String!): [UserDTO!]!
+
+    getUserChats(isPrivate: Boolean, pageNumber: Int, pageSize: Int): [ChatDetail!]!
+    getChatParticipants(chatId: ID!): [ParticipantDTO!]!
+
+    getMessages(
+        chatId: ID!
+        from: DateTime
+        to: DateTime
+        limit: Int
+    ): [MessageDTO!]!
+}
+
+input SignUpRequest {
+    userName: String!
+    email: String!
+    password: String!
+    confirmPassword: String!
+}
+
+input SignInRequest {
+    email: String!
+    password: String!
+}
+
+type UserDTO {
+    id: ID!
+    userName: String!
+    email: String!
+    imageUrl: String
+}
+
+type SignInResponse {
+    user: UserDTO!
+    token: String!
+}
+
+
+
+input ChatRequest {
+    name: String
+    imageUrl: String
+    isPrivate: Boolean!
+    userIds: [ID!]!
+}
+
+input ModifyChatRequest {
+    name: String!
+    imageUrl: String!
+}
+
+input ModifyChatParticipantsRequest {
+    userIdsToAdd: [ID]
+    userIdsToDelete: [ID]
+}
+
+input UpdateChatReadAtRequest {
+    lastReadAt: DateTime!
+}
+
+type ChatDetail {
+    chatId: ID!
+    name: String
+    imageUrl: String
+    isPrivate: Boolean!
+    lastMessageAt: DateTime
+    lastReadAt: DateTime
+    otherUser: ID
+}
+
+type ParticipantDTO {
+    userId: ID!
+    userName: String!
+    imageUrl: String
+    role: String!
+    joinedAt: DateTime!
+}
+
+
+
+input MessageRequest {
+    chatId: ID!
+    content: String!
+}
+
+input MessageEditRequest {
+    chatId: ID!
+    messageId: ID!
+    content: String!
+}
+
+type MessageDTO {
+    chatId: ID!
+    messageId: ID!
+    senderId: ID!
+    content: String
+    mediaContent: String
+    createdAt: DateTime!
+}

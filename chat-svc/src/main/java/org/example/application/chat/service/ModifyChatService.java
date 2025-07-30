@@ -2,13 +2,13 @@ package org.example.application.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
-import org.example.application.chat.dto.ModifyChatParticipantsRequest;
-import org.example.application.chat.dto.ModifyChatRequest;
 import org.example.application.chat.service.mapper.ChatMapper;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.user.UserFacade;
+import org.example.dto.chat.ModifyChatParticipantsRequest;
+import org.example.dto.chat.ModifyChatRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
