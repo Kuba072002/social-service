@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
@@ -31,6 +32,21 @@ public class WebclientConfiguration {
     @Bean
     public WebClient messageSvcClient() {
         return WebClient.create(messageServiceUrl);
+    }
+
+    @Bean
+    public HttpGraphQlClient userSvcGraphQlClient(WebClient userSvcClient) {
+        return HttpGraphQlClient.create(userSvcClient).mutate().build();
+    }
+
+    @Bean
+    public HttpGraphQlClient chatSvcGraphQlClient(WebClient chatSvcClient) {
+        return HttpGraphQlClient.create(chatSvcClient).mutate().build();
+    }
+
+    @Bean
+    public HttpGraphQlClient messageSvcGraphQlClient(WebClient messageSvcClient) {
+        return HttpGraphQlClient.create(messageSvcClient).mutate().build();
     }
 
 }

@@ -1,0 +1,36 @@
+scalar DateTime
+
+
+type Mutation {
+    register(signUpRequest: SignUpRequest!): ID!
+    login(signInRequest: SignInRequest!): SignInResponse!
+}
+
+type Query {
+    users(userName: String!): [UserDTO!]!
+
+}
+
+input SignUpRequest {
+    userName: String!
+    email: String!
+    password: String!
+    confirmPassword: String!
+}
+
+input SignInRequest {
+    email: String!
+    password: String!
+}
+
+type UserDTO {
+    id: ID!
+    userName: String!
+    email: String!
+    imageUrl: String
+}
+
+type SignInResponse {
+    user: UserDTO!
+    token: String!
+}

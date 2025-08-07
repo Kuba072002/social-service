@@ -9,6 +9,7 @@ import org.example.dto.user.SignInRequest;
 import org.example.dto.user.SignInResponse;
 import org.example.dto.user.SignUpRequest;
 import org.example.dto.user.UserDTO;
+import org.springframework.graphql.client.HttpGraphQlClient;
 import org.springframework.graphql.data.method.annotation.Argument;
 import org.springframework.graphql.data.method.annotation.ContextValue;
 import org.springframework.graphql.data.method.annotation.MutationMapping;
@@ -27,6 +28,9 @@ public class SocialController {
     private final WebClient userSvcClient;
     private final WebClient chatSvcClient;
     private final WebClient messageSvcClient;
+    private final HttpGraphQlClient userSvcGraphQlClient;
+    private final HttpGraphQlClient chatSvcGraphQlClient;
+    private final HttpGraphQlClient messageSvcGraphQlClient;
     private final AuthenticationService authenticationService;
     private static final String USER_ID_HEADER = "userId";
     private static final String AUTH_HEADER = "authHeader";

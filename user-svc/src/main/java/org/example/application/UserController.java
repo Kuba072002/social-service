@@ -1,6 +1,5 @@
 package org.example.application;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import org.example.application.service.AuthService;
@@ -10,41 +9,40 @@ import org.example.dto.user.SignInRequest;
 import org.example.dto.user.SignInResponse;
 import org.example.dto.user.SignUpRequest;
 import org.example.dto.user.UserDTO;
+import org.springframework.graphql.data.method.annotation.Argument;
+import org.springframework.graphql.data.method.annotation.MutationMapping;
+import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
 
-import static org.springframework.http.HttpStatus.CREATED;
-
 @CrossOrigin
-@RestController
+@Controller
 @RequiredArgsConstructor
 public class UserController {
     private final CreateUserService createUserService;
     private final AuthService authService;
     private final GetUserService getUserService;
 
-    @PostMapping("/register")
-    public ResponseEntity<Long> register(@RequestBody @Valid SignUpRequest signUpRequest) {
-        return ResponseEntity.status(CREATED)
-                .body(createUserService.createUser(signUpRequest));
+    @MutationMapping("register")
+    public Long register(@Argument SignUpRequest signUpRequest) {
+        return createUserService.createUser(signUpRequest);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<SignInResponse> login(@RequestBody @Valid SignInRequest signInRequest) {
-        var response = authService.authUser(signInRequest.email(), signInRequest.password());
-        return ResponseEntity.ok(response);
+    @MutationMapping("login")
+    public SignInResponse login(@Argument SignInRequest signInRequest) {
+        return authService.authUser(signInRequest.email(), signInRequest.password());
     }
 
-    @GetMapping("/users")
-    public ResponseEntity<List<UserDTO>> getUser(@RequestParam String userName) {
-        var response = getUserService.get(userName);
-        return ResponseEntity.ok(response);
+    @QueryMapping("users")
+    public List<UserDTO> getUser(@Argument String userName) {
+        return getUserService.get(userName);
     }
 
-    @GetMapping("/internal/users/{userId}")
+    @GetMapping(value = "/internal/users/{userId}")
     public ResponseEntity<UserDTO> getUser(@PathVariable Long userId) {
         var response = getUserService.get(userId);
         return ResponseEntity.ok(response);

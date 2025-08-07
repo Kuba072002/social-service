@@ -1,0 +1,40 @@
+scalar DateTime
+#scalar Upload
+#scalar UUID
+
+
+type Mutation {
+    createMessage(messageRequest: MessageRequest!): ID!
+    editMessage(messageEditRequest: MessageEditRequest!): Boolean!
+    deleteMessage(chatId: ID!, messageId: ID!): Boolean!
+}
+
+type Query {
+   getMessages(
+        chatId: ID!
+        from: DateTime
+        to: DateTime
+        limit: Int
+    ): [MessageDTO!]!
+}
+
+
+input MessageRequest {
+    chatId: ID!
+    content: String!
+}
+
+input MessageEditRequest {
+    chatId: ID!
+    messageId: ID!
+    content: String!
+}
+
+type MessageDTO {
+    chatId: ID!
+    messageId: ID!
+    senderId: ID!
+    content: String
+    mediaContent: String
+    createdAt: DateTime!
+}

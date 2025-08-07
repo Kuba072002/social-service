@@ -1,0 +1,64 @@
+scalar DateTime
+#scalar Upload
+#scalar UUID
+
+type Mutation {
+    createChat(userId: ID!, chatRequest: ChatRequest!): ID!
+    modifyChat(userId: ID!, chatId: ID!, modifyChatRequest: ModifyChatRequest!): Boolean!
+    modifyChatParticipants(userId: ID!, chatId: ID!, participants: ModifyChatParticipantsRequest!): Boolean!
+    updateLastReadAt(userId: ID!, chatId: ID!, request: UpdateChatReadAtRequest!): Boolean!
+    deleteChat(userId: ID!, chatId: ID!): Boolean!
+    deleteParticipant(userId: ID!, chatId: ID!): Boolean!
+
+}
+
+type Query {
+    getUserChats(userId: ID!, isPrivate: Boolean, pageNumber: Int, pageSize: Int): [ChatDetail!]!
+    getChatParticipants(userId: ID!, chatId: ID!): [ParticipantDTO!]!
+}
+
+type UserDTO {
+    id: ID!
+    userName: String!
+    email: String!
+    imageUrl: String
+}
+
+input ChatRequest {
+    name: String
+    imageUrl: String
+    isPrivate: Boolean!
+    userIds: [ID!]!
+}
+
+input ModifyChatRequest {
+    name: String!
+    imageUrl: String!
+}
+
+input ModifyChatParticipantsRequest {
+    userIdsToAdd: [ID]
+    userIdsToDelete: [ID]
+}
+
+input UpdateChatReadAtRequest {
+    lastReadAt: DateTime!
+}
+
+type ChatDetail {
+    chatId: ID!
+    name: String
+    imageUrl: String
+    isPrivate: Boolean!
+    lastMessageAt: DateTime
+    lastReadAt: DateTime
+    otherUser: ID
+}
+
+type ParticipantDTO {
+    userId: ID!
+    userName: String!
+    imageUrl: String
+    role: String!
+    joinedAt: DateTime!
+}
