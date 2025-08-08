@@ -9,7 +9,7 @@ type Mutation {
 
     createChat(chatRequest: ChatRequest!): ID!
     modifyChat(chatId: ID!, modifyChatRequest: ModifyChatRequest!): Boolean!
-    modifyChatParticipants(chatId: ID!, participants: ModifyChatParticipantsRequest!): Boolean!
+    modifyChatParticipants(chatId: ID!, modifyChatParticipants: ModifyChatParticipantsRequest!): Boolean!
     updateLastReadAt(chatId: ID!, request: UpdateChatReadAtRequest!): Boolean!
     deleteChat(chatId: ID!): Boolean!
     deleteParticipant(chatId: ID!): Boolean!

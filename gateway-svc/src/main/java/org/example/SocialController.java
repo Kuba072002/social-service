@@ -62,7 +62,6 @@ public class SocialController {
     @MutationMapping("createChat")
     public Mono<Long> createChat(@Argument ChatRequest chatRequest, @ContextValue(name = AUTH_HEADER) String authHeader) {
         return authenticationService.getUserId(authHeader)
-                .delayUntil(this::validateUser)
                 .flatMap(userId -> chatSvcClient.post()
                         .uri("/chats")
                         .header(USER_ID_HEADER, String.valueOf(userId))
@@ -78,7 +77,6 @@ public class SocialController {
             @ContextValue(name = AUTH_HEADER) String authHeader
     ) {
         return authenticationService.getUserId(authHeader)
-                .delayUntil(this::validateUser)
                 .flatMap(userId -> chatSvcClient.put()
                         .uri("/chats/{chatId}", chatId)
                         .header(USER_ID_HEADER, String.valueOf(userId))
@@ -91,15 +89,14 @@ public class SocialController {
     @MutationMapping("modifyChatParticipants")
     public Mono<Boolean> modifyChatParticipants(
             @Argument Long chatId,
-            @Argument ModifyChatParticipantsRequest modifyChatParticipantsRequest,
+            @Argument ModifyChatParticipantsRequest modifyChatParticipants,
             @ContextValue(name = AUTH_HEADER) String authHeader
     ) {
         return authenticationService.getUserId(authHeader)
-                .delayUntil(this::validateUser)
                 .flatMap(userId -> chatSvcClient.put()
                         .uri("/chats/{chatId}/participants", chatId)
                         .header(USER_ID_HEADER, String.valueOf(userId))
-                        .bodyValue(modifyChatParticipantsRequest)
+                        .bodyValue(modifyChatParticipants)
                         .retrieve()
                         .bodyToMono(Void.class))
                 .thenReturn(true);
@@ -112,7 +109,6 @@ public class SocialController {
             @ContextValue(name = AUTH_HEADER) String authHeader
     ) {
         return authenticationService.getUserId(authHeader)
-                .delayUntil(this::validateUser)
                 .flatMap(userId -> chatSvcClient.put()
                         .uri("/chats/{chatId}/participants/last_read_at", chatId)
                         .header(USER_ID_HEADER, String.valueOf(userId))
@@ -125,7 +121,6 @@ public class SocialController {
     @MutationMapping("deleteChat")
     public Mono<Boolean> deleteChat(@Argument Long chatId, @ContextValue(name = AUTH_HEADER) String authHeader) {
         return authenticationService.getUserId(authHeader)
-                .delayUntil(this::validateUser)
                 .flatMap(userId -> chatSvcClient.delete()
                         .uri("/chats/{chatId}", chatId)
                         .header(USER_ID_HEADER, String.valueOf(userId))
@@ -137,7 +132,6 @@ public class SocialController {
     @MutationMapping("deleteParticipant")
     public Mono<Boolean> deleteParticipant(@Argument Long chatId, @ContextValue(name = AUTH_HEADER) String authHeader) {
         return authenticationService.getUserId(authHeader)
-                .delayUntil(this::validateUser)
                 .flatMap(userId -> chatSvcClient.delete()
                         .uri("/chats/{chatId}/participants", chatId)
                         .header(USER_ID_HEADER, String.valueOf(userId))
@@ -158,7 +152,6 @@ public class SocialController {
         if (pageSize != null) additionalParams += "&pageSize=" + pageSize;
         String finalAdditionalParams = additionalParams;
         return authenticationService.getUserId(authHeader)
-                .delayUntil(this::validateUser)
                 .flatMapMany(userId -> chatSvcClient.get()
                         .uri("/chats?isPrivate=" + isPrivate + finalAdditionalParams)
                         .header(USER_ID_HEADER, String.valueOf(userId))
@@ -169,7 +162,6 @@ public class SocialController {
     @QueryMapping("getChatParticipants")
     public Flux<ParticipantDTO> getChatParticipants(@Argument Long chatId, @ContextValue(name = AUTH_HEADER) String authHeader) {
         return authenticationService.getUserId(authHeader)
-                .delayUntil(this::validateUser)
                 .flatMapMany(userId -> chatSvcClient.get()
                         .uri("/chats/{chatId}/participants", chatId)
                         .header(USER_ID_HEADER, String.valueOf(userId))
@@ -181,7 +173,6 @@ public class SocialController {
     @MutationMapping("createMessage")
     public Mono<UUID> createMessage(@Argument MessageRequest messageRequest, @ContextValue(name = AUTH_HEADER) String authHeader) {
         return authenticationService.getUserId(authHeader)
-                .delayUntil(this::validateUser)
                 .flatMap(userId -> messageSvcClient.post()
                         .uri("/messages")
                         .header(USER_ID_HEADER, String.valueOf(userId))
@@ -193,7 +184,6 @@ public class SocialController {
     @MutationMapping("editMessage")
     public Mono<Boolean> editMessage(@Argument MessageEditRequest messageEditRequest, @ContextValue(name = AUTH_HEADER) String authHeader) {
         return authenticationService.getUserId(authHeader)
-                .delayUntil(this::validateUser)
                 .flatMap(userId -> messageSvcClient.put()
                         .uri("/messages")
                         .header(USER_ID_HEADER, String.valueOf(userId))
@@ -206,7 +196,6 @@ public class SocialController {
     @MutationMapping("deleteMessage")
     public Mono<Boolean> deleteMessage(@Argument Long chatId, @Argument UUID messageId, @ContextValue(name = AUTH_HEADER) String authHeader) {
         return authenticationService.getUserId(authHeader)
-                .delayUntil(this::validateUser)
                 .flatMap(userId -> messageSvcClient.delete()
                         .uri("/messages?chatId=" + chatId + "&messageId=" + messageId)
                         .header(USER_ID_HEADER, String.valueOf(userId))
@@ -234,13 +223,5 @@ public class SocialController {
                         .header(USER_ID_HEADER, String.valueOf(userId))
                         .retrieve()
                         .bodyToFlux(MessageDTO.class));
-    }
-
-    private Mono<Void> validateUser(Long userId) {
-        return userSvcClient.get()
-                .uri("/internal/users/{userId}", userId)
-                .retrieve()
-                .bodyToMono(UserDTO.class)
-                .then();
     }
 }
