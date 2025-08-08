@@ -24,22 +24,22 @@ public class MessageController {
 
     @MutationMapping("createMessage")
     public UUID createMessage(
-            @Argument Long senderId,
+            @Argument Long userId,
             @Argument MessageRequest messageRequest
     ) {
-        return messageService.createMessage(senderId, messageRequest);
+        return messageService.createMessage(userId, messageRequest);
     }
 
     @QueryMapping("getMessages")
     public List<MessageDTO> getMessages(
-            @Argument Long senderId,
+            @Argument Long userId,
             @Argument Long chatId,
             @Argument OffsetDateTime from,
             @Argument OffsetDateTime to,
             @Argument Integer limit
     ) {
         return messageService.getMessages(
-                senderId,
+                userId,
                 chatId,
                 from == null ? null : from.toInstant(),
                 to == null ? null : to.toInstant(),
@@ -49,20 +49,20 @@ public class MessageController {
 
     @QueryMapping("editMessage")
     public Boolean editMessage(
-            @Argument Long senderId,
+            @Argument Long userId,
             @Argument MessageEditRequest messageEditRequest
     ) {
-        messageService.editMessage(senderId, messageEditRequest);
+        messageService.editMessage(userId, messageEditRequest);
         return true;
     }
 
     @QueryMapping("deleteMessage")
     public Boolean deleteMessage(
-            @Argument Long senderId,
+            @Argument Long userId,
             @Argument Long chatId,
             @Argument UUID messageId
     ) {
-        messageService.deleteMessage(senderId, chatId, messageId);
+        messageService.deleteMessage(userId, chatId, messageId);
         return true;
     }
 }

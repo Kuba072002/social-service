@@ -5,7 +5,7 @@ scalar DateTime
 type Mutation {
     createChat(userId: ID!, chatRequest: ChatRequest!): ID!
     modifyChat(userId: ID!, chatId: ID!, modifyChatRequest: ModifyChatRequest!): Boolean!
-    modifyChatParticipants(userId: ID!, chatId: ID!, participants: ModifyChatParticipantsRequest!): Boolean!
+    modifyChatParticipants(userId: ID!, chatId: ID!, modifyChatParticipants: ModifyChatParticipantsRequest!): Boolean!
     updateLastReadAt(userId: ID!, chatId: ID!, request: UpdateChatReadAtRequest!): Boolean!
     deleteChat(userId: ID!, chatId: ID!): Boolean!
     deleteParticipant(userId: ID!, chatId: ID!): Boolean!

@@ -50,9 +50,9 @@ public class ChatController {
     public Boolean modifyChatParticipants(
             @Argument Long userId,
             @Argument Long chatId,
-            @Argument ModifyChatParticipantsRequest modifyChatParticipantsRequest
+            @Argument ModifyChatParticipantsRequest modifyChatParticipants
     ) {
-        modifyChatService.modifyChatParticipants(userId, chatId, modifyChatParticipantsRequest);
+        modifyChatService.modifyChatParticipants(userId, chatId, modifyChatParticipants);
         return true;
     }
 

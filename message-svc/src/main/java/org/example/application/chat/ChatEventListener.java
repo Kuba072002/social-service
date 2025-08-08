@@ -6,6 +6,7 @@ import org.example.domain.chat.ChatFacade;
 import org.example.domain.message.MessageFacade;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
@@ -14,6 +15,7 @@ public class ChatEventListener {
     private final ChatFacade chatFacade;
     private final MessageFacade messageFacade;
 
+    @Transactional
     @RabbitListener(queues = "${chat.events.queue.rabbit}")
     public void process(ChatEvent chatEvent) {
         log.info("Processing chat event with type {}. for chat: {}", chatEvent.type(), chatEvent.chatId());
