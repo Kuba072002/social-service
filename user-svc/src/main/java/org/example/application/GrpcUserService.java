@@ -6,14 +6,37 @@ import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.example.application.service.AuthService;
 import org.example.application.service.CreateUserService;
+import org.example.domain.service.UserService;
 import org.example.grpc.*;
+
+import java.util.HashSet;
+import java.util.stream.Collectors;
 
 @GrpcService
 @RequiredArgsConstructor
 @Slf4j
 public class GrpcUserService extends UserServiceGrpc.UserServiceImplBase {
     private final CreateUserService createUserService;
+    private final UserService userService;
     private final AuthService authService;
+
+    @Override
+    public void findUsers(FindUsersRequest request, StreamObserver<FindUsersResponse> responseObserver) {
+        var users = userService.findByIds(new HashSet<>(request.getUserIdsList()));
+        var response = users.stream()
+                .map(u -> {
+                    var builder = org.example.grpc.UserDTO.newBuilder()
+                            .setUserName(u.getUserName())
+                            .setEmail(u.getEmail())
+                            .setId(u.getId());
+                    if (u.getImageUrl() != null) builder.setImageUrl(u.getImageUrl());
+                    return builder.build();
+                }).toList();
+        responseObserver.onNext(FindUsersResponse.newBuilder()
+                .addAllUsers(response)
+                .build());
+        responseObserver.onCompleted();
+    }
 
     @Override
     public void login(SignInRequest request, StreamObserver<SignInResponse> responseObserver) {
