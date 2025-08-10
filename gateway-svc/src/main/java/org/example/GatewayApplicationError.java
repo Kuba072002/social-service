@@ -8,7 +8,8 @@ import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 public enum GatewayApplicationError implements ApplicationError {
     INVALID_AUTHORIZATION(UNAUTHORIZED, "Invalid authorization."),
-    INVALID_USER_HEADER(BAD_REQUEST, "Header is missing or invalid.");
+    INVALID_USER_HEADER(BAD_REQUEST, "Header is missing or invalid."),
+    INVALID_RESPONSE(BAD_REQUEST, "Something went wrong.");
 
     private final HttpStatus status;
     private String message;

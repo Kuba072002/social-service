@@ -1,0 +1,105 @@
+syntax = "proto3";
+
+package chat;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
+option java_multiple_files = true;
+option java_package = "org.example.grpc.chat";
+option java_outer_classname = "ChatProto";
+
+// -------- Requests --------
+
+message ChatRequest {
+  int64 user_id = 1;
+  string name = 2; // nullable if private chat
+  string image_url = 3;
+  bool is_private = 4;
+  repeated int64 user_ids = 5;
+}
+
+message ModifyChatRequest {
+  string name = 1;
+  string image_url = 2;
+}
+
+message ModifyChatParticipantsRequest {
+  repeated int64 user_ids_to_add = 1;
+  repeated int64 user_ids_to_delete = 2;
+}
+
+message GetUserChatsRequest {
+  int64 user_id = 1;
+  google.protobuf.BoolValue is_private = 2;
+  google.protobuf.Int32Value page_number = 3;
+  google.protobuf.Int32Value page_size = 4;
+}
+
+message GetChatParticipantsRequest {
+  int64 user_id = 1;
+  int64 chat_id = 2;
+}
+
+message ChatIdRequest {
+  int64 user_id = 1;
+  int64 chat_id = 2;
+}
+
+// -------- Responses --------
+
+message ChatDetail {
+  int64 chat_id = 1;
+  google.protobuf.StringValue name = 2;
+  google.protobuf.StringValue image_url = 3;
+  bool is_private = 4;
+  google.protobuf.Timestamp last_message_at = 5;
+  google.protobuf.Timestamp last_read_at = 6;
+  google.protobuf.Int64Value other_user = 7;
+}
+
+message ParticipantDTO {
+  int64 user_id = 1;
+  string user_name = 2;
+  string image_url = 3;
+  string role = 4;
+  google.protobuf.Timestamp joined_at = 5;
+}
+
+message CreateChatResponse {
+  int64 chat_id = 1;
+}
+
+message GetUserChatsResponse {
+  repeated ChatDetail chats = 1;
+}
+
+message GetChatParticipantsResponse {
+  repeated ParticipantDTO participants = 1;
+}
+
+message Empty {}
+
+// -------- Service --------
+
+service ChatService {
+  rpc CreateChat(ChatRequest) returns (CreateChatResponse);
+  rpc ModifyChat(ModifyChatRequestWithIds) returns (Empty);
+  rpc ModifyChatParticipants(ModifyChatParticipantsRequestWithIds) returns (Empty);
+  rpc GetUserChats(GetUserChatsRequest) returns (GetUserChatsResponse);
+  rpc GetChatParticipants(GetChatParticipantsRequest) returns (GetChatParticipantsResponse);
+  rpc DeleteChat(ChatIdRequest) returns (Empty);
+}
+
+// Wrappers for requests requiring both user_id and chat_id
+message ModifyChatRequestWithIds {
+  int64 user_id = 1;
+  int64 chat_id = 2;
+  ModifyChatRequest modify_chat_request = 3;
+}
+
+message ModifyChatParticipantsRequestWithIds {
+  int64 user_id = 1;
+  int64 chat_id = 2;
+  ModifyChatParticipantsRequest modify_chat_participants_request = 3;
+}

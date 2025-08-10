@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package messages;
+
+option java_multiple_files = true;
+option java_package = "org.example.grpc";
+option java_outer_classname = "MessagesProto";
+
+message CreateMessageRequest {
+    int64 senderId = 1;
+    int64 chatId = 2;
+    string content = 3;
+}
+
+message CreateMessageResponse {
+    string messageId = 1;
+}
+
+message GetMessagesRequest {
+    int64 senderId = 1;         // From header
+    int64 chatId = 2;           // Required param
+    string from = 3;            // Optional, ISO-8601 string (OffsetDateTime)
+    string to = 4;              // Optional, ISO-8601 string
+    int32 limit = 5;            // Optional, max 100
+}
+
+message Message {
+    int64 chatId = 1;
+    string messageId = 2;       // UUID as string
+    int64 senderId = 3;
+    string content = 4;         // Nullable handled by empty string
+    string mediaContent = 5;    // Nullable handled by empty string
+    string createdAt = 6;       // ISO-8601 string
+}
+
+message GetMessagesResponse {
+    repeated Message messages = 1;
+}
+
+service MessageService {
+    rpc CreateMessage(CreateMessageRequest) returns (CreateMessageResponse);
+    rpc GetMessages(GetMessagesRequest) returns (GetMessagesResponse);
+}

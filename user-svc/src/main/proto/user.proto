@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package user;
+
+option java_multiple_files = true;
+option java_package = "org.example.grpc";
+option java_outer_classname = "UserProto";
+
+// --- Request messages ---
+message SignUpRequest {
+    string userName = 1;
+    string email = 2;
+    string password = 3;
+    string confirmPassword = 4;
+}
+
+message SignInRequest {
+    string email = 1;
+    string password = 2;
+}
+
+// --- Response messages ---
+message SignUpResponse {
+    int64 userId = 1;
+}
+
+message UserDTO {
+    int64 id = 1;
+    string userName = 2;
+    string email = 3;
+    string imageUrl = 4;
+}
+
+message SignInResponse {
+    UserDTO user = 1;
+    string token = 2;
+}
+
+// --- Service ---
+service UserService {
+    rpc Register(SignUpRequest) returns (SignUpResponse);
+    rpc Login(SignInRequest) returns (SignInResponse);
+}
