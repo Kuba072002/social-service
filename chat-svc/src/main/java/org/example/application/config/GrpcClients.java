@@ -15,11 +15,12 @@ public class GrpcClients {
 
     public GrpcClients(
             @Value(value = "${user.service.url.grpc}") String userHost,
-            @Value(value = "${user.service.port.grpc}") int userPort
+            @Value(value = "${user.service.port.grpc}") int userPort,
+            @Value(value = "${grpc.development.mode}") boolean developmentMode
         ) {
-        this.userChannel = ManagedChannelBuilder.forAddress(userHost, userPort)
-                .usePlaintext()  // Remove or replace with TLS in production
-                .build();
+        var chanelBuilder = ManagedChannelBuilder.forAddress(userHost, userPort);
+        if (developmentMode) chanelBuilder.usePlaintext();
+        this.userChannel = chanelBuilder.build();
         this.userStub = UserServiceGrpc.newBlockingStub(userChannel);
     }
 }

@@ -103,4 +103,11 @@ public class GrpcChatService
         responseObserver.onNext(CreateChatResponse.newBuilder().setChatId(id).build());
         responseObserver.onCompleted();
     }
+
+    @Override
+    public void getChatParticipantIds(ParticipantIdsRequest request, StreamObserver<GetChatParticipantIdsResponse> responseObserver) {
+        var response = getChatService.getParticipantIds(request.getChatId());
+        responseObserver.onNext(GetChatParticipantIdsResponse.newBuilder().addAllParticipants(response).build());
+        responseObserver.onCompleted();
+    }
 }
