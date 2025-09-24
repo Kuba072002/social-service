@@ -30,9 +30,6 @@ public class MessageService {
     private final MessageMapper messageMapper;
     private final MessagePublisher messagePublisher;
 
-    @Value("${message.query.default.limit}")
-    private Integer defaultLimit;
-
     public void createMessage(Long senderId, MessageRequest messageRequest) {
         var chatParticipantIds = findChatParticipantIds(messageRequest.chatId());
         validateRequester(chatParticipantIds, senderId);
@@ -58,7 +55,6 @@ public class MessageService {
     public List<MessageDTO> getMessages(Long userId, Long chatId, Instant from, Instant to, Integer limit) {
         if (to == null) to = Instant.now();
         if (from == null) from = Instant.now().minus(Duration.ofDays(365));
-        if (limit == null) limit = defaultLimit;
         validateQueryParams(from, to);
         validateRequester(findChatParticipantIds(chatId), userId);
 

@@ -24,12 +24,8 @@ public class GetChatService {
     private final ChatFacade chatFacade;
     private final UserFacade userFacade;
     private final ChatResponseMapper chatResponseMapper;
-    @Value("${default.chat.page.size}")
-    private Integer defaultPageSize;
 
     public List<ChatDetail> getChats(Long userId, boolean isPrivate, Integer pageNumber, Integer pageSize) {
-        if (pageNumber == null) pageNumber = 1;
-        if (pageSize == null) pageSize = defaultPageSize;
         if (!isPrivate) {
             return chatFacade.findUserGroupChatDetails(userId, pageNumber, pageSize);
         } else {
