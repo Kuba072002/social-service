@@ -22,6 +22,7 @@ public class MessageEventListener {
                     chatFacade.updateLastMessageAt(messageEvent.chatId(), messageEvent.lastMessageCreatedAt());
             case GET_EVENT_TYPE ->
                     chatFacade.updateLastReadAt(messageEvent.chatId(), messageEvent.userId(), messageEvent.lastReadAt());
+            default -> log.info("Unhandled message event for chat, type: {}", messageEvent.type());
         }
     }
 }
