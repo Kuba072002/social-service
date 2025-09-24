@@ -8,7 +8,6 @@ import org.example.domain.chat.ChatFacade;
 import org.example.domain.chat.entity.ChatDetail;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.user.UserFacade;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

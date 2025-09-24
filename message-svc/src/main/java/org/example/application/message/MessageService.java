@@ -10,7 +10,6 @@ import org.example.application.message.event.MessagePublisher;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.message.Message;
 import org.example.domain.message.MessageFacade;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
