@@ -20,6 +20,11 @@
         <maven.compiler.source>23</maven.compiler.source>
         <maven.compiler.target>23</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- SonarCloud -->
+        <sonar.projectKey>social-service</sonar.projectKey>
+        <sonar.organization>Kuba072002</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+        <sonar.exclusions>**/src/test/**</sonar.exclusions>
     </properties>
 
 </project>
