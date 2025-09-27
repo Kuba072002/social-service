@@ -70,8 +70,8 @@ public class ChatController {
     public ResponseEntity<List<ChatDetail>> getUserChats(
             @RequestHeader Long userId,
             @RequestParam(required = false) boolean isPrivate,
-            @RequestParam(required = false) @Min(1) Integer pageNumber,
-            @RequestParam(required = false) @Min(1) Integer pageSize
+            @RequestParam(required = false, defaultValue = "1") @Min(1) Integer pageNumber,
+            @RequestParam(required = false, defaultValue = "${default.chat.page.size}") @Min(1) Integer pageSize
     ) {
         return ResponseEntity.ok(getChatService.getChats(userId, isPrivate, pageNumber, pageSize));
     }

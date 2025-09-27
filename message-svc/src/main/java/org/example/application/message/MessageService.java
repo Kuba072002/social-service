@@ -10,7 +10,6 @@ import org.example.application.message.event.MessagePublisher;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.message.Message;
 import org.example.domain.message.MessageFacade;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -29,9 +28,6 @@ public class MessageService {
     private final ChatFacade chatFacade;
     private final MessageMapper messageMapper;
     private final MessagePublisher messagePublisher;
-
-    @Value("${message.query.default.limit}")
-    private Integer defaultLimit;
 
     public UUID createMessage(Long senderId, MessageRequest messageRequest) {
         var chatParticipantIds = findChatParticipantIds(messageRequest.chatId());
@@ -60,7 +56,6 @@ public class MessageService {
     public List<MessageDTO> getMessages(Long userId, Long chatId, Instant from, Instant to, Integer limit) {
         if (to == null) to = Instant.now();
         if (from == null) from = Instant.now().minus(Duration.ofDays(365));
-        if (limit == null) limit = defaultLimit;
         validateQueryParams(from, to);
         validateRequester(findChatParticipantIds(chatId), userId);
 

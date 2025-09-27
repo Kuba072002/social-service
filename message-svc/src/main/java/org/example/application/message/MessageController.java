@@ -41,7 +41,7 @@ public class MessageController {
             @RequestParam Long chatId,
             @RequestParam(required = false) @Past Instant from,
             @RequestParam(required = false) @PastOrPresent Instant to,
-            @RequestParam(required = false) @Max(100) Integer limit
+            @RequestParam(required = false, defaultValue = "${message.query.default.limit}") @Max(100) Integer limit
     ) {
         return ResponseEntity.ok(messageService.getMessages(senderId, chatId, from, to, limit));
     }
