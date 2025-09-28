@@ -9,7 +9,6 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Getter
 public enum ChatApplicationError implements ApplicationError {
-    INVALID_USER_HEADER(BAD_REQUEST, "Header is missing or invalid."),
     INVALID_USERS(BAD_REQUEST, "Invalid users: %s"),
     PRIVATE_CHAT_ALREADY_EXISTS(BAD_REQUEST, "Private chat already exists."),
     REQUEST_GROUP_VALIDATION_NOT_EXISTS(BAD_REQUEST, "Request group validation not exists."),

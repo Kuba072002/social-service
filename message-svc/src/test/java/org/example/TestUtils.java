@@ -11,6 +11,7 @@ import java.util.Set;
 import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 
 public class TestUtils {
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     public static void mockGetUser(Long userId) {
         IntegrationTestInitializer.WIREMOCK.stubFor(
@@ -38,11 +39,18 @@ public class TestUtils {
     }
 
     public static String convertToJson(Object object) {
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
-            return objectMapper.writeValueAsString(object);
+            return OBJECT_MAPPER.writeValueAsString(object);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Cannot convert to json");
+        }
+    }
+
+    public static <T> T readJson(String json, final Class<T> clazz) {
+        try {
+            return OBJECT_MAPPER.readValue(json, clazz);
+        } catch (Exception e) {
+            throw new RuntimeException();
         }
     }
 

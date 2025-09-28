@@ -20,16 +20,12 @@ public class ChatEventListener {
     public void process(ChatEvent chatEvent) {
         log.info("Processing chat event with type {}. for chat: {}", chatEvent.type(), chatEvent.chatId());
         switch (chatEvent.type()) {
-            case "CREATE", "MODIFY" -> {
-                chatFacade.save(chatEvent.chatId(), chatEvent.userIds());
-            }
+            case "CREATE", "MODIFY" -> chatFacade.save(chatEvent.chatId(), chatEvent.userIds());
             case "DELETE" -> {
                 chatFacade.delete(chatEvent.chatId());
                 messageFacade.delete(chatEvent.chatId());
             }
-            default -> {
-                log.info("Invalid chat event: {}", chatEvent);
-            }
+            default -> log.info("Invalid chat event: {}", chatEvent);
         }
     }
 }
