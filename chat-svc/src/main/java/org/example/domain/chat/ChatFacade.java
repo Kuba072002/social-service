@@ -2,7 +2,7 @@ package org.example.domain.chat;
 
 import lombok.RequiredArgsConstructor;
 import org.example.domain.chat.entity.Chat;
-import org.example.domain.chat.entity.ChatDetail;
+import org.example.domain.chat.projection.ChatDetail;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;

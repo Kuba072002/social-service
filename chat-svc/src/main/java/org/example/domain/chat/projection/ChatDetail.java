@@ -1,4 +1,4 @@
-package org.example.domain.chat.entity;
+package org.example.domain.chat.projection;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -25,14 +25,28 @@ public class ChatDetail {
     private Long otherUser;
 
     public ChatDetail(
-            Long chatId, Boolean isPrivate, Instant lastMessageAt,
-            Instant lastReadAt, Long otherUser
+            Long chatId, Boolean isPrivate,
+            Instant lastMessageAt, Instant lastReadAt,
+            Long otherUser
     ) {
         this.chatId = chatId;
         this.isPrivate = isPrivate;
         this.lastMessageAt = lastMessageAt;
         this.lastReadAt = lastReadAt;
         this.otherUser = otherUser;
+    }
+
+    public ChatDetail(
+            Long chatId, String name,
+            String imageUrl, Boolean isPrivate,
+            Instant lastMessageAt, Instant lastReadAt
+    ) {
+        this.chatId = chatId;
+        this.name = name;
+        this.imageUrl = imageUrl;
+        this.isPrivate = isPrivate;
+        this.lastMessageAt = lastMessageAt;
+        this.lastReadAt = lastReadAt;
     }
 
 }

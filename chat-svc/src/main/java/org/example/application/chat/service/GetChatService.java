@@ -1,12 +1,13 @@
 package org.example.application.chat.service;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.BooleanUtils;
 import org.example.ApplicationException;
 import org.example.application.chat.dto.ParticipantDTO;
 import org.example.application.chat.service.mapper.ChatResponseMapper;
 import org.example.domain.chat.ChatFacade;
-import org.example.domain.chat.entity.ChatDetail;
 import org.example.domain.chat.entity.ChatParticipant;
+import org.example.domain.chat.projection.ChatDetail;
 import org.example.domain.user.UserFacade;
 import org.springframework.stereotype.Service;
 
@@ -24,14 +25,12 @@ public class GetChatService {
     private final UserFacade userFacade;
     private final ChatResponseMapper chatResponseMapper;
 
-    public List<ChatDetail> getChats(Long userId, boolean isPrivate, Integer pageNumber, Integer pageSize) {
-        if (!isPrivate) {
-            return chatFacade.findUserGroupChatDetails(userId, pageNumber, pageSize);
-        } else {
+    public List<ChatDetail> getChats(Long userId, Boolean isPrivate, Integer pageNumber, Integer pageSize) {
+        if (BooleanUtils.isTrue(isPrivate)) {
             var chatDetails = chatFacade.findUserPrivateChatDetails(userId, pageNumber, pageSize);
             var userIds = chatDetails.stream()
-                    .map(ChatDetail::getOtherUser)
-                    .collect(Collectors.toSet());
+                .map(ChatDetail::getOtherUser)
+                .collect(Collectors.toSet());
             var usersMap = userFacade.getUsersMap(userIds);
             chatDetails.forEach(chatDetail -> {
                 var userDTO = usersMap.get(chatDetail.getOtherUser());
@@ -39,6 +38,8 @@ public class GetChatService {
                 chatDetail.setImageUrl(userDTO.imageUrl());
             });
             return chatDetails;
+        } else {
+            return chatFacade.findUserGroupChatDetails(userId, pageNumber, pageSize);
         }
     }
 

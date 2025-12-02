@@ -1,7 +1,7 @@
 package org.example.domain.chat.repository;
 
-import org.example.domain.chat.entity.ChatDetail;
 import org.example.domain.chat.entity.ChatParticipant;
+import org.example.domain.chat.projection.ChatDetail;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -18,7 +18,7 @@ public interface ChatParticipantRepository extends JpaRepository<ChatParticipant
     List<ChatParticipant> findByChatId(Long chatId);
 
     @Query(value = """
-            SELECT cp.chat_id,c.name,c.image_url,c.is_private,c.last_message_at,cp.last_read_at,null AS other_user
+            SELECT c.id, c.name, c.image_url, c.is_private, c.last_message_at, cp.last_read_at
             FROM chat_schema.chat_participants cp
             JOIN chat_schema.chats c ON cp.chat_id = c.id
             WHERE cp.user_id = ?1 AND c.is_private = 'false'
@@ -29,8 +29,13 @@ public interface ChatParticipantRepository extends JpaRepository<ChatParticipant
     List<ChatDetail> findUserGroupChats(Long userId, int offset, int limit);
 
     @Query(value = """
-            SELECT cp.chat_id,c.is_private,c.last_message_at,cp.last_read_at,
-            (SELECT cp2.user_id FROM chat_schema.chat_participants cp2 WHERE cp2.chat_id = c.id AND cp2.user_id != ?1 limit 1) AS other_user
+            SELECT c.id, c.is_private, c.last_message_at, cp.last_read_at,
+            (
+                SELECT cp2.user_id
+                FROM chat_schema.chat_participants cp2
+                WHERE cp2.chat_id = c.id AND cp2.user_id != ?1
+                limit 1
+            ) AS other_user
             FROM chat_schema.chat_participants cp
             JOIN chat_schema.chats c ON cp.chat_id = c.id
             WHERE cp.user_id = ?1 AND c.is_private = 'true'

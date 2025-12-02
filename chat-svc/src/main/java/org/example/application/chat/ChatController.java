@@ -8,7 +8,7 @@ import org.example.application.chat.service.CreateChatService;
 import org.example.application.chat.service.DeleteChatService;
 import org.example.application.chat.service.GetChatService;
 import org.example.application.chat.service.ModifyChatService;
-import org.example.domain.chat.entity.ChatDetail;
+import org.example.domain.chat.projection.ChatDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -69,7 +69,7 @@ public class ChatController {
     @GetMapping("/chats")
     public ResponseEntity<List<ChatDetail>> getUserChats(
             @RequestHeader Long userId,
-            @RequestParam(required = false) boolean isPrivate,
+            @RequestParam(required = false) Boolean isPrivate,
             @RequestParam(required = false, defaultValue = "1") @Min(1) Integer pageNumber,
             @RequestParam(required = false, defaultValue = "${default.chat.page.size}") @Min(1) Integer pageSize
     ) {

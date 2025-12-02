@@ -28,4 +28,16 @@ public class Chat {
     private Instant createdAt;
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ChatParticipant> participants;
+
+    @Override
+    public String toString() {
+        return "Chat{" +
+                "name='" + name + '\'' +
+                ", lastMessageAt=" + lastMessageAt +
+                ", isPrivate=" + isPrivate +
+                ", imageUrl='" + imageUrl + '\'' +
+                ", id=" + id +
+                ", createdAt=" + createdAt +
+                '}';
+    }
 }

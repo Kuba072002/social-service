@@ -2,6 +2,7 @@ package org.example.application.chat.service;
 
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.BooleanUtils;
 import org.example.ApplicationException;
 import org.example.application.chat.dto.ChatRequest;
 import org.example.application.chat.service.mapper.ChatMapper;
@@ -40,7 +41,7 @@ public class CreateChatService {
     private Chat prepareChatWithParticipants(Long userId, ChatRequest chatRequest) {
         var chat = chatMapper.toChat(chatRequest);
         var chatParticipants = chatMapper.toChatParticipants(chatRequest.userIds(), chat);
-        if (chat.getIsPrivate()) {
+        if (BooleanUtils.isTrue(chat.getIsPrivate())) {
             chatParticipants.getFirst().setRole(ADMIN_ROLE);
         }
         chatParticipants.add(new ChatParticipant(chat, userId, ADMIN_ROLE));

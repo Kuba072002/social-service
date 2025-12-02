@@ -3,14 +3,30 @@ package org.example;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import org.apache.commons.text.RandomStringGenerator;
 import org.example.domain.user.UserDTO;
 
 import java.util.List;
 import java.util.Set;
 
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
-
 public class TestUtils {
+
+    private static final RandomStringGenerator STRING_GENERATOR = new RandomStringGenerator.Builder()
+            .withinRange('A', 'Z')
+            .withinRange('a', 'z')
+            .filteredBy(Character::isLetter)
+            .build();
+
+    public static void mockGetUser(Long userId) {
+        IntegrationTestInitializer.WIREMOCK.stubFor(
+                WireMock.get(WireMock.urlPathEqualTo("/internal/users/" + userId))
+                        .willReturn(WireMock.aResponse()
+                                .withStatus(200)
+                                .withHeader("Content-Type", "application/json")
+                                .withBody(convertToJson(createUsers(Set.of(userId)).getFirst()))
+                        )
+        );
+    }
 
     public static void mockGetUsers(Set<Long> userIds) {
         IntegrationTestInitializer.WIREMOCK.stubFor(
@@ -41,5 +57,9 @@ public class TestUtils {
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Cannot convert to json");
         }
+    }
+
+    public static String randomAlphabetic(int length) {
+        return STRING_GENERATOR.generate(length);
     }
 }
