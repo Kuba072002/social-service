@@ -1,7 +1,8 @@
 package org.example.application.chat.service;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.Strings;
 import org.example.ApplicationException;
 import org.example.application.chat.dto.ModifyChatParticipantsRequest;
 import org.example.application.chat.dto.ModifyChatRequest;
@@ -79,14 +80,14 @@ public class ModifyChatService {
     private void validateIfUserIsAdmin(Long userId, Chat chat) {
         var userIsAdmin = chat.getParticipants().stream()
                 .anyMatch(chatParticipant -> chatParticipant.getUserId().equals(userId)
-                        && StringUtils.equals(chatParticipant.getRole(), ADMIN_ROLE));
+                        && Strings.CS.equals(chatParticipant.getRole(), ADMIN_ROLE));
         if (!userIsAdmin) {
             throw new ApplicationException(USER_IS_NOT_ADMIN);
         }
     }
 
     private void validateIfIsNotPrivate(Chat chat) {
-        if (chat.getIsPrivate()) {
+        if (BooleanUtils.isTrue(chat.getIsPrivate())) {
             throw new ApplicationException(CANNOT_MODIFY_PRIVATE_CHAT);
         }
     }
