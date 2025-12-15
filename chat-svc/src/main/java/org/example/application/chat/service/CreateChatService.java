@@ -51,7 +51,7 @@ public class CreateChatService {
 
     private void validate(Long userId, ChatRequest chatRequest) {
         validateRequest(userId, chatRequest);
-        userFacade.validateUsers(chatRequest.userIds());
+        userFacade.getAndValidateUsers(chatRequest.userIds());
         if (chatRequest.isPrivate()) {
             validateIfPrivateChatAlreadyExists(userId, chatRequest.userIds().iterator().next());
         }

@@ -1,8 +1,6 @@
 package org.example;
 
-import org.example.application.chat.dto.ChatRequest;
-import org.example.application.chat.dto.ModifyChatParticipantsRequest;
-import org.example.application.chat.dto.ModifyChatRequest;
+import org.example.application.chat.dto.*;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.projection.ChatDetail;
@@ -26,6 +24,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import wiremock.org.apache.commons.lang3.RandomUtils;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -248,6 +248,74 @@ class ChatControllerTest {
         assertThat(savedChat).isNotNull();
         var participants = savedChat.getParticipants().stream().map(ChatParticipant::getUserId).collect(Collectors.toSet());
         assertThat(participants).containsExactlyInAnyOrderElementsOf(userIds);
+    }
+
+    @Test
+    void shouldGetChatParticipantsWhenRequested() {
+        int numberOfParticipants = 4;
+        Long senderId = RandomUtils.nextLong();
+        var userIds = getRandomUserIds(numberOfParticipants);
+        Chat chat = createChat(false, userIds, senderId);
+        chatRepository.save(chat);
+
+        userIds.add(senderId);
+        mockGetUser(senderId);
+        mockGetUsers(userIds);
+        ResponseEntity<List<ParticipantDTO>> result = restTemplate.exchange(
+                "/chats/" + chat.getId() + "/participants",
+                HttpMethod.GET, new HttpEntity<>(null, getHttpHeaders(senderId)),
+                new ParameterizedTypeReference<>() {
+                }
+        );
+
+        assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(result.getBody()).isNotNull()
+                .hasSize(numberOfParticipants + 1)
+                .extracting(ParticipantDTO::userId)
+                .containsExactlyInAnyOrderElementsOf(userIds);
+    }
+
+    @Test
+    void shouldDeleteChatWhenRequested() {
+        int numberOfParticipants = 2;
+        Long senderId = RandomUtils.nextLong();
+        var userIds = getRandomUserIds(numberOfParticipants);
+        Chat chat = createChat(false, userIds, senderId);
+        chatRepository.save(chat);
+
+        mockGetUser(senderId);
+        ResponseEntity<Void> result = restTemplate.exchange(
+                "/chats/" + chat.getId(), HttpMethod.DELETE, new HttpEntity<>(null, getHttpHeaders(senderId)), Void.class);
+
+        assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+        var savedChat = chatRepository.findWithParticipantsById(chat.getId()).orElse(null);
+        assertThat(savedChat).isNull();
+    }
+
+    @Test
+    void shouldUpdateLastReadAtChatWhenRequested() {
+        int numberOfParticipants = 2;
+        Long senderId = RandomUtils.nextLong();
+        var userIds = getRandomUserIds(numberOfParticipants);
+        Chat chat = createChat(false, userIds, senderId);
+        chatRepository.save(chat);
+
+        mockGetUser(senderId);
+        var request = new UpdateChatReadAtRequest(Instant.now().truncatedTo(ChronoUnit.MICROS));
+        ResponseEntity<Void> result = restTemplate.exchange(
+                "/chats/" + chat.getId() + "/participants/last_read_at", HttpMethod.PUT,
+                new HttpEntity<>(request, getHttpHeaders(senderId)), Void.class
+        );
+
+        assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+        var savedChat = chatRepository.findWithParticipantsById(chat.getId()).orElse(null);
+        assertThat(savedChat).isNotNull();
+        var lastReadAt = savedChat.getParticipants().stream()
+                .filter(cp -> cp.getUserId().equals(senderId))
+                .map(ChatParticipant::getLastReadAt)
+                .findFirst()
+                .orElse(null);
+        assertThat(lastReadAt).isEqualTo(request.lastReadAt());
     }
 
     private static Chat createChat(boolean isPrivate) {

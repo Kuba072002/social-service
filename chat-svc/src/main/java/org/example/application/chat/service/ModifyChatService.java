@@ -74,7 +74,7 @@ public class ModifyChatService {
         if (!existedParticipantIds.containsAll(modifyRequest.userIdsToDelete())) {
             throw new ApplicationException(CHAT_PARTICIPANTS_NOT_EXISTS);
         }
-        userFacade.validateUsers(modifyRequest.userIdsToAdd());
+        userFacade.getAndValidateUsers(modifyRequest.userIdsToAdd());
     }
 
     private void validateIfUserIsAdmin(Long userId, Chat chat) {
