@@ -22,7 +22,7 @@ public class MessagePublisher {
     private String queueName;
 
     @Async("asyncExecutor")
-    public void broadcastMessageAndPublishEvent(Set<Long> chatParticipantIds, Message message) {
+    public void broadcastMessageAndPublishEventAsync(Set<Long> chatParticipantIds, Message message) {
         var messageJson = Utils.writeToJson(message);
         chatParticipantIds.forEach(userId -> {
             if (message.getSenderId().equals(userId)) return;
@@ -32,7 +32,12 @@ public class MessagePublisher {
         publish(event);
     }
 
-    public void publish(MessageEvent event) {
+    @Async("asyncExecutor")
+    public void publishAsync(MessageEvent event) {
+        publish(event);
+    }
+
+    private void publish(MessageEvent event) {
         log.info("Publishing message event: {}", event);
         rabbitTemplate.convertAndSend(queueName, event);
     }

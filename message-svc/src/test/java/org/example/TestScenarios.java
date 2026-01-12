@@ -1,7 +1,10 @@
 package org.example;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.example.application.dto.MessageDTO;
+import org.example.application.dto.MessageEditRequest;
 import org.example.application.dto.MessageRequest;
 import org.example.common.Utils;
 import org.example.domain.message.Message;
@@ -17,8 +20,11 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.converter.StringMessageConverter;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
@@ -38,12 +44,14 @@ import javax.crypto.SecretKey;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.example.TestUtils.mockGetUser;
@@ -66,8 +74,7 @@ class TestScenarios {
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
-    //    @Autowired
-//    private SimpUserRegistry simpUserRegistry;
+
     @LocalServerPort
     private int port;
 
@@ -93,12 +100,13 @@ class TestScenarios {
         var senderId = RandomUtils.nextLong();
         CompletableFuture<String> messageFuture = new CompletableFuture<>();
 
-        connectUserByStomp(senderId, messageFuture);
+        StompSession session = connectUserByStomp(senderId, messageFuture);
         LOGGER.info("Sending message to user: {}", senderId);
         messagingTemplate.convertAndSendToUser(String.valueOf(senderId), "/queue/messages", "Test message.");
 
         String message = messageFuture.get(4, TimeUnit.SECONDS);
         assertThat(message).isEqualTo("Test message.");
+        session.disconnect();
     }
 
     @Test
@@ -110,20 +118,115 @@ class TestScenarios {
         Set<Long> participants = Set.of(connectedUserId, RandomUtils.nextLong(), senderId);
         putParticipantsToCache(chatId, participants);
         CompletableFuture<String> messageFuture = new CompletableFuture<>();
-        connectUserByStomp(connectedUserId, messageFuture);
+        StompSession session = connectUserByStomp(connectedUserId, messageFuture);
 
         mockGetUser(senderId);
         var result = restTemplate.postForEntity("/messages", new HttpEntity<>(messageRequest, getHttpHeaders(senderId)), UUID.class);
 
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
         assert result.getBody() != null;
-        assertThat(messageRepository.findByChatIdAndMessageId(chatId, result.getBody())).isNotNull();
+        assertThat(messageRepository.findByChatIdAndMessageId(chatId, result.getBody())).isPresent();
         String receivedMessage = messageFuture.get(4, TimeUnit.SECONDS);
         LOGGER.info("Client got: {}", receivedMessage);
         assertThat(receivedMessage).isNotNull();
         Message message = Utils.readJson(receivedMessage, Message.class);
         assert message != null;
         assertThat(message.getContent()).isEqualTo(messageRequest.content());
+        session.disconnect();
+    }
+
+    @Test
+    void shouldEditMessageWhenRequested() throws Exception {
+        var senderId = RandomUtils.nextLong();
+        var chatId = RandomUtils.nextLong();
+        Message orginalMessage = createMessage(chatId, senderId);
+        messageRepository.save(orginalMessage);
+        MessageEditRequest messageEditRequest = new MessageEditRequest(chatId, orginalMessage.getMessageId(), randomAlphabetic(50));
+        var connectedUserId = RandomUtils.nextLong();
+        Set<Long> participants = Set.of(RandomUtils.nextLong(), connectedUserId, senderId);
+        putParticipantsToCache(chatId, participants);
+        CompletableFuture<String> messageFuture = new CompletableFuture<>();
+        StompSession session = connectUserByStomp(connectedUserId, messageFuture);
+
+        mockGetUser(senderId);
+        var result = restTemplate.exchange("/messages",
+                HttpMethod.PUT,
+                new HttpEntity<>(messageEditRequest, getHttpHeaders(senderId)),
+                Void.class);
+
+        assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+        var updatedMessage = messageRepository.findByChatIdAndMessageId(chatId, orginalMessage.getMessageId()).orElse(null);
+        assertThat(updatedMessage).isNotNull();
+        assertThat(updatedMessage.getContent()).isEqualTo(messageEditRequest.content());
+        assertThat(updatedMessage.getCreatedAt()).isAfter(orginalMessage.getCreatedAt());
+
+        String receivedMessage = messageFuture.get(4, TimeUnit.SECONDS);
+        LOGGER.info("Client got: {}", receivedMessage);
+        assertThat(receivedMessage).isNotNull();
+        Message message = Utils.readJson(receivedMessage, Message.class);
+        assert message != null;
+        assertThat(message.getMessageId()).isEqualTo(orginalMessage.getMessageId());
+        assertThat(message.getContent()).isEqualTo(messageEditRequest.content());
+        session.disconnect();
+    }
+
+    @Test
+    void shouldDeleteMessageWhenRequested() throws Exception {
+        var senderId = RandomUtils.nextLong();
+        var chatId = RandomUtils.nextLong();
+        Message orginalMessage = createMessage(chatId, senderId);
+        messageRepository.save(orginalMessage);
+        var connectedUserId = RandomUtils.nextLong();
+        Set<Long> participants = Set.of(RandomUtils.nextLong(), connectedUserId, senderId);
+        putParticipantsToCache(chatId, participants);
+        CompletableFuture<String> messageFuture = new CompletableFuture<>();
+        StompSession session = connectUserByStomp(connectedUserId, messageFuture);
+
+        mockGetUser(senderId);
+        var result = restTemplate.exchange("/messages?chatId=" + chatId + "&messageId=" + orginalMessage.getMessageId(),
+                HttpMethod.DELETE,
+                new HttpEntity<>(null, getHttpHeaders(senderId)),
+                Void.class);
+
+        assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+        var updatedMessage = messageRepository.findByChatIdAndMessageId(chatId, orginalMessage.getMessageId()).orElse(null);
+        assertThat(updatedMessage).isNotNull();
+        assertThat(updatedMessage.isDeleted()).isTrue();
+        assertThat(updatedMessage.getCreatedAt()).isAfter(orginalMessage.getCreatedAt());
+
+        String receivedMessage = messageFuture.get(4, TimeUnit.SECONDS);
+        LOGGER.info("Client got: {}", receivedMessage);
+        assertThat(receivedMessage).isNotNull();
+        Message message = Utils.readJson(receivedMessage, Message.class);
+        assert message != null;
+        assertThat(message.getMessageId()).isEqualTo(orginalMessage.getMessageId());
+        assertThat(message.isDeleted()).isTrue();
+        session.disconnect();
+    }
+
+    @Test
+    void shouldGetMessageWhenRequested() {
+        var senderId = RandomUtils.nextLong();
+        var chatId = RandomUtils.nextLong();
+        var otherUserId = RandomUtils.nextLong();
+        List<Message> originalMessages = IntStream.range(0, 12)
+                .mapToObj(i -> createMessage(chatId, i % 3 == 0 ? senderId : otherUserId))
+                .toList();
+        messageRepository.saveAll(originalMessages);
+        putParticipantsToCache(chatId, Set.of(otherUserId, senderId));
+
+        mockGetUser(senderId);
+        ResponseEntity<List<MessageDTO>> result = restTemplate.exchange("/messages?chatId=" + chatId,
+                HttpMethod.GET,
+                new HttpEntity<>(null, getHttpHeaders(senderId)),
+                new ParameterizedTypeReference<>() {
+                });
+
+        assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+        assert result.getBody() != null;
+        assertThat(result.getBody()).hasSize(originalMessages.size());
+        assertThat(result.getBody().stream().map(MessageDTO::messageId).toList())
+                .containsExactlyInAnyOrderElementsOf(originalMessages.stream().map(Message::getMessageId).toList());
     }
 
     private void putParticipantsToCache(long chatId, Set<Long> participants) {
@@ -138,7 +241,7 @@ class TestScenarios {
         return headers;
     }
 
-    private void connectUserByStomp(Long participantId, CompletableFuture<String> messageFuture) throws Exception {
+    private StompSession connectUserByStomp(Long participantId, CompletableFuture<String> messageFuture) throws Exception {
         String url = "ws://localhost:" + port + "/message-svc/ws";
         StompHeaders headers = new StompHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + generateToken(participantId));
@@ -162,6 +265,17 @@ class TestScenarios {
         });
 
         Thread.sleep(300);
+        return session;
+    }
+
+    private static Message createMessage(long chatId, long senderId) {
+        return Message.builder()
+                .messageId(UuidCreator.getTimeOrderedEpoch(Instant.now()))
+                .chatId(chatId)
+                .senderId(senderId)
+                .content(randomAlphabetic(20))
+                .createdAt(Instant.now())
+                .build();
     }
 
     private String generateToken(Long userId) {

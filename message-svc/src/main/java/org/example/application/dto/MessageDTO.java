@@ -13,6 +13,7 @@ public record MessageDTO(
         String content,
         @JsonInclude(JsonInclude.Include.NON_NULL)
         String mediaContent,
-        Instant createdAt
+        Instant createdAt,
+        boolean deleted
 ) {
 }

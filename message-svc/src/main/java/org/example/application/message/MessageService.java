@@ -35,7 +35,7 @@ public class MessageService {
 
         var message = messageMapper.toMessage(senderId, messageRequest);
         messageFacade.saveMessage(message);
-        messagePublisher.broadcastMessageAndPublishEvent(chatParticipantIds, message);
+        messagePublisher.broadcastMessageAndPublishEventAsync(chatParticipantIds, message);
         return message.getMessageId();
     }
 
@@ -43,13 +43,20 @@ public class MessageService {
         var message = findMessageAndValidateSender(
                 senderId, messageEditRequest.chatId(), messageEditRequest.messageId());
         message.setContent(messageEditRequest.content());
+        message.setCreatedAt(Instant.now());
+        message.setDeleted(false);
         messageFacade.saveMessage(message);
+        var chatParticipantIds = findChatParticipantIds(messageEditRequest.chatId());
+        messagePublisher.broadcastMessageAndPublishEventAsync(chatParticipantIds, message);
     }
 
     public void deleteMessage(Long senderId, Long chatId, UUID messageId) {
         var message = findMessageAndValidateSender(senderId, chatId, messageId);
-        message.setContent("");
+        message.setCreatedAt(Instant.now());
+        message.setDeleted(true);
         messageFacade.saveMessage(message);
+        var chatParticipantIds = findChatParticipantIds(chatId);
+        messagePublisher.broadcastMessageAndPublishEventAsync(chatParticipantIds, message);
     }
 
     public List<MessageDTO> getMessages(Long userId, Long chatId, Instant from, Instant to, Integer limit) {
@@ -61,7 +68,7 @@ public class MessageService {
         var messages = messageFacade.getMessages(chatId, from, to, limit);
         if (!messages.isEmpty()) {
             var event = MessageEvent.get(chatId, userId, messages.getFirst().getCreatedAt());
-            messagePublisher.publish(event);
+            messagePublisher.publishAsync(event);
         }
         return messages.stream()
                 .map(messageMapper::toMessageDTO)
