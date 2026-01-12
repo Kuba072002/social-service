@@ -1,0 +1,35 @@
+{
+  "vhosts": [
+    {
+      "name": "my_vhost"
+    }
+  ],
+  "users": [
+    {
+      "name": "rabbit",
+      "password": "rabbit",
+      "tags": "administrator"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "rabbit",
+      "vhost": "my_vhost",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "queues": [
+    {
+      "name": "chat_events_queue",
+      "vhost": "my_vhost",
+      "durable": true
+    },
+    {
+      "name": "message_events_queue",
+      "vhost": "my_vhost",
+      "durable": true
+    }
+  ]
+}

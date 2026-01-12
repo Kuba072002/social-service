@@ -28,7 +28,7 @@ public class UserFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if (!request.getRequestURI().startsWith("/internal")) {
+        if (!(request.getRequestURI().startsWith("/internal") || request.getRequestURI().startsWith("/message-svc/ws"))) {
             try {
                 String userIdHeader = request.getHeader(USER_ID_HEADER);
                 if (StringUtils.isBlank(userIdHeader)) {

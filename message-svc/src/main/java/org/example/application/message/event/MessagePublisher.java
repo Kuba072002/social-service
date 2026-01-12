@@ -2,6 +2,7 @@ package org.example.application.message.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.common.Utils;
 import org.example.domain.message.Message;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,9 +23,10 @@ public class MessagePublisher {
 
     @Async("asyncExecutor")
     public void broadcastMessageAndPublishEvent(Set<Long> chatParticipantIds, Message message) {
+        var messageJson = Utils.writeToJson(message);
         chatParticipantIds.forEach(userId -> {
             if (message.getSenderId().equals(userId)) return;
-            messagingTemplate.convertAndSend("/topic/" + userId, message);
+            messagingTemplate.convertAndSendToUser(String.valueOf(userId), "/queue/messages", messageJson);
         });
         var event = MessageEvent.post(message.getChatId(), message.getCreatedAt());
         publish(event);

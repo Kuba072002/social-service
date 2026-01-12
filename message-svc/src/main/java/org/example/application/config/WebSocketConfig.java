@@ -1,7 +1,9 @@
 package org.example.application.config;
 
+import org.example.application.interceptor.StompAuthInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -21,6 +23,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${spring.rabbitmq.password:rabbit}")
     private String rabbitmqPassword;
 
+    private final StompAuthInterceptor stompAuthInterceptor;
+
+    public WebSocketConfig(StompAuthInterceptor interceptor) {
+        this.stompAuthInterceptor = interceptor;
+    }
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.enableStompBrokerRelay("/topic", "/queue", "/exchange", "/amq/queue")
@@ -31,6 +39,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setClientPasscode(rabbitmqPassword)
                 .setSystemLogin(rabbitmqUsername)
                 .setSystemPasscode(rabbitmqPassword);
+//        registry.enableSimpleBroker("/topic", "/queue");
         registry.setApplicationDestinationPrefixes("/app");
         registry.setUserDestinationPrefix("/user");
     }
@@ -40,5 +49,15 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")
                 .withSockJS();
+    }
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(stompAuthInterceptor);
+    }
+
+    @Override
+    public void configureClientOutboundChannel(ChannelRegistration registration) {
+        registration.interceptors(stompAuthInterceptor);
     }
 }
