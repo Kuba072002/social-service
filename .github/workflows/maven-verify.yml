@@ -2,7 +2,7 @@ name: Maven Verify
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, main ]
   pull_request:
     branches: [ main ]
 
