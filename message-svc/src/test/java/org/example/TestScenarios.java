@@ -253,7 +253,7 @@ class TestScenarios {
 
         session.subscribe("/user/queue/messages", new StompFrameHandler() {
             @Override
-            public Type getPayloadType(@NotNull StompHeaders headers) {
+            public @NotNull Type getPayloadType(@NotNull StompHeaders headers) {
                 return String.class;
             }
 

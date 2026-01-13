@@ -27,7 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(initializers = IntegrationTestInitializer.class)
-public class UserControllerTest {
+class UserControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
     @Autowired
@@ -44,7 +44,7 @@ public class UserControllerTest {
         var userName = randomAlphabetic(12);
         var request = new SignUpRequest(userName, userName + "@mail.com", password, password);
 
-        var response = restTemplate.postForEntity("/signUp", request, Void.class);
+        var response = restTemplate.postForEntity("/register", request, Void.class);
 
         Assertions.assertEquals(201, response.getStatusCode().value());
         var user = userRepository.findByUserName(request.userName());
@@ -58,7 +58,7 @@ public class UserControllerTest {
         userRepository.save(user);
 
         var request = new SignInRequest(user.getEmail(), password);
-        var response = restTemplate.postForEntity("/signIn", request, SignInResponse.class);
+        var response = restTemplate.postForEntity("/login", request, SignInResponse.class);
 
         Assertions.assertEquals(200, response.getStatusCode().value());
         Assertions.assertNotNull(response.getBody());

@@ -33,6 +33,10 @@ public class RoutesConfiguration {
                         .filters(f -> f.filter(authenticationFilter))
                         .uri(chatServiceUrl)
                 )
+                .route("message-svc-websocket-route", r -> r
+                        .path("/message-svc/ws/**")
+                        .uri(messageServiceUrl)
+                )
                 .route("message-svc-route", r -> r
                         .path("/message-svc/**")
                         .and().not(rp -> rp.path("/message-svc/internal/**"))
