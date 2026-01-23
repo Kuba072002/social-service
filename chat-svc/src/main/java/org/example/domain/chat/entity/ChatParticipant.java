@@ -20,13 +20,14 @@ import java.time.Instant;
 @Builder
 public class ChatParticipant {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_id", referencedColumnName = "id", nullable = false)
     private Chat chat;
     @Column(name = "chat_id", insertable = false, updatable = false)
     private Long chatId;
+    @Column(name = "user_id")
     private Long userId;
     private String role;
     private Instant lastReadAt;

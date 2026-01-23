@@ -48,6 +48,14 @@ public interface ChatParticipantRepository extends JpaRepository<ChatParticipant
     Optional<ChatParticipant> findByChatIdAndUserId(Long chatId, Long userId);
 
     @Modifying
-    @Query("UPDATE ChatParticipant cp SET cp.lastReadAt = :lastReadAt WHERE cp.chat.id = :chatId AND cp.userId = :userId AND cp.lastReadAt < :lastReadAt")
-    void updateLastReadAt(@Param("chatId") Long chatId, @Param("userId") Long userId, @Param("lastReadAt") Instant lastReadAt);
+    @Query(value = """
+            UPDATE chat_schema.chat_participants
+            SET last_read_at = :lastReadAt
+            WHERE id = (
+                SELECT id FROM chat_schema.chat_participants
+                WHERE chat_id = :chatId AND user_id = :userId AND last_read_at < :lastReadAt OR last_read_at IS NULL
+                FOR UPDATE
+            )
+            """, nativeQuery = true)
+    int updateLastReadAt(@Param("chatId") Long chatId, @Param("userId") Long userId, @Param("lastReadAt") Instant lastReadAt);
 }

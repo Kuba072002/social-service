@@ -6,27 +6,26 @@ import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.projection.ChatDetail;
 import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;
-import org.example.domain.event.ChatEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import wiremock.org.apache.commons.lang3.RandomUtils;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -34,11 +33,8 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.example.TestUtils.*;
 import static org.example.common.ChatApplicationError.PRIVATE_CHAT_ALREADY_EXISTS;
-import static org.example.common.Constants.ADMIN_ROLE;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ContextConfiguration(initializers = IntegrationTestInitializer.class)
-class ChatControllerTest {
+class ChatControllerTest extends BaseIntegrationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatControllerTest.class);
 
     @Autowired
@@ -47,8 +43,6 @@ class ChatControllerTest {
     private ChatRepository chatRepository;
     @Autowired
     private ChatParticipantRepository chatParticipantRepository;
-    @MockitoBean
-    private ChatEventPublisher chatEventPublisher;
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
@@ -56,6 +50,11 @@ class ChatControllerTest {
         int numberOfParticipants = isPrivate ? 1 : 3;
         var userIds = getRandomUserIds(numberOfParticipants);
         var senderId = RandomUtils.nextLong();
+        if (isPrivate) { // for test existsPrivateChat query
+            var participantIds = new HashSet<>(userIds);
+            participantIds.add(senderId);
+            createChat(false, participantIds);
+        }
         ChatRequest chatRequest = isPrivate
                 ? new ChatRequest(null, null, true, userIds)
                 : new ChatRequest(randomAlphabetic(12), randomAlphabetic(12), false, userIds);
@@ -203,7 +202,7 @@ class ChatControllerTest {
 
     @Test
     void shouldModifyChatParticipantsWhenRequested() {
-        int numberOfParticipants = 2, numberOfParticipantsToAdd = 2, numberOfParticipantsToRemove = numberOfParticipants - 1;
+        int numberOfParticipants = 6, numberOfParticipantsToAdd = 2, numberOfParticipantsToRemove = numberOfParticipants - 1;
         Long senderId = RandomUtils.nextLong();
         var userIds = getRandomUserIds(numberOfParticipants);
         Chat chat = createChat(false, userIds, senderId);
@@ -316,38 +315,6 @@ class ChatControllerTest {
                 .findFirst()
                 .orElse(null);
         assertThat(lastReadAt).isEqualTo(request.lastReadAt());
-    }
-
-    private static Chat createChat(boolean isPrivate) {
-        var builder = Chat.builder().isPrivate(isPrivate);
-        if (isPrivate) {
-            return builder.build();
-        } else {
-            return builder
-                    .name(randomAlphabetic(12))
-                    .imageUrl(randomAlphabetic(12))
-                    .build();
-        }
-    }
-
-    private static Chat createChat(boolean isPrivate, Collection<Long> userIds) {
-        return createChat(isPrivate, userIds, null);
-    }
-
-    private static Chat createChat(boolean isPrivate, Collection<Long> userIds, Long userId) {
-        Chat chat = createChat(isPrivate);
-        var userMap = userIds.stream()
-                .map(id -> new ChatParticipant(chat, id))
-                .collect(Collectors.toMap(ChatParticipant::getUserId, Function.identity()));
-        if (userId != null) userMap.put(userId, new ChatParticipant(chat, userId, ADMIN_ROLE));
-        chat.setParticipants(new ArrayList<>(userMap.values()));
-        return chat;
-    }
-
-    private static Set<Long> getRandomUserIds(int numberOfParticipants) {
-        return IntStream.range(0, numberOfParticipants)
-                .mapToObj(i -> RandomUtils.nextLong())
-                .collect(Collectors.toSet());
     }
 
     private static HttpHeaders getHttpHeaders(Long senderId) {

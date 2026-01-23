@@ -2,8 +2,8 @@ package org.example.domain.chat;
 
 import lombok.RequiredArgsConstructor;
 import org.example.domain.chat.entity.Chat;
-import org.example.domain.chat.projection.ChatDetail;
 import org.example.domain.chat.entity.ChatParticipant;
+import org.example.domain.chat.projection.ChatDetail;
 import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;
 import org.example.domain.event.ChatEvent;
@@ -64,13 +64,13 @@ public class ChatFacade {
     }
 
     @Transactional
-    public void updateLastMessageAt(Long chatId, Instant lastMessageAt) {
-        chatRepository.updateLastMessageAt(chatId, lastMessageAt);
+    public int updateLastMessageAt(Long chatId, Instant lastMessageAt) {
+        return chatRepository.updateLastMessageAt(chatId, lastMessageAt);
     }
 
     @Transactional
-    public void updateLastReadAt(Long chatId, Long userId, Instant lastReadAt) {
-        chatParticipantRepository.updateLastReadAt(chatId, userId, lastReadAt);
+    public int updateLastReadAt(Long chatId, Long userId, Instant lastReadAt) {
+        return chatParticipantRepository.updateLastReadAt(chatId, userId, lastReadAt);
     }
 
     public Optional<ChatParticipant> getChatParticipant(Long chatId, Long userId) {

@@ -17,10 +17,10 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     @Query(value = """
                 SELECT EXISTS (
                     SELECT 1
-                    FROM chat_schema.chats c
-                    JOIN chat_schema.chat_participants cp1 ON cp1.chat_id = c.id AND cp1.user_id = :user1Id
-                    JOIN chat_schema.chat_participants cp2 ON cp2.chat_id = c.id AND cp2.user_id = :user2Id
-                    WHERE c.is_private = true
+                    FROM chat_schema.chat_participants cp1
+                    JOIN chat_schema.chat_participants cp2 ON cp2.chat_id = cp1.chat_id AND cp2.user_id = :user2Id
+                    JOIN chat_schema.chats c ON c.id = cp1.chat_id AND c.is_private = true
+                    WHERE cp1.user_id = :user1Id
                 )
             """, nativeQuery = true)
     boolean existsPrivateChat(@Param("user1Id") Long user1Id, @Param("user2Id") Long user2Id);
@@ -29,6 +29,14 @@ public interface ChatRepository extends JpaRepository<Chat, Long> {
     Optional<Chat> findWithParticipantsById(Long chatId);
 
     @Modifying
-    @Query("UPDATE Chat c SET c.lastMessageAt = :lastMessageAt WHERE c.id = :id AND c.lastMessageAt < :lastMessageAt")
-    void updateLastMessageAt(@Param("id") Long id, @Param("lastMessageAt") Instant lastMessageAt);
+    @Query(value = """
+            UPDATE chat_schema.chats
+            SET last_message_at = :lastMessageAt
+            WHERE id = (
+                SELECT id FROM chat_schema.chats
+                WHERE id = :id AND (last_message_at < :lastMessageAt OR last_message_at IS NULL)
+                FOR UPDATE
+            )
+            """, nativeQuery = true)
+    int updateLastMessageAt(@Param("id") Long id, @Param("lastMessageAt") Instant lastMessageAt);
 }
