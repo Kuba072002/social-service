@@ -3,11 +3,11 @@ package org.example;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.text.RandomStringGenerator;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.user.UserDTO;
-import wiremock.org.apache.commons.lang3.RandomUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -100,7 +100,7 @@ public class TestUtils {
 
     public static Set<Long> getRandomUserIds(int numberOfParticipants) {
         return IntStream.range(0, numberOfParticipants)
-                .mapToObj(i -> RandomUtils.nextLong())
+                .mapToObj(i -> RandomUtils.secure().randomLong())
                 .collect(Collectors.toSet());
     }
 }

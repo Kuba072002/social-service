@@ -1,5 +1,6 @@
 package org.example;
 
+import org.apache.commons.lang3.RandomUtils;
 import org.example.application.chat.dto.*;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
@@ -18,7 +19,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import wiremock.org.apache.commons.lang3.RandomUtils;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -49,7 +49,7 @@ class ChatControllerTest extends BaseIntegrationTest {
     void shouldCreateChatWhenRequested(boolean isPrivate) {
         int numberOfParticipants = isPrivate ? 1 : 3;
         var userIds = getRandomUserIds(numberOfParticipants);
-        var senderId = RandomUtils.nextLong();
+        var senderId = RandomUtils.secure().randomLong();
         if (isPrivate) { // for test existsPrivateChat query
             var participantIds = new HashSet<>(userIds);
             participantIds.add(senderId);
@@ -73,8 +73,8 @@ class ChatControllerTest extends BaseIntegrationTest {
 
     @Test
     void shouldNotCreatePrivateChatWhenAlreadyExists() {
-        var senderId = RandomUtils.nextLong();
-        var secondUser = RandomUtils.nextLong();
+        var senderId = RandomUtils.secure().randomLong();
+        var secondUser = RandomUtils.secure().randomLong();
         var userIds = Set.of(secondUser);
         ChatRequest chatRequest = new ChatRequest(null, null, true, userIds);
         Chat chat = createChat(true, List.of(senderId, secondUser));
@@ -94,18 +94,18 @@ class ChatControllerTest extends BaseIntegrationTest {
     void shouldReturnUserChatsWhenRequested(boolean isPrivate) {
         int numberOfGroupChats = 4;
         int numberOfPrivateChats = 5;
-        Long senderId = RandomUtils.nextLong();
+        Long senderId = RandomUtils.secure().randomLong();
         var groupChats = IntStream.range(0, numberOfGroupChats)
                 .mapToObj(i -> {
-                    var participantIds = IntStream.range(0, RandomUtils.nextInt(0, 5))
-                            .mapToObj(j -> RandomUtils.nextLong())
+                    var participantIds = IntStream.range(0, RandomUtils.secure().randomInt(0, 5))
+                            .mapToObj(j -> RandomUtils.secure().randomLong())
                             .collect(Collectors.toList());
                     participantIds.add(senderId);
                     return createChat(false, participantIds);
                 }).toList();
         chatRepository.saveAll(groupChats);
         var privateChats = IntStream.range(0, numberOfPrivateChats)
-                .mapToObj(i -> createChat(true, List.of(senderId, RandomUtils.nextLong())))
+                .mapToObj(i -> createChat(true, List.of(senderId, RandomUtils.secure().randomLong())))
                 .toList();
         chatRepository.saveAll(privateChats);
         if (isPrivate) {
@@ -160,7 +160,7 @@ class ChatControllerTest extends BaseIntegrationTest {
     @Test
     void shouldReturnChatParticipantsWhenRequested() {
         int numberOfParticipants = 3;
-        Long senderId = RandomUtils.nextLong();
+        Long senderId = RandomUtils.secure().randomLong();
         var userIds = getRandomUserIds(numberOfParticipants);
         userIds.add(senderId);
         Chat chat = createChat(false, userIds);
@@ -183,7 +183,7 @@ class ChatControllerTest extends BaseIntegrationTest {
     @Test
     void shouldModifyChatWhenRequested() {
         int numberOfParticipants = 2;
-        Long senderId = RandomUtils.nextLong();
+        Long senderId = RandomUtils.secure().randomLong();
         var userIds = getRandomUserIds(numberOfParticipants);
         Chat chat = createChat(false, userIds, senderId);
         chatRepository.save(chat);
@@ -203,7 +203,7 @@ class ChatControllerTest extends BaseIntegrationTest {
     @Test
     void shouldModifyChatParticipantsWhenRequested() {
         int numberOfParticipants = 6, numberOfParticipantsToAdd = 2, numberOfParticipantsToRemove = numberOfParticipants - 1;
-        Long senderId = RandomUtils.nextLong();
+        Long senderId = RandomUtils.secure().randomLong();
         var userIds = getRandomUserIds(numberOfParticipants);
         Chat chat = createChat(false, userIds, senderId);
         chatRepository.save(chat);
@@ -233,7 +233,7 @@ class ChatControllerTest extends BaseIntegrationTest {
     @Test
     void shouldDeleteChatParticipantWhenRequested() {
         int numberOfParticipants = 2;
-        Long senderId = RandomUtils.nextLong();
+        Long senderId = RandomUtils.secure().randomLong();
         var userIds = getRandomUserIds(numberOfParticipants);
         Chat chat = createChat(false, userIds, senderId);
         chatRepository.save(chat);
@@ -252,7 +252,7 @@ class ChatControllerTest extends BaseIntegrationTest {
     @Test
     void shouldGetChatParticipantsWhenRequested() {
         int numberOfParticipants = 4;
-        Long senderId = RandomUtils.nextLong();
+        Long senderId = RandomUtils.secure().randomLong();
         var userIds = getRandomUserIds(numberOfParticipants);
         Chat chat = createChat(false, userIds, senderId);
         chatRepository.save(chat);
@@ -277,7 +277,7 @@ class ChatControllerTest extends BaseIntegrationTest {
     @Test
     void shouldDeleteChatWhenRequested() {
         int numberOfParticipants = 2;
-        Long senderId = RandomUtils.nextLong();
+        Long senderId = RandomUtils.secure().randomLong();
         var userIds = getRandomUserIds(numberOfParticipants);
         Chat chat = createChat(false, userIds, senderId);
         chatRepository.save(chat);
@@ -294,7 +294,7 @@ class ChatControllerTest extends BaseIntegrationTest {
     @Test
     void shouldUpdateLastReadAtChatWhenRequested() {
         int numberOfParticipants = 2;
-        Long senderId = RandomUtils.nextLong();
+        Long senderId = RandomUtils.secure().randomLong();
         var userIds = getRandomUserIds(numberOfParticipants);
         Chat chat = createChat(false, userIds, senderId);
         chatRepository.save(chat);

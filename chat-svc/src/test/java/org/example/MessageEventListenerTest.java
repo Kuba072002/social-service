@@ -58,7 +58,7 @@ class MessageEventListenerTest extends BaseIntegrationTest {
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
     void shouldProcessEventWhenReceivedMessageWithGetType(boolean isGreater) {
-        var userId = RandomUtils.nextLong();
+        var userId = RandomUtils.secure().randomLong();
         var userIds = getRandomUserIds(2);
         var currentTime = Instant.now().truncatedTo(ChronoUnit.MICROS);
         userIds.add(userId);
