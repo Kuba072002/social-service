@@ -3,6 +3,7 @@ package org.example;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.apache.commons.lang3.RandomUtils;
 import org.example.application.dto.MessageDTO;
 import org.example.application.dto.MessageEditRequest;
 import org.example.application.dto.MessageRequest;
@@ -15,8 +16,9 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.resttestclient.TestRestTemplate;
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -38,7 +40,6 @@ import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
 import org.springframework.web.socket.sockjs.client.Transport;
 import org.springframework.web.socket.sockjs.client.WebSocketTransport;
-import wiremock.org.apache.commons.lang3.RandomUtils;
 
 import javax.crypto.SecretKey;
 import java.lang.reflect.Type;
@@ -59,6 +60,7 @@ import static org.example.TestUtils.randomAlphabetic;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(initializers = IntegrationTestInitializer.class)
+@AutoConfigureTestRestTemplate
 class TestScenarios {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestScenarios.class);
@@ -97,7 +99,7 @@ class TestScenarios {
 
     @Test
     void shouldConnectViaStomp() throws Exception {
-        var senderId = RandomUtils.nextLong();
+        var senderId = RandomUtils.secure().randomLong();
         CompletableFuture<String> messageFuture = new CompletableFuture<>();
 
         StompSession session = connectUserByStomp(senderId, messageFuture);
@@ -111,11 +113,11 @@ class TestScenarios {
 
     @Test
     void shouldCreateMessageWhenRequested() throws Exception {
-        var senderId = RandomUtils.nextLong();
-        var chatId = RandomUtils.nextLong();
+        var senderId = RandomUtils.secure().randomLong();
+        var chatId = RandomUtils.secure().randomLong();
         MessageRequest messageRequest = new MessageRequest(chatId, randomAlphabetic(50));
-        var connectedUserId = RandomUtils.nextLong();
-        Set<Long> participants = Set.of(connectedUserId, RandomUtils.nextLong(), senderId);
+        var connectedUserId = RandomUtils.secure().randomLong();
+        Set<Long> participants = Set.of(connectedUserId, RandomUtils.secure().randomLong(), senderId);
         putParticipantsToCache(chatId, participants);
         CompletableFuture<String> messageFuture = new CompletableFuture<>();
         StompSession session = connectUserByStomp(connectedUserId, messageFuture);
@@ -137,13 +139,13 @@ class TestScenarios {
 
     @Test
     void shouldEditMessageWhenRequested() throws Exception {
-        var senderId = RandomUtils.nextLong();
-        var chatId = RandomUtils.nextLong();
+        var senderId = RandomUtils.secure().randomLong();
+        var chatId = RandomUtils.secure().randomLong();
         Message orginalMessage = createMessage(chatId, senderId);
         messageRepository.save(orginalMessage);
         MessageEditRequest messageEditRequest = new MessageEditRequest(chatId, orginalMessage.getMessageId(), randomAlphabetic(50));
-        var connectedUserId = RandomUtils.nextLong();
-        Set<Long> participants = Set.of(RandomUtils.nextLong(), connectedUserId, senderId);
+        var connectedUserId = RandomUtils.secure().randomLong();
+        Set<Long> participants = Set.of(RandomUtils.secure().randomLong(), connectedUserId, senderId);
         putParticipantsToCache(chatId, participants);
         CompletableFuture<String> messageFuture = new CompletableFuture<>();
         StompSession session = connectUserByStomp(connectedUserId, messageFuture);
@@ -172,12 +174,12 @@ class TestScenarios {
 
     @Test
     void shouldDeleteMessageWhenRequested() throws Exception {
-        var senderId = RandomUtils.nextLong();
-        var chatId = RandomUtils.nextLong();
+        var senderId = RandomUtils.secure().randomLong();
+        var chatId = RandomUtils.secure().randomLong();
         Message orginalMessage = createMessage(chatId, senderId);
         messageRepository.save(orginalMessage);
-        var connectedUserId = RandomUtils.nextLong();
-        Set<Long> participants = Set.of(RandomUtils.nextLong(), connectedUserId, senderId);
+        var connectedUserId = RandomUtils.secure().randomLong();
+        Set<Long> participants = Set.of(RandomUtils.secure().randomLong(), connectedUserId, senderId);
         putParticipantsToCache(chatId, participants);
         CompletableFuture<String> messageFuture = new CompletableFuture<>();
         StompSession session = connectUserByStomp(connectedUserId, messageFuture);
@@ -206,9 +208,9 @@ class TestScenarios {
 
     @Test
     void shouldGetMessageWhenRequested() {
-        var senderId = RandomUtils.nextLong();
-        var chatId = RandomUtils.nextLong();
-        var otherUserId = RandomUtils.nextLong();
+        var senderId = RandomUtils.secure().randomLong();
+        var chatId = RandomUtils.secure().randomLong();
+        var otherUserId = RandomUtils.secure().randomLong();
         List<Message> originalMessages = IntStream.range(0, 12)
                 .mapToObj(i -> createMessage(chatId, i % 3 == 0 ? senderId : otherUserId))
                 .toList();

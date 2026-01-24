@@ -25,7 +25,7 @@ public class TestUtils {
             .withinRange('A', 'Z')
             .withinRange('a', 'z')
             .filteredBy(Character::isLetter)
-            .build();
+            .get();
 
     public static void mockGetUser(Long userId) {
         IntegrationTestInitializer.WIREMOCK.stubFor(
