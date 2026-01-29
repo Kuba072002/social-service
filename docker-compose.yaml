@@ -8,6 +8,7 @@ services:
       - USER_SERVICE_URL=http://user-svc:8081/user-svc
       - CHAT_SERVICE_URL=http://chat-svc:8082/chat-svc
       - MESSAGE_SERVICE_URL=http://message-svc:8083/message-svc
+      - MONITORING_HOST=grafana-lgtm
     ports:
       - "8080:8080"
 
@@ -18,6 +19,7 @@ services:
     container_name: user-svc
     environment:
       - DB_HOST=postgresql_database
+      - MONITORING_HOST=grafana-lgtm
     ports:
       - "8081:8081"
 
@@ -30,6 +32,7 @@ services:
       - DB_HOST=postgresql_database
       - USER_SERVICE_URL=http://user-svc:8081/user-svc/
       - SPRING_RABBITMQ_HOST=rabbitmq
+      - MONITORING_HOST=grafana-lgtm
     ports:
       - "8082:8082"
 
@@ -45,6 +48,7 @@ services:
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_DATA_REDIS_HOST=redis
       - SPRING_CASSANDRA_SCHEMA-ACTION=RECREATE
+      - MONITORING_HOST=grafana-lgtm
     ports:
       - "8083:8083"
 
@@ -97,6 +101,13 @@ services:
       - ./init/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
       - ./init/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json
       - ./init/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins
+
+  grafana-lgtm:
+    image: 'grafana/otel-lgtm:latest'
+    ports:
+      - '3000:3000'
+      - '4317:4317'
+      - '4318:4318'
 
 volumes:
   redis_data:

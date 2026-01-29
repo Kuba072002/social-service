@@ -6,7 +6,7 @@ import org.springframework.web.service.annotation.HttpExchange;
 
 import java.util.Set;
 
-@HttpExchange(accept = "application/json", contentType = "application/json")
+@HttpExchange(accept = "application/json", contentType = "application/json", url = "${chat.service.url}")
 public interface ChatService {
     @GetExchange("/internal/chats/participants/ids")
     Set<Long> findChatParticipantIds(@RequestParam Long chatId);

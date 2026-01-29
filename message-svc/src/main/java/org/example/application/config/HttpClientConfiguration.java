@@ -1,5 +1,6 @@
 package org.example.application.config;
 
+import org.example.domain.chat.ChatService;
 import org.example.domain.user.UserService;
 import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -9,11 +10,12 @@ import org.zalando.logbook.spring.LogbookClientHttpRequestInterceptor;
 
 @Configuration(proxyBeanMethods = false)
 @ImportHttpServices(UserService.class)
-public class UserServiceConfiguration {
+@ImportHttpServices(ChatService.class)
+public class HttpClientConfiguration {
     @Bean
     RestClientCustomizer userAgentCustomizer(LogbookClientHttpRequestInterceptor interceptor) {
         return restClientBuilder -> restClientBuilder
-                .defaultHeader("User-Agent", "chat-service")
+                .defaultHeader("User-Agent", "message-service")
                 .requestInterceptor(interceptor);
     }
 }
