@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Set;
 
+import static org.example.common.Constants.USER_ID_HEADER;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @CrossOrigin
@@ -30,16 +31,16 @@ public class ChatController {
 
     @PostMapping("/chats")
     public ResponseEntity<Long> createChat(
-            @RequestHeader Long userId,
+            @RequestHeader(USER_ID_HEADER) Long userId,
             @RequestBody @Valid ChatRequest chatRequest
     ) {
         return ResponseEntity.status(CREATED)
                 .body(createChatService.create(userId, chatRequest));
     }
 
-    @PutMapping("/chats/{chatId}")
+    @PatchMapping("/chats/{chatId}")
     public ResponseEntity<Void> modifyChat(
-            @RequestHeader Long userId,
+            @RequestHeader(USER_ID_HEADER) Long userId,
             @PathVariable Long chatId,
             @RequestBody @Valid ModifyChatRequest modifyChatRequest
     ) {
@@ -47,9 +48,9 @@ public class ChatController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/chats/{chatId}/participants")
+    @PatchMapping("/chats/{chatId}/participants")
     public ResponseEntity<Void> modifyChatParticipants(
-            @RequestHeader Long userId,
+            @RequestHeader(USER_ID_HEADER) Long userId,
             @PathVariable Long chatId,
             @RequestBody @Valid ModifyChatParticipantsRequest modifyChatParticipantsRequest
     ) {
@@ -59,7 +60,7 @@ public class ChatController {
 
     @DeleteMapping("/chats/{chatId}/participants")
     public ResponseEntity<Void> deleteParticipant(
-            @RequestHeader Long userId,
+            @RequestHeader(USER_ID_HEADER) Long userId,
             @PathVariable Long chatId
     ) {
         deleteChatService.deleteParticipant(userId, chatId);
@@ -68,7 +69,7 @@ public class ChatController {
 
     @GetMapping("/chats")
     public ResponseEntity<List<ChatDetail>> getUserChats(
-            @RequestHeader Long userId,
+            @RequestHeader(USER_ID_HEADER) Long userId,
             @RequestParam(required = false) Boolean isPrivate,
             @RequestParam(required = false, defaultValue = "1") @Min(1) Integer pageNumber,
             @RequestParam(required = false, defaultValue = "${default.chat.page.size}") @Min(1) Integer pageSize
@@ -78,15 +79,15 @@ public class ChatController {
 
     @GetMapping("/chats/{chatId}/participants")
     public ResponseEntity<List<ParticipantDTO>> getChatParticipants(
-            @RequestHeader Long userId,
+            @RequestHeader(USER_ID_HEADER) Long userId,
             @PathVariable Long chatId
     ) {
         return ResponseEntity.ok(getChatService.getParticipants(userId, chatId));
     }
 
-    @PutMapping("/chats/{chatId}/participants/last_read_at")
+    @PatchMapping("/chats/{chatId}/participants/last_read_at")
     public ResponseEntity<Void> updateLastReadAt(
-            @RequestHeader Long userId,
+            @RequestHeader(USER_ID_HEADER) Long userId,
             @PathVariable Long chatId,
             @RequestBody @Valid UpdateChatReadAtRequest request
     ) {
@@ -96,15 +97,15 @@ public class ChatController {
 
     @DeleteMapping("/chats/{chatId}")
     public ResponseEntity<Void> deleteChat(
-            @RequestHeader Long userId,
+            @RequestHeader(USER_ID_HEADER) Long userId,
             @PathVariable Long chatId
     ) {
         deleteChatService.delete(userId, chatId);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/internal/chats/participants/ids")
-    public ResponseEntity<Set<Long>> getChatParticipantsIds(@RequestParam Long chatId) {
+    @GetMapping("/internal/chats/{chatId}/participants/ids")
+    public ResponseEntity<Set<Long>> getChatParticipantsIds(@PathVariable Long chatId) {
         return ResponseEntity.ok()
                 .body(getChatService.getParticipantIds(chatId));
     }

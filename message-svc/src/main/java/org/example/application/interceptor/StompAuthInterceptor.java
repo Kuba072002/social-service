@@ -48,7 +48,7 @@ public class StompAuthInterceptor implements ChannelInterceptor {
                 }
                 try {
                     String token = authHeader.substring(7);
-                    userId = validateToken(token);
+                    userId = validateTokenAndGetSubject(token);
                 } catch (JwtException ex) {
                     throw new ApplicationException(INVALID_TOKEN);
                 }
@@ -62,7 +62,7 @@ public class StompAuthInterceptor implements ChannelInterceptor {
         return message;
     }
 
-    private String validateToken(String token) {
+    private String validateTokenAndGetSubject(String token) {
         return Jwts.parser()
                 .verifyWith(key)
                 .build()

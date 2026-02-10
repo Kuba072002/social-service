@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class AuthenticationFilter implements GatewayFilter {
     private final SecretKey key;
+    public static final String USER_ID_HEADER = "User-Id";
 
     public AuthenticationFilter(@Value("${jwt.secret}") String jwtSecret) {
         this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
@@ -37,7 +38,7 @@ public class AuthenticationFilter implements GatewayFilter {
             var userId = validateTokenAndGetSubject(token);
             ServerHttpRequest mutatedRequest = exchange.getRequest()
                     .mutate()
-                    .header("userId", userId)
+                    .header(USER_ID_HEADER, userId)
                     .build();
 
             return chain.filter(exchange.mutate().request(mutatedRequest).build());

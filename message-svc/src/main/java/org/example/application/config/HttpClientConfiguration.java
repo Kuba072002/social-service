@@ -1,7 +1,6 @@
 package org.example.application.config;
 
 import org.example.domain.chat.ChatService;
-import org.example.domain.user.UserService;
 import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,7 +8,6 @@ import org.springframework.web.service.registry.ImportHttpServices;
 import org.zalando.logbook.spring.LogbookClientHttpRequestInterceptor;
 
 @Configuration(proxyBeanMethods = false)
-@ImportHttpServices(UserService.class)
 @ImportHttpServices(ChatService.class)
 public class HttpClientConfiguration {
     @Bean

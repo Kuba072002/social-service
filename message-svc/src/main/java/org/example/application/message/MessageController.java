@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static org.example.common.Constants.USER_ID_HEADER;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @CrossOrigin
@@ -28,7 +29,7 @@ public class MessageController {
 
     @PostMapping(value = "/messages", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> createMessage(
-            @RequestHeader(name = "userId") Long senderId,
+            @RequestHeader(USER_ID_HEADER) Long senderId,
             @RequestBody @Valid MessageRequest messageRequest
     ) {
         var messageId = messageService.createMessage(senderId, messageRequest);
@@ -37,7 +38,7 @@ public class MessageController {
 
     @GetMapping("/messages")
     public ResponseEntity<List<MessageDTO>> getMessages(
-            @RequestHeader(name = "userId") Long senderId,
+            @RequestHeader(USER_ID_HEADER) Long senderId,
             @RequestParam Long chatId,
             @RequestParam(required = false) @Past Instant from,
             @RequestParam(required = false) @PastOrPresent Instant to,
@@ -48,7 +49,7 @@ public class MessageController {
 
     @PutMapping("/messages")
     public ResponseEntity<Void> editMessage(
-            @RequestHeader(name = "userId") Long senderId,
+            @RequestHeader(USER_ID_HEADER) Long senderId,
             @RequestBody @Valid MessageEditRequest messageEditRequest
     ) {
         messageService.editMessage(senderId, messageEditRequest);
@@ -57,7 +58,7 @@ public class MessageController {
 
     @DeleteMapping("/messages")
     public ResponseEntity<Void> deleteMessage(
-            @RequestHeader(name = "userId") Long senderId,
+            @RequestHeader(USER_ID_HEADER) Long senderId,
             @RequestParam Long chatId,
             @RequestParam UUID messageId
     ) {

@@ -55,8 +55,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.example.TestUtils.mockGetUser;
 import static org.example.TestUtils.randomAlphabetic;
+import static org.example.common.Constants.USER_ID_HEADER;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(initializers = IntegrationTestInitializer.class)
@@ -122,7 +122,6 @@ class TestScenarios {
         CompletableFuture<String> messageFuture = new CompletableFuture<>();
         StompSession session = connectUserByStomp(connectedUserId, messageFuture);
 
-        mockGetUser(senderId);
         var result = restTemplate.postForEntity("/messages", new HttpEntity<>(messageRequest, getHttpHeaders(senderId)), UUID.class);
 
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
@@ -150,7 +149,6 @@ class TestScenarios {
         CompletableFuture<String> messageFuture = new CompletableFuture<>();
         StompSession session = connectUserByStomp(connectedUserId, messageFuture);
 
-        mockGetUser(senderId);
         var result = restTemplate.exchange("/messages",
                 HttpMethod.PUT,
                 new HttpEntity<>(messageEditRequest, getHttpHeaders(senderId)),
@@ -184,7 +182,6 @@ class TestScenarios {
         CompletableFuture<String> messageFuture = new CompletableFuture<>();
         StompSession session = connectUserByStomp(connectedUserId, messageFuture);
 
-        mockGetUser(senderId);
         var result = restTemplate.exchange("/messages?chatId=" + chatId + "&messageId=" + orginalMessage.getMessageId(),
                 HttpMethod.DELETE,
                 new HttpEntity<>(null, getHttpHeaders(senderId)),
@@ -217,7 +214,6 @@ class TestScenarios {
         messageRepository.saveAll(originalMessages);
         putParticipantsToCache(chatId, Set.of(otherUserId, senderId));
 
-        mockGetUser(senderId);
         ResponseEntity<List<MessageDTO>> result = restTemplate.exchange("/messages?chatId=" + chatId,
                 HttpMethod.GET,
                 new HttpEntity<>(null, getHttpHeaders(senderId)),
@@ -239,7 +235,7 @@ class TestScenarios {
 
     private static HttpHeaders getHttpHeaders(Long senderId) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("userId", String.valueOf(senderId));
+        headers.set(USER_ID_HEADER, String.valueOf(senderId));
         return headers;
     }
 

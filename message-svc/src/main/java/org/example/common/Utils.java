@@ -17,7 +17,7 @@ public final class Utils {
         try {
             return OBJECT_MAPPER.readValue(json, clazz);
         } catch (Exception e) {
-            throw new RuntimeException("Error during read json: " + e.getMessage());
+            throw new IllegalArgumentException("Error during read json: " + e.getMessage());
         }
     }
 
@@ -25,7 +25,7 @@ public final class Utils {
         try {
             return OBJECT_MAPPER.writeValueAsString(object);
         } catch (Exception e) {
-            throw new RuntimeException("Error during write to json: " + e.getMessage());
+            throw new IllegalArgumentException("Error during write to json: " + e.getMessage());
         }
     }
 }

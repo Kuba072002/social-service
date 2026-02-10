@@ -13,6 +13,7 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import java.nio.charset.StandardCharsets;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.example.AuthenticationFilter.USER_ID_HEADER;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ContextConfiguration(initializers = IntegrationTestInitializer.class)
@@ -51,7 +52,7 @@ class GatewayServiceApplicationTests {
     void chat_service_should_forward_request_with_valid_jwt() {
         IntegrationTestInitializer.WIREMOCK.stubFor(
                 get("/chat-svc/chats")
-                        .withHeader("userId", equalTo("42"))
+                        .withHeader(USER_ID_HEADER, equalTo("42"))
                         .willReturn(ok("chat-ok"))
         );
 

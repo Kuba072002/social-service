@@ -33,6 +33,7 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.example.TestUtils.*;
 import static org.example.common.ChatApplicationError.PRIVATE_CHAT_ALREADY_EXISTS;
+import static org.example.common.Constants.USER_ID_HEADER;
 
 class ChatControllerTest extends BaseIntegrationTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatControllerTest.class);
@@ -59,7 +60,6 @@ class ChatControllerTest extends BaseIntegrationTest {
                 ? new ChatRequest(null, null, true, userIds)
                 : new ChatRequest(randomAlphabetic(12), randomAlphabetic(12), false, userIds);
 
-        mockGetUser(senderId);
         mockGetUsers(userIds);
         var result = restTemplate.postForEntity("/chats", new HttpEntity<>(chatRequest, getHttpHeaders(senderId)), Long.class);
 
@@ -80,7 +80,6 @@ class ChatControllerTest extends BaseIntegrationTest {
         Chat chat = createChat(true, List.of(senderId, secondUser));
         chatRepository.save(chat);
 
-        mockGetUser(senderId);
         mockGetUsers(userIds);
         var result = restTemplate.postForEntity("/chats", new HttpEntity<>(chatRequest, getHttpHeaders(senderId)), ServiceResponse.class);
 
@@ -118,7 +117,6 @@ class ChatControllerTest extends BaseIntegrationTest {
             mockGetUsers(userIdsToFetch);
         }
 
-        mockGetUser(senderId);
         ResponseEntity<List<ChatDetail>> result = restTemplate.exchange("/chats?isPrivate=" + isPrivate,
                 HttpMethod.GET,
                 new HttpEntity<>(null, getHttpHeaders(senderId)),
@@ -166,9 +164,8 @@ class ChatControllerTest extends BaseIntegrationTest {
         Chat chat = createChat(false, userIds);
         chatRepository.save(chat);
 
-        mockGetUser(senderId);
         ResponseEntity<Set<Long>> result = restTemplate.exchange(
-                "/internal/chats/participants/ids?chatId=" + chat.getId(),
+                "/internal/chats/"+ chat.getId() +"/participants/ids",
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<>() {
@@ -189,9 +186,8 @@ class ChatControllerTest extends BaseIntegrationTest {
         chatRepository.save(chat);
 
         var request = new ModifyChatRequest(randomAlphabetic(10), randomAlphabetic(10));
-        mockGetUser(senderId);
         ResponseEntity<Void> result = restTemplate.exchange(
-                "/chats/" + chat.getId(), HttpMethod.PUT, new HttpEntity<>(request, getHttpHeaders(senderId)), Void.class);
+                "/chats/" + chat.getId(), HttpMethod.PATCH, new HttpEntity<>(request, getHttpHeaders(senderId)), Void.class);
 
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
         var savedChat = chatRepository.findWithParticipantsById(chat.getId()).orElse(null);
@@ -212,10 +208,9 @@ class ChatControllerTest extends BaseIntegrationTest {
                 getRandomUserIds(numberOfParticipantsToAdd),
                 userIds.stream().limit(numberOfParticipantsToRemove).collect(Collectors.toSet())
         );
-        mockGetUser(senderId);
         mockGetUsers(request.userIdsToAdd());
         ResponseEntity<Void> result = restTemplate.exchange(
-                "/chats/" + chat.getId() + "/participants", HttpMethod.PUT, new HttpEntity<>(request, getHttpHeaders(senderId)), Void.class);
+                "/chats/" + chat.getId() + "/participants", HttpMethod.PATCH, new HttpEntity<>(request, getHttpHeaders(senderId)), Void.class);
 
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
         var savedChat = chatRepository.findWithParticipantsById(chat.getId()).orElse(null);
@@ -238,7 +233,6 @@ class ChatControllerTest extends BaseIntegrationTest {
         Chat chat = createChat(false, userIds, senderId);
         chatRepository.save(chat);
 
-        mockGetUser(senderId);
         ResponseEntity<Void> result = restTemplate.exchange(
                 "/chats/" + chat.getId() + "/participants", HttpMethod.DELETE, new HttpEntity<>(null, getHttpHeaders(senderId)), Void.class);
 
@@ -258,7 +252,6 @@ class ChatControllerTest extends BaseIntegrationTest {
         chatRepository.save(chat);
 
         userIds.add(senderId);
-        mockGetUser(senderId);
         mockGetUsers(userIds);
         ResponseEntity<List<ParticipantDTO>> result = restTemplate.exchange(
                 "/chats/" + chat.getId() + "/participants",
@@ -282,7 +275,6 @@ class ChatControllerTest extends BaseIntegrationTest {
         Chat chat = createChat(false, userIds, senderId);
         chatRepository.save(chat);
 
-        mockGetUser(senderId);
         ResponseEntity<Void> result = restTemplate.exchange(
                 "/chats/" + chat.getId(), HttpMethod.DELETE, new HttpEntity<>(null, getHttpHeaders(senderId)), Void.class);
 
@@ -299,10 +291,9 @@ class ChatControllerTest extends BaseIntegrationTest {
         Chat chat = createChat(false, userIds, senderId);
         chatRepository.save(chat);
 
-        mockGetUser(senderId);
         var request = new UpdateChatReadAtRequest(Instant.now().truncatedTo(ChronoUnit.MICROS));
         ResponseEntity<Void> result = restTemplate.exchange(
-                "/chats/" + chat.getId() + "/participants/last_read_at", HttpMethod.PUT,
+                "/chats/" + chat.getId() + "/participants/last_read_at", HttpMethod.PATCH,
                 new HttpEntity<>(request, getHttpHeaders(senderId)), Void.class
         );
 
@@ -319,7 +310,7 @@ class ChatControllerTest extends BaseIntegrationTest {
 
     private static HttpHeaders getHttpHeaders(Long senderId) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("userId", String.valueOf(senderId));
+        headers.set(USER_ID_HEADER, String.valueOf(senderId));
         return headers;
     }
 
