@@ -5,8 +5,7 @@ import org.example.ApplicationException;
 import org.example.application.dto.MessageDTO;
 import org.example.application.dto.MessageEditRequest;
 import org.example.application.dto.MessageRequest;
-import org.example.application.message.event.MessageEvent;
-import org.example.application.message.event.MessagePublisher;
+import org.example.application.event.OutboundMessagingService;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.message.Message;
 import org.example.domain.message.MessageFacade;
@@ -27,7 +26,7 @@ public class MessageService {
     private final MessageFacade messageFacade;
     private final ChatFacade chatFacade;
     private final MessageMapper messageMapper;
-    private final MessagePublisher messagePublisher;
+    private final OutboundMessagingService outboundMessagingService;
 
     public UUID createMessage(Long senderId, MessageRequest messageRequest) {
         var chatParticipantIds = findChatParticipantIds(messageRequest.chatId());
@@ -35,7 +34,7 @@ public class MessageService {
 
         var message = messageMapper.toMessage(senderId, messageRequest);
         messageFacade.saveMessage(message);
-        messagePublisher.broadcastMessageAndPublishEventAsync(chatParticipantIds, message);
+        outboundMessagingService.broadcastMessageAndPublishEventAsync(chatParticipantIds, message);
         return message.getMessageId();
     }
 
@@ -47,7 +46,7 @@ public class MessageService {
         message.setDeleted(false);
         messageFacade.saveMessage(message);
         var chatParticipantIds = findChatParticipantIds(messageEditRequest.chatId());
-        messagePublisher.broadcastMessageAndPublishEventAsync(chatParticipantIds, message);
+        outboundMessagingService.broadcastMessageAndPublishEventAsync(chatParticipantIds, message);
     }
 
     public void deleteMessage(Long senderId, Long chatId, UUID messageId) {
@@ -56,7 +55,7 @@ public class MessageService {
         message.setDeleted(true);
         messageFacade.saveMessage(message);
         var chatParticipantIds = findChatParticipantIds(chatId);
-        messagePublisher.broadcastMessageAndPublishEventAsync(chatParticipantIds, message);
+        outboundMessagingService.broadcastMessageAndPublishEventAsync(chatParticipantIds, message);
     }
 
     public List<MessageDTO> getMessages(Long userId, Long chatId, Instant from, Instant to, Integer limit) {
@@ -66,10 +65,6 @@ public class MessageService {
         validateRequester(findChatParticipantIds(chatId), userId);
 
         var messages = messageFacade.getMessages(chatId, from, to, limit);
-        if (!messages.isEmpty()) {
-            var event = MessageEvent.get(chatId, userId, messages.getFirst().getCreatedAt());
-            messagePublisher.publishAsync(event);
-        }
         return messages.stream()
                 .map(messageMapper::toMessageDTO)
                 .toList();

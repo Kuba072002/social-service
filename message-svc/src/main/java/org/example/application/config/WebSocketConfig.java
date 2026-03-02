@@ -1,6 +1,8 @@
 package org.example.application.config;
 
+import lombok.RequiredArgsConstructor;
 import org.example.application.interceptor.StompAuthInterceptor;
+import org.example.application.interceptor.UserHandshakeHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
@@ -11,6 +13,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${spring.rabbitmq.host:localhost}")
     private String relayHost;
@@ -24,14 +27,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private String rabbitmqPassword;
 
     private final StompAuthInterceptor stompAuthInterceptor;
-
-    public WebSocketConfig(StompAuthInterceptor interceptor) {
-        this.stompAuthInterceptor = interceptor;
-    }
+    private final UserHandshakeHandler userHandshakeHandler;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableStompBrokerRelay("/topic", "/queue", "/exchange", "/amq/queue")
+        registry.enableStompBrokerRelay("/topic", "/queue")
                 .setRelayHost(relayHost)
                 .setRelayPort(Integer.parseInt(rabbitmqPort))
                 .setVirtualHost(virtualHost)
@@ -47,8 +47,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
+                .setHandshakeHandler(userHandshakeHandler)
                 .setAllowedOriginPatterns("*")
-                .withSockJS();
+                .withSockJS()
+                .setHeartbeatTime(25_000)
+                .setDisconnectDelay(5_000);
     }
 
     @Override

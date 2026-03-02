@@ -1,4 +1,4 @@
-package org.example.application.message.event;
+package org.example.application.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,12 +10,13 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Set;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class MessagePublisher {
+public class OutboundMessagingService {
     private final SimpMessagingTemplate messagingTemplate;
     private final RabbitTemplate rabbitTemplate;
     @Value("${message.events.queue.rabbit}")
@@ -29,16 +30,17 @@ public class MessagePublisher {
             messagingTemplate.convertAndSendToUser(String.valueOf(userId), "/queue/messages", messageJson);
         });
         var event = MessageEvent.post(message.getChatId(), message.getCreatedAt());
-        publish(event);
+        publishEvent(event);
     }
 
-    @Async("asyncExecutor")
-    public void publishAsync(MessageEvent event) {
-        publish(event);
-    }
-
-    private void publish(MessageEvent event) {
+    public void publishEvent(MessageEvent event) {
         log.info("Publishing message event: {}", event);
         rabbitTemplate.convertAndSend(queueName, event);
+    }
+
+    public void broadcastUserStatus(String userId, UserStatusEvent.Status status) {
+        UserStatusEvent event = new UserStatusEvent(userId, status, Instant.now());
+        messagingTemplate.convertAndSend("/topic/status." + userId, event);
+        log.debug("Status broadcast: userId = {} status = {}", userId, status);
     }
 }

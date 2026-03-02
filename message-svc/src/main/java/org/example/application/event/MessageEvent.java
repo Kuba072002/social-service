@@ -1,4 +1,4 @@
-package org.example.application.message.event;
+package org.example.application.event;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

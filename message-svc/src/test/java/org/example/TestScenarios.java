@@ -35,6 +35,7 @@ import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.web.socket.WebSocketHttpHeaders;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
 import org.springframework.web.socket.sockjs.client.SockJsClient;
@@ -241,10 +242,10 @@ class TestScenarios {
 
     private StompSession connectUserByStomp(Long participantId, CompletableFuture<String> messageFuture) throws Exception {
         String url = "ws://localhost:" + port + "/message-svc/ws";
-        StompHeaders headers = new StompHeaders();
+        WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + generateToken(participantId));
         StompSession session = stompClient
-                .connectAsync(new URI(url), null, headers, new StompSessionHandlerAdapter() {
+                .connectAsync(new URI(url), headers, null, new StompSessionHandlerAdapter() {
                 })
                 .get(10, TimeUnit.SECONDS);
         assertThat(session.isConnected()).isTrue();
