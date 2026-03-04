@@ -8,6 +8,7 @@ import org.example.application.dto.MessageDTO;
 import org.example.application.dto.MessageEditRequest;
 import org.example.application.dto.MessageRequest;
 import org.example.common.Utils;
+import org.example.domain.activity.ActiveUserService;
 import org.example.domain.message.Message;
 import org.example.domain.message.MessageRepository;
 import org.jetbrains.annotations.NotNull;
@@ -47,15 +48,13 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.example.TestUtils.randomAlphabetic;
 import static org.example.common.Constants.USER_ID_HEADER;
 
@@ -78,6 +77,9 @@ class TestScenarios {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private ActiveUserService activeUserService;
+
     @LocalServerPort
     private int port;
 
@@ -95,7 +97,7 @@ class TestScenarios {
         ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
         taskScheduler.initialize();
         stompClient.setTaskScheduler(taskScheduler);
-        stompClient.setDefaultHeartbeat(new long[]{10000, 10000});
+        stompClient.setDefaultHeartbeat(new long[]{5000, 5000});
     }
 
     @Test
@@ -107,9 +109,17 @@ class TestScenarios {
         LOGGER.info("Sending message to user: {}", senderId);
         messagingTemplate.convertAndSendToUser(String.valueOf(senderId), "/queue/messages", "Test message.");
 
+        assertThat(activeUserService.isUserOnline(String.valueOf(senderId)))
+                .isTrue();
+
         String message = messageFuture.get(4, TimeUnit.SECONDS);
         assertThat(message).isEqualTo("Test message.");
         session.disconnect();
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() ->
+            assertThat(activeUserService.isUserOnline(String.valueOf(senderId)))
+                    .isFalse()
+        );
     }
 
     @Test
@@ -228,6 +238,28 @@ class TestScenarios {
                 .containsExactlyInAnyOrderElementsOf(originalMessages.stream().map(Message::getMessageId).toList());
     }
 
+    @Test
+    void shouldGetActiveUsers() throws Exception {
+        var senderId = RandomUtils.secure().randomLong();
+        var connectedUser = RandomUtils.secure().randomLong();
+        var disconnectedUser = RandomUtils.secure().randomLong();
+        connectUserByStomp(connectedUser);
+
+        Thread.sleep(2000);
+
+        ResponseEntity<Map<Long, Boolean>> result = restTemplate.exchange("/activity?userIds=" + connectedUser + "," + disconnectedUser,
+                HttpMethod.GET,
+                new HttpEntity<>(null, getHttpHeaders(senderId)),
+                new ParameterizedTypeReference<>() {
+                });
+
+        assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+        assert result.getBody() != null;
+        assertThat(result.getBody()).hasSize(2);
+        assertThat(result.getBody().get(connectedUser)).isTrue();
+        assertThat(result.getBody().get(disconnectedUser)).isFalse();
+    }
+
     private void putParticipantsToCache(long chatId, Set<Long> participants) {
         Cache cache = cacheManager.getCache("chatParticipantIds");
         assertThat(cache).isNotNull();
@@ -241,15 +273,7 @@ class TestScenarios {
     }
 
     private StompSession connectUserByStomp(Long participantId, CompletableFuture<String> messageFuture) throws Exception {
-        String url = "ws://localhost:" + port + "/message-svc/ws";
-        WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
-        headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + generateToken(participantId));
-        StompSession session = stompClient
-                .connectAsync(new URI(url), headers, null, new StompSessionHandlerAdapter() {
-                })
-                .get(10, TimeUnit.SECONDS);
-        assertThat(session.isConnected()).isTrue();
-
+        StompSession session = connectUserByStomp(participantId);
         session.subscribe("/user/queue/messages", new StompFrameHandler() {
             @Override
             public @NotNull Type getPayloadType(@NotNull StompHeaders headers) {
@@ -264,6 +288,18 @@ class TestScenarios {
         });
 
         Thread.sleep(300);
+        return session;
+    }
+
+    private StompSession connectUserByStomp(Long participantId) throws Exception {
+        String url = "ws://localhost:" + port + "/message-svc/ws";
+        WebSocketHttpHeaders headers = new WebSocketHttpHeaders();
+        headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + generateToken(participantId));
+        StompSession session = stompClient
+                .connectAsync(new URI(url), headers, null, new StompSessionHandlerAdapter() {
+                })
+                .get(10, TimeUnit.SECONDS);
+        assertThat(session.isConnected()).isTrue();
         return session;
     }
 

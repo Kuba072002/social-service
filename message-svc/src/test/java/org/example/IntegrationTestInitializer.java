@@ -2,6 +2,7 @@ package org.example;
 
 import com.datastax.oss.driver.api.core.CqlSession;
 import com.github.tomakehurst.wiremock.WireMockServer;
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.redis.testcontainers.RedisContainer;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -78,6 +79,9 @@ public class IntegrationTestInitializer implements ApplicationContextInitializer
         session.execute("USE message_keyspace");
 
         session.close();
+
+        WIREMOCK.stubFor(WireMock.patch(WireMock.urlPathMatching("/internal/users/*"))
+                .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")));
     }
 
 
