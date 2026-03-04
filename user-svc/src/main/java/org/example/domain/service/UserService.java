@@ -38,4 +38,7 @@ public class UserService {
         return userRepository.findAllById(userIds);
     }
 
+    public Optional<User> findByIdForUpdate(Long userId) {
+        return userRepository.findByIdForUpdate(userId);
+    }
 }

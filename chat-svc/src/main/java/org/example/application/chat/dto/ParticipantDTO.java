@@ -7,6 +7,7 @@ public record ParticipantDTO(
         String userName,
         String imageUrl,
         String role,
-        Instant joinedAt
+        Instant joinedAt,
+        Instant lastSeenAt
 ) {
 }

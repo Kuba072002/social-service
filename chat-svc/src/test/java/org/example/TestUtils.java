@@ -42,7 +42,8 @@ public class TestUtils {
                                 userId,
                                 randomAlphabetic(12),
                                 randomAlphabetic(12),
-                                randomAlphabetic(12)
+                                randomAlphabetic(12),
+                                null
                         )
                 ).toList();
     }

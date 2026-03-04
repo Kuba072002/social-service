@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.example.application.event.OutboundMessagingService;
 import org.example.application.event.UserStatusEvent;
 import org.example.domain.activity.ActiveUserService;
+import org.example.domain.user.UserService;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
@@ -20,6 +21,7 @@ import java.security.Principal;
 public class SessionEventListener {
     private final ActiveUserService activeUserService;
     private final OutboundMessagingService outboundMessagingService;
+    private final UserService userService;
 
     @EventListener
     public void handle(SessionConnectEvent event) {
@@ -33,25 +35,29 @@ public class SessionEventListener {
 
     @EventListener
     public void handle(SessionDisconnectEvent event) {
-        String sessionId = event.getSessionId();
-        String userId = activeUserService.getUserIdBySession(sessionId);
-        if (userId != null) {
+        try {
+            String sessionId = event.getSessionId();
+            String userId = activeUserService.getUserIdBySession(sessionId);
+            if (userId == null) {
+                log.warn("No userId found for sessionId = {}", sessionId);
+                return;
+            }
             outboundMessagingService.broadcastUserStatus(userId, UserStatusEvent.Status.OFFLINE);
+            var lastSeenAt = activeUserService.userDisconnected(userId, sessionId);
+            if (lastSeenAt != null) {
+                userService.updateLastSeenAt(Long.valueOf(userId), lastSeenAt);
+            }
+        } catch (Exception ex) {
+            log.error("Error handling SessionDisconnectEvent: {}", ex.getMessage());
         }
-        activeUserService.userDisconnected(sessionId);
-        //TO_DO update last seen at in user_service
     }
 
     @EventListener(classes = {SessionSubscribeEvent.class, SessionUnsubscribeEvent.class})
     public void handle(AbstractSubProtocolEvent event) {
-        switch (event) {
-            case SessionSubscribeEvent sub -> outboundMessagingService
-                    .broadcastUserStatus(getUserId(sub.getUser()), UserStatusEvent.Status.ONLINE);
-            case SessionUnsubscribeEvent unsub -> outboundMessagingService
-                    .broadcastUserStatus(getUserId(unsub.getUser()), UserStatusEvent.Status.OFFLINE);
-            default -> {
-                log.warn("Unknown event: {}", event);
-            }
+        var userId = getUserId(event.getUser());
+        StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(event.getMessage(), StompHeaderAccessor.class);
+        if (StringUtils.isNotBlank(userId) && accessor != null) {
+            activeUserService.refreshLastSeen(userId, accessor.getSessionId());
         }
     }
 

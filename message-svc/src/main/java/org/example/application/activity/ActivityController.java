@@ -6,10 +6,12 @@ import org.example.ApplicationException;
 import org.example.application.dto.ChatActivityRequest;
 import org.example.application.event.MessageEvent;
 import org.example.application.event.OutboundMessagingService;
+import org.example.domain.activity.ActiveUserService;
 import org.example.domain.chat.ChatFacade;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
@@ -23,9 +25,12 @@ import static org.example.common.MessageApplicationError.NOT_INVOLVED_REQUESTER;
 public class ActivityController {
     private final ChatFacade chatFacade;
     private final OutboundMessagingService outboundMessagingService;
+    private final ActiveUserService activeUserService;
 
     @MessageMapping("/chat/lastRead")
-    public boolean handle(@Payload ChatActivityRequest req, Principal principal) {
+    public boolean handle(
+            @Payload ChatActivityRequest req, Principal principal, SimpMessageHeaderAccessor headerAccessor
+    ) {
         if (principal == null) {
             throw new IllegalArgumentException("Principal is required");
         }
@@ -35,6 +40,7 @@ public class ActivityController {
         }
         var event = MessageEvent.get(req.chatId(), userId, req.lastReadAt());
         outboundMessagingService.publishEvent(event);
+        activeUserService.refreshLastSeen(principal.getName(), headerAccessor.getSessionId());
         return true;
     }
 

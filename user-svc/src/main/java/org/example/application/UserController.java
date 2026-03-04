@@ -3,16 +3,15 @@ package org.example.application;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
-import org.example.application.dto.SignInRequest;
-import org.example.application.dto.SignInResponse;
-import org.example.application.dto.SignUpRequest;
-import org.example.application.dto.UserDTO;
+import org.example.application.dto.*;
 import org.example.application.service.AuthService;
 import org.example.application.service.CreateUserService;
 import org.example.application.service.GetUserService;
+import org.example.application.service.ModifyUserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.Set;
 
 import static org.springframework.http.HttpStatus.CREATED;
@@ -24,6 +23,7 @@ public class UserController {
     private final CreateUserService createUserService;
     private final AuthService authService;
     private final GetUserService getUserService;
+    private final ModifyUserService modifyUserService;
 
     @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody @Valid SignUpRequest signUpRequest) {
@@ -53,5 +53,11 @@ public class UserController {
     public ResponseEntity<Set<UserDTO>> findUsers(@RequestBody @NotEmpty Set<Long> userIds) {
         var response = getUserService.find(userIds);
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/internal/users/{userId}")
+    public ResponseEntity<Void> getUser(@PathVariable Long userId, @RequestParam Instant lastSeenAt) {
+        modifyUserService.updateLastSeenAt(userId, lastSeenAt);
+        return ResponseEntity.ok().build();
     }
 }

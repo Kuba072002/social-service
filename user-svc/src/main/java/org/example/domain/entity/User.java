@@ -31,6 +31,8 @@ public class User {
     private String email;
     private String password;
     private String imageUrl;
+    @Column(name = "last_seen_at")
+    private Instant lastSeenAt;
     @UpdateTimestamp
     private Instant updatedAt;
     @CreationTimestamp

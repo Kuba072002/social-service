@@ -36,16 +36,17 @@ public class ActiveUserService {
         log.debug("User connected: userId = {}, sessionId = {}", userId, sessionId);
     }
 
-    public void userDisconnected(String sessionId) {
-        String userId = redis.opsForValue().get(SESSION_PREFIX + sessionId);
-        if (userId == null) {
-            log.warn("No userId found for sessionId = {}", sessionId);
-            return;
-        }
+    public Instant userDisconnected(String userId, String sessionId) {
         redis.delete(SESSION_PREFIX + sessionId);
-        redis.delete(USER_INFO_PREFIX + userId);
+        var userInfoKey = USER_INFO_PREFIX + userId;
+        Object lastSeen = redis.opsForHash().get(userInfoKey, "lastSeen");
+        redis.delete(userInfoKey);
 
         log.debug("User disconnected: userId = {}, sessionId = {}", userId, sessionId);
+        if (lastSeen instanceof String str) {
+            return Instant.parse(str);
+        }
+        return null;
     }
 
     public void refreshLastSeen(String userId, String sessionId) {
