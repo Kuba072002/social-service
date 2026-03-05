@@ -4,9 +4,11 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.apache.commons.lang3.RandomUtils;
+import org.example.application.dto.ChatActivityRequest;
 import org.example.application.dto.MessageDTO;
 import org.example.application.dto.MessageEditRequest;
 import org.example.application.dto.MessageRequest;
+import org.example.application.event.MessageEvent;
 import org.example.common.Utils;
 import org.example.domain.activity.ActiveUserService;
 import org.example.domain.message.Message;
@@ -16,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.resttestclient.TestRestTemplate;
 import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate;
@@ -48,6 +51,7 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -62,29 +66,22 @@ import static org.example.common.Constants.USER_ID_HEADER;
 @ContextConfiguration(initializers = IntegrationTestInitializer.class)
 @AutoConfigureTestRestTemplate
 class TestScenarios {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(TestScenarios.class);
-
     @Autowired
     private TestRestTemplate restTemplate;
-
     @Autowired
     private MessageRepository messageRepository;
-
     @Autowired
     private CacheManager cacheManager;
-
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
-
     @Autowired
     private ActiveUserService activeUserService;
-
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
     @LocalServerPort
     private int port;
-
     private WebSocketStompClient stompClient;
-
     private final SecretKey key = Keys.hmacShaKeyFor("long_and_secure_jwt_secret_for_development".getBytes(StandardCharsets.UTF_8));
 
     @BeforeEach
@@ -117,8 +114,8 @@ class TestScenarios {
         session.disconnect();
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() ->
-            assertThat(activeUserService.isUserOnline(String.valueOf(senderId)))
-                    .isFalse()
+                assertThat(activeUserService.isUserOnline(String.valueOf(senderId)))
+                        .isFalse()
         );
     }
 
@@ -258,6 +255,26 @@ class TestScenarios {
         assertThat(result.getBody()).hasSize(2);
         assertThat(result.getBody().get(connectedUser)).isTrue();
         assertThat(result.getBody().get(disconnectedUser)).isFalse();
+    }
+
+    @Test
+    void shouldSendLastRead() throws Exception {
+        var userId = RandomUtils.secure().randomLong();
+        var chatId = RandomUtils.secure().randomLong();
+        putParticipantsToCache(chatId, Set.of(userId, RandomUtils.secure().randomLong()));
+        StompSession session = connectUserByStomp(userId);
+
+        var req = new ChatActivityRequest(chatId, Instant.now().truncatedTo(ChronoUnit.SECONDS));
+        session.send("/app/chat/lastRead", Utils.writeToJson(req));
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            var message = rabbitTemplate.receive("message_events_queue");
+            LOGGER.info("Received message from RabbitMQ: {}", message);
+            assertThat(message).isNotNull();
+            var event = Utils.readJson(new String(message.getBody()), MessageEvent.class);
+            assertThat(event.chatId()).isEqualTo(chatId);
+            assertThat(event.lastReadAt()).isEqualTo(req.lastReadAt());
+        });
     }
 
     private void putParticipantsToCache(long chatId, Set<Long> participants) {

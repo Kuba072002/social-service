@@ -6,6 +6,7 @@ import org.example.ApplicationException;
 import org.example.application.dto.ChatActivityRequest;
 import org.example.application.event.MessageEvent;
 import org.example.application.event.OutboundMessagingService;
+import org.example.common.Utils;
 import org.example.domain.chat.ChatFacade;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -24,16 +25,17 @@ public class ActivityMessageController {
     private final ChatFacade chatFacade;
     private final OutboundMessagingService outboundMessagingService;
 
-    @MessageMapping("/chat/lastSeen")
-    public void updateLastSeen(@Payload ChatActivityRequest req, Principal principal) {
+    @MessageMapping("/chat/lastRead")
+    public void updateLastRead(@Payload String req, Principal principal) {
+        var chatActivityRequest = Utils.readJson(req, ChatActivityRequest.class);
         if (principal == null) {
             throw new IllegalArgumentException("Principal is required");
         }
         Long userId = Long.parseLong(principal.getName());
-        if (chatFacade.findChatParticipants(req.chatId()).contains(userId)) {
+        if (!chatFacade.findChatParticipants(chatActivityRequest.chatId()).contains(userId)) {
             throw new ApplicationException(NOT_INVOLVED_REQUESTER);
         }
-        var event = MessageEvent.get(req.chatId(), userId, req.lastReadAt());
+        var event = MessageEvent.get(chatActivityRequest.chatId(), userId, chatActivityRequest.lastReadAt());
         outboundMessagingService.publishEvent(event);
     }
 
