@@ -8,6 +8,11 @@ import lombok.RequiredArgsConstructor;
 import org.example.application.dto.MessageDTO;
 import org.example.application.dto.MessageEditRequest;
 import org.example.application.dto.MessageRequest;
+import org.example.application.message.command.CreateMessageCommand;
+import org.example.application.message.command.DeleteMessageCommand;
+import org.example.application.message.command.EditMessageCommand;
+import org.example.application.message.service.MessageCommandHandler;
+import org.example.application.message.service.MessageService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -25,6 +30,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RequiredArgsConstructor
 @Validated
 public class MessageController {
+    private final MessageCommandHandler messageCommandHandler;
     private final MessageService messageService;
 
     @PostMapping(value = "/messages", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -32,7 +38,8 @@ public class MessageController {
             @RequestHeader(USER_ID_HEADER) Long senderId,
             @RequestBody @Valid MessageRequest messageRequest
     ) {
-        var messageId = messageService.createMessage(senderId, messageRequest);
+        var command = new CreateMessageCommand(senderId, messageRequest.chatId(), messageRequest.content());
+        var messageId = messageCommandHandler.handle(command);
         return ResponseEntity.status(CREATED).body(messageId);
     }
 
@@ -52,7 +59,9 @@ public class MessageController {
             @RequestHeader(USER_ID_HEADER) Long senderId,
             @RequestBody @Valid MessageEditRequest messageEditRequest
     ) {
-        messageService.editMessage(senderId, messageEditRequest);
+        var command = new EditMessageCommand(
+                senderId, messageEditRequest.chatId(), messageEditRequest.messageId(), messageEditRequest.content());
+        messageCommandHandler.handle(command);
         return ResponseEntity.ok().build();
     }
 
@@ -62,7 +71,8 @@ public class MessageController {
             @RequestParam Long chatId,
             @RequestParam UUID messageId
     ) {
-        messageService.deleteMessage(senderId, chatId, messageId);
+        var command = new DeleteMessageCommand(senderId, chatId, messageId);
+        messageCommandHandler.handle(command);
         return ResponseEntity.ok().build();
     }
 }
