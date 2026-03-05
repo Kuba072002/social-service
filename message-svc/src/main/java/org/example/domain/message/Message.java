@@ -29,8 +29,8 @@ public class Message {
     private String mediaContent;
     @PrimaryKeyColumn(name = "message_id", type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
     private UUID messageId;
-    private Instant createdAt;
-    @Column("deleted")
-    private boolean deleted;
+    private Instant timestamp;
+    @Column("state")
+    private MessageState state;
 
 }

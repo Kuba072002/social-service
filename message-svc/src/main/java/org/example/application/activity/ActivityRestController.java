@@ -1,7 +1,7 @@
 package org.example.application.activity;
 
 import lombok.RequiredArgsConstructor;
-import org.example.domain.activity.ActiveUserService;
+import org.example.application.activity.service.ActiveUserService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +19,6 @@ public class ActivityRestController {
 
     @GetMapping("/activity")
     public Map<Long, Boolean> getActivity(@RequestHeader(USER_ID_HEADER) Long userId, @RequestParam Set<Long> userIds) {
-        return activeUserService.getActiveUsers(userIds);
+        return activeUserService.getActiveUsersMap(userIds);
     }
 }

@@ -2,8 +2,8 @@ package org.example.application.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.application.dto.WsEvent;
 import org.example.common.Utils;
-import org.example.domain.message.Message;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -23,14 +23,21 @@ public class OutboundMessagingService {
     private String queueName;
 
     @Async("asyncExecutor")
-    public void broadcastMessageAndPublishEventAsync(Set<Long> chatParticipantIds, Message message) {
-        var messageJson = Utils.writeToJson(message);
+    public void broadcastMessageAndPublishEventAsync(
+            Set<Long> chatParticipantIds, Long senderId, WsEvent<?> event, MessageEvent messageEvent
+    ) {
+        broadcastMessageAndPublishEvent(chatParticipantIds, senderId, event, messageEvent);
+    }
+
+    public void broadcastMessageAndPublishEvent(
+            Set<Long> chatParticipantIds, Long senderId, WsEvent<?> wsEvent, MessageEvent messageEvent
+    ) {
+        var messageJson = Utils.writeToJson(wsEvent);
         chatParticipantIds.forEach(userId -> {
-            if (message.getSenderId().equals(userId)) return;
+            if (senderId.equals(userId)) return;
             messagingTemplate.convertAndSendToUser(String.valueOf(userId), "/queue/messages", messageJson);
         });
-        var event = MessageEvent.post(message.getChatId(), message.getCreatedAt());
-        publishEvent(event);
+        publishEvent(messageEvent);
     }
 
     public void publishEvent(MessageEvent event) {

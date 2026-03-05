@@ -10,7 +10,8 @@ import org.mapstruct.Mapping;
 public interface MessageMapper {
 
     @Mapping(target = "messageId", expression = "java(com.github.f4b6a3.uuid.UuidCreator.getTimeOrderedEpoch())")
-    @Mapping(target = "createdAt", expression = "java(java.time.Instant.now())")
+    @Mapping(target = "timestamp", expression = "java(java.time.Instant.now())")
+    @Mapping(target = "state", constant = "CREATED")
     Message toMessage(Long senderId, MessageRequest messageRequest);
 
     MessageDTO toMessageDTO(Message message);

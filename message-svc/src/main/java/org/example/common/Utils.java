@@ -1,5 +1,6 @@
 package org.example.common;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -18,6 +19,14 @@ public final class Utils {
             return OBJECT_MAPPER.readValue(json, clazz);
         } catch (Exception e) {
             throw new IllegalArgumentException("Error during read json: " + e.getMessage());
+        }
+    }
+
+    public static <T> T readJson(String json, TypeReference<T> typeReference) {
+        try {
+            return OBJECT_MAPPER.readValue(json, typeReference);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Error during read json: " + e.getMessage(), e);
         }
     }
 

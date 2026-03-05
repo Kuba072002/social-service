@@ -2,12 +2,9 @@ package org.example.application.activity;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.ApplicationException;
+import org.example.application.activity.service.ActiveUserService;
 import org.example.application.dto.ChatActivityRequest;
-import org.example.application.event.MessageEvent;
-import org.example.application.event.OutboundMessagingService;
 import org.example.common.Utils;
-import org.example.domain.chat.ChatFacade;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -16,14 +13,11 @@ import org.springframework.stereotype.Controller;
 
 import java.security.Principal;
 
-import static org.example.common.MessageApplicationError.NOT_INVOLVED_REQUESTER;
-
 @Slf4j
 @Controller
 @RequiredArgsConstructor
 public class ActivityMessageController {
-    private final ChatFacade chatFacade;
-    private final OutboundMessagingService outboundMessagingService;
+    private final ActiveUserService activeUserService;
 
     @MessageMapping("/chat/lastRead")
     public void updateLastRead(@Payload String req, Principal principal) {
@@ -32,11 +26,7 @@ public class ActivityMessageController {
             throw new IllegalArgumentException("Principal is required");
         }
         Long userId = Long.parseLong(principal.getName());
-        if (!chatFacade.findChatParticipants(chatActivityRequest.chatId()).contains(userId)) {
-            throw new ApplicationException(NOT_INVOLVED_REQUESTER);
-        }
-        var event = MessageEvent.get(chatActivityRequest.chatId(), userId, chatActivityRequest.lastReadAt());
-        outboundMessagingService.publishEvent(event);
+        activeUserService.updateLastRead(userId, chatActivityRequest.chatId(), chatActivityRequest.lastReadAt());
     }
 
     @MessageExceptionHandler

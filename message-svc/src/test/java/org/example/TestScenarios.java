@@ -1,18 +1,17 @@
 package org.example;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.apache.commons.lang3.RandomUtils;
-import org.example.application.dto.ChatActivityRequest;
-import org.example.application.dto.MessageDTO;
-import org.example.application.dto.MessageEditRequest;
-import org.example.application.dto.MessageRequest;
+import org.example.application.dto.*;
 import org.example.application.event.MessageEvent;
 import org.example.common.Utils;
-import org.example.domain.activity.ActiveUserService;
+import org.example.domain.activity.ActiveUserRegistry;
 import org.example.domain.message.Message;
 import org.example.domain.message.MessageRepository;
+import org.example.domain.message.MessageState;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -76,7 +75,7 @@ class TestScenarios {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
     @Autowired
-    private ActiveUserService activeUserService;
+    private ActiveUserRegistry activeUserRegistry;
     @Autowired
     private RabbitTemplate rabbitTemplate;
     @LocalServerPort
@@ -106,7 +105,7 @@ class TestScenarios {
         LOGGER.info("Sending message to user: {}", senderId);
         messagingTemplate.convertAndSendToUser(String.valueOf(senderId), "/queue/messages", "Test message.");
 
-        assertThat(activeUserService.isUserOnline(String.valueOf(senderId)))
+        assertThat(activeUserRegistry.isUserOnline(String.valueOf(senderId)))
                 .isTrue();
 
         String message = messageFuture.get(4, TimeUnit.SECONDS);
@@ -114,7 +113,7 @@ class TestScenarios {
         session.disconnect();
 
         await().atMost(10, TimeUnit.SECONDS).untilAsserted(() ->
-                assertThat(activeUserService.isUserOnline(String.valueOf(senderId)))
+                assertThat(activeUserRegistry.isUserOnline(String.valueOf(senderId)))
                         .isFalse()
         );
     }
@@ -138,9 +137,11 @@ class TestScenarios {
         String receivedMessage = messageFuture.get(4, TimeUnit.SECONDS);
         LOGGER.info("Client got: {}", receivedMessage);
         assertThat(receivedMessage).isNotNull();
-        Message message = Utils.readJson(receivedMessage, Message.class);
-        assert message != null;
-        assertThat(message.getContent()).isEqualTo(messageRequest.content());
+        WsEvent<Message> wsEvent = Utils.readJson(receivedMessage, new TypeReference<>() {
+        });
+        assert wsEvent != null;
+        assert wsEvent.payload() != null;
+        assertThat(wsEvent.payload().getContent()).isEqualTo(messageRequest.content());
         session.disconnect();
     }
 
@@ -166,15 +167,17 @@ class TestScenarios {
         var updatedMessage = messageRepository.findByChatIdAndMessageId(chatId, orginalMessage.getMessageId()).orElse(null);
         assertThat(updatedMessage).isNotNull();
         assertThat(updatedMessage.getContent()).isEqualTo(messageEditRequest.content());
-        assertThat(updatedMessage.getCreatedAt()).isAfter(orginalMessage.getCreatedAt());
+        assertThat(updatedMessage.getTimestamp()).isAfter(orginalMessage.getTimestamp());
 
         String receivedMessage = messageFuture.get(4, TimeUnit.SECONDS);
         LOGGER.info("Client got: {}", receivedMessage);
         assertThat(receivedMessage).isNotNull();
-        Message message = Utils.readJson(receivedMessage, Message.class);
-        assert message != null;
-        assertThat(message.getMessageId()).isEqualTo(orginalMessage.getMessageId());
-        assertThat(message.getContent()).isEqualTo(messageEditRequest.content());
+        WsEvent<Message> wsEvent = Utils.readJson(receivedMessage, new TypeReference<>() {
+        });
+        assert wsEvent != null;
+        assert wsEvent.payload() != null;
+        assertThat(wsEvent.payload().getMessageId()).isEqualTo(orginalMessage.getMessageId());
+        assertThat(wsEvent.payload().getContent()).isEqualTo(messageEditRequest.content());
         session.disconnect();
     }
 
@@ -198,16 +201,18 @@ class TestScenarios {
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
         var updatedMessage = messageRepository.findByChatIdAndMessageId(chatId, orginalMessage.getMessageId()).orElse(null);
         assertThat(updatedMessage).isNotNull();
-        assertThat(updatedMessage.isDeleted()).isTrue();
-        assertThat(updatedMessage.getCreatedAt()).isAfter(orginalMessage.getCreatedAt());
+        assertThat(updatedMessage.getState()).isEqualTo(MessageState.DELETED);
+        assertThat(updatedMessage.getTimestamp()).isAfter(orginalMessage.getTimestamp());
 
         String receivedMessage = messageFuture.get(4, TimeUnit.SECONDS);
         LOGGER.info("Client got: {}", receivedMessage);
         assertThat(receivedMessage).isNotNull();
-        Message message = Utils.readJson(receivedMessage, Message.class);
-        assert message != null;
-        assertThat(message.getMessageId()).isEqualTo(orginalMessage.getMessageId());
-        assertThat(message.isDeleted()).isTrue();
+        WsEvent<Message> wsEvent = Utils.readJson(receivedMessage, new TypeReference<>() {
+        });
+        assert wsEvent != null;
+        assert wsEvent.payload() != null;
+        assertThat(wsEvent.payload().getMessageId()).isEqualTo(orginalMessage.getMessageId());
+        assertThat(wsEvent.payload().getState()).isEqualTo(MessageState.DELETED);
         session.disconnect();
     }
 
@@ -240,7 +245,7 @@ class TestScenarios {
         var senderId = RandomUtils.secure().randomLong();
         var connectedUser = RandomUtils.secure().randomLong();
         var disconnectedUser = RandomUtils.secure().randomLong();
-        connectUserByStomp(connectedUser);
+        StompSession session = connectUserByStomp(connectedUser);
 
         Thread.sleep(2000);
 
@@ -255,6 +260,7 @@ class TestScenarios {
         assertThat(result.getBody()).hasSize(2);
         assertThat(result.getBody().get(connectedUser)).isTrue();
         assertThat(result.getBody().get(disconnectedUser)).isFalse();
+        session.disconnect();
     }
 
     @Test
@@ -275,6 +281,7 @@ class TestScenarios {
             assertThat(event.chatId()).isEqualTo(chatId);
             assertThat(event.lastReadAt()).isEqualTo(req.lastReadAt());
         });
+        session.disconnect();
     }
 
     private void putParticipantsToCache(long chatId, Set<Long> participants) {
@@ -326,7 +333,7 @@ class TestScenarios {
                 .chatId(chatId)
                 .senderId(senderId)
                 .content(randomAlphabetic(20))
-                .createdAt(Instant.now())
+                .timestamp(Instant.now())
                 .build();
     }
 

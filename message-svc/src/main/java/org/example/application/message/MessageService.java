@@ -5,10 +5,13 @@ import org.example.ApplicationException;
 import org.example.application.dto.MessageDTO;
 import org.example.application.dto.MessageEditRequest;
 import org.example.application.dto.MessageRequest;
+import org.example.application.dto.WsEvent;
+import org.example.application.event.MessageEvent;
 import org.example.application.event.OutboundMessagingService;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.message.Message;
 import org.example.domain.message.MessageFacade;
+import org.example.domain.message.MessageState;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -34,7 +37,7 @@ public class MessageService {
 
         var message = messageMapper.toMessage(senderId, messageRequest);
         messageFacade.saveMessage(message);
-        outboundMessagingService.broadcastMessageAndPublishEventAsync(chatParticipantIds, message);
+        sendMessageToUsersAndSendEventAsync(chatParticipantIds, message);
         return message.getMessageId();
     }
 
@@ -42,20 +45,20 @@ public class MessageService {
         var message = findMessageAndValidateSender(
                 senderId, messageEditRequest.chatId(), messageEditRequest.messageId());
         message.setContent(messageEditRequest.content());
-        message.setCreatedAt(Instant.now());
-        message.setDeleted(false);
+        message.setTimestamp(Instant.now());
+        message.setState(MessageState.EDITED);
         messageFacade.saveMessage(message);
         var chatParticipantIds = findChatParticipantIds(messageEditRequest.chatId());
-        outboundMessagingService.broadcastMessageAndPublishEventAsync(chatParticipantIds, message);
+        sendMessageToUsersAndSendEventAsync(chatParticipantIds, message);
     }
 
     public void deleteMessage(Long senderId, Long chatId, UUID messageId) {
         var message = findMessageAndValidateSender(senderId, chatId, messageId);
-        message.setCreatedAt(Instant.now());
-        message.setDeleted(true);
+        message.setTimestamp(Instant.now());
+        message.setState(MessageState.DELETED);
         messageFacade.saveMessage(message);
         var chatParticipantIds = findChatParticipantIds(chatId);
-        outboundMessagingService.broadcastMessageAndPublishEventAsync(chatParticipantIds, message);
+        sendMessageToUsersAndSendEventAsync(chatParticipantIds, message);
     }
 
     public List<MessageDTO> getMessages(Long userId, Long chatId, Instant from, Instant to, Integer limit) {
@@ -92,5 +95,14 @@ public class MessageService {
             throw new ApplicationException(SENDER_MISMATCH);
         }
         return message;
+    }
+
+    private void sendMessageToUsersAndSendEventAsync(Set<Long> userIds, Message message) {
+        outboundMessagingService.broadcastMessageAndPublishEventAsync(
+                userIds,
+                message.getSenderId(),
+                WsEvent.of(message),
+                MessageEvent.post(message.getChatId(), message.getTimestamp())
+        );
     }
 }

@@ -4,18 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
-public class ActiveUserService {
+public class ActiveUserRegistry {
 
     private static final String USER_INFO_PREFIX = "ws:user:";
     private static final String SESSION_PREFIX = "ws:session:";
@@ -47,15 +45,13 @@ public class ActiveUserService {
         return count != null && count > 0;
     }
 
-    public Map<Long, Boolean> getActiveUsers(Set<Long> userIds) {
+    public Set<Long> getActiveUsers(Set<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) {
-            return Collections.emptyMap();
+            return Collections.emptySet();
         }
         return userIds.stream()
-                .collect(Collectors.toMap(
-                        Function.identity(),
-                        userId -> BooleanUtils.isTrue(redis.hasKey(USER_INFO_PREFIX + userId)))
-                );
+                .filter(userId -> BooleanUtils.isTrue(redis.hasKey(USER_INFO_PREFIX + userId)))
+                .collect(Collectors.toSet());
     }
 
 }
