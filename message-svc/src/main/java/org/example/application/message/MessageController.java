@@ -11,7 +11,7 @@ import org.example.application.dto.MessageRequest;
 import org.example.application.message.command.CreateMessageCommand;
 import org.example.application.message.command.DeleteMessageCommand;
 import org.example.application.message.command.EditMessageCommand;
-import org.example.application.message.service.MessageCommandHandler;
+import org.example.application.message.command.MessageCommandHandler;
 import org.example.application.message.service.MessageService;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

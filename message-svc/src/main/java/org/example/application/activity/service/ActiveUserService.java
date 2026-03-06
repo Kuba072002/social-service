@@ -2,14 +2,13 @@ package org.example.application.activity.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.ApplicationException;
+import org.example.application.chat.ChatAccessValidator;
 import org.example.application.dto.ChatActivityDTO;
 import org.example.application.dto.WsEvent;
 import org.example.application.event.MessageEvent;
 import org.example.application.event.OutboundMessagingService;
 import org.example.application.event.UserStatusEvent;
 import org.example.domain.activity.ActiveUserRegistry;
-import org.example.domain.chat.ChatFacade;
 import org.example.domain.user.UserService;
 import org.springframework.stereotype.Service;
 
@@ -20,24 +19,19 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.example.common.MessageApplicationError.NOT_INVOLVED_REQUESTER;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ActiveUserService {
-    private final ChatFacade chatFacade;
+    private final ChatAccessValidator chatAccessValidator;
     private final UserService userService;
     private final OutboundMessagingService outboundMessagingService;
     private final ActiveUserRegistry activeUserRegistry;
 
     public void updateLastRead(Long userId, Long chatId, Instant lastReadAt) {
-        Set<Long> participantIds = chatFacade.findChatParticipants(chatId);
-        if (!participantIds.contains(userId)) {
-            throw new ApplicationException(NOT_INVOLVED_REQUESTER);
-        }
+        Set<Long> participants = chatAccessValidator.getParticipantsIfAllowed(chatId, userId);
         outboundMessagingService.broadcastMessageAndPublishEvent(
-                activeUserRegistry.getActiveUsers(participantIds),
+                activeUserRegistry.getActiveUsers(participants),
                 userId,
                 WsEvent.of(new ChatActivityDTO(chatId, userId, lastReadAt)),
                 MessageEvent.get(chatId, userId, lastReadAt)

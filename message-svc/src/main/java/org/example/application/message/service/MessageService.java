@@ -3,7 +3,7 @@ package org.example.application.message.service;
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
 import org.example.application.dto.MessageDTO;
-import org.example.application.message.validation.ChatAccessValidator;
+import org.example.application.chat.ChatAccessValidator;
 import org.example.domain.message.MessageFacade;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +24,7 @@ public class MessageService {
         if (to == null) to = Instant.now();
         if (from == null) from = Instant.now().minus(Duration.ofDays(365));
         validateQueryParams(from, to);
-        chatAccessValidator.validateRequesterAndReturnParticipants(chatId, userId);
+        chatAccessValidator.getParticipantsIfAllowed(chatId, userId);
 
         var messages = messageFacade.getMessages(chatId, from, to, limit);
         return messages.stream()

@@ -40,14 +40,14 @@ public class OutboundMessagingService {
         publishEvent(messageEvent);
     }
 
-    public void publishEvent(MessageEvent event) {
-        log.info("Publishing message event: {}", event);
-        rabbitTemplate.convertAndSend(queueName, event);
-    }
-
     public void broadcastUserStatus(String userId, UserStatusEvent.Status status) {
         UserStatusEvent event = new UserStatusEvent(userId, status, Instant.now());
         messagingTemplate.convertAndSend("/topic/status." + userId, event);
         log.debug("Status broadcast: userId = {} status = {}", userId, status);
+    }
+
+    private void publishEvent(MessageEvent event) {
+        log.info("Publishing message event: {}", event);
+        rabbitTemplate.convertAndSend(queueName, event);
     }
 }

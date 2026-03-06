@@ -16,7 +16,22 @@ public class MessageFacade {
     private final MessageRepository messageRepository;
 
     @Transactional
-    public void saveMessage(Message message) {
+    public void createMessage(Message message) {
+        messageRepository.save(message);
+    }
+
+    @Transactional
+    public void editMessage(Message message, String content) {
+        message.setContent(content);
+        message.setTimestamp(Instant.now());
+        message.setState(MessageState.EDITED);
+        messageRepository.save(message);
+    }
+
+    @Transactional
+    public void deleteMessage(Message message) {
+        message.setTimestamp(Instant.now());
+        message.setState(MessageState.DELETED);
         messageRepository.save(message);
     }
 

@@ -1,4 +1,4 @@
-package org.example.application.message.validation;
+package org.example.application.chat;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
@@ -14,7 +14,7 @@ import static org.example.common.MessageApplicationError.NOT_INVOLVED_REQUESTER;
 public class ChatAccessValidator {
     private final ChatFacade chatFacade;
 
-    public Set<Long> validateRequesterAndReturnParticipants(Long chatId, Long requesterId) {
+    public Set<Long> getParticipantsIfAllowed(Long chatId, Long requesterId) {
         var participants = chatFacade.findChatParticipants(chatId);
         validateRequester(participants, requesterId);
         return participants;
