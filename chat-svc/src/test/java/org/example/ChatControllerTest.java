@@ -1,7 +1,11 @@
 package org.example;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.example.application.chat.dto.*;
+import org.example.application.chat.dto.ChatRequest;
+import org.example.application.chat.dto.ModifyChatParticipantsRequest;
+import org.example.application.chat.dto.ModifyChatRequest;
+import org.example.application.chat.dto.ParticipantDTO;
+import org.example.application.chat.dto.UpdateChatReadAtRequest;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.projection.ChatDetail;
@@ -31,7 +35,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.example.TestUtils.*;
+import static org.example.TestUtils.createChat;
+import static org.example.TestUtils.getRandomUserIds;
+import static org.example.TestUtils.mockGetUsers;
+import static org.example.TestUtils.randomAlphabetic;
 import static org.example.common.ChatApplicationError.PRIVATE_CHAT_ALREADY_EXISTS;
 import static org.example.common.Constants.USER_ID_HEADER;
 

@@ -7,7 +7,10 @@ import org.example.ApplicationException;
 import org.example.domain.chat.ChatFacade;
 import org.springframework.stereotype.Service;
 
-import static org.example.common.ChatApplicationError.*;
+import static org.example.common.ChatApplicationError.CANNOT_MODIFY_PRIVATE_CHAT;
+import static org.example.common.ChatApplicationError.CHAT_NOT_EXISTS;
+import static org.example.common.ChatApplicationError.USER_DOES_NOT_BELONG_TO_CHAT;
+import static org.example.common.ChatApplicationError.USER_IS_NOT_ADMIN;
 import static org.example.common.Constants.ADMIN_ROLE;
 
 @Service

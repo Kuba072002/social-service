@@ -16,7 +16,9 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.example.BasicApplicationError.INVALID_DATA;
-import static org.example.common.ChatApplicationError.*;
+import static org.example.common.ChatApplicationError.PRIVATE_CHAT_ALREADY_EXISTS;
+import static org.example.common.ChatApplicationError.REQUEST_CANNOT_CONTAIN_REQUESTER_ID;
+import static org.example.common.ChatApplicationError.REQUEST_GROUP_VALIDATION_NOT_EXISTS;
 import static org.example.common.Constants.ADMIN_ROLE;
 
 @Service

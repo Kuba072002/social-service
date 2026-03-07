@@ -17,7 +17,13 @@ import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.example.common.ChatApplicationError.*;
+import static org.example.common.ChatApplicationError.CANNOT_MODIFY_PRIVATE_CHAT;
+import static org.example.common.ChatApplicationError.CHAT_NOT_EXISTS;
+import static org.example.common.ChatApplicationError.CHAT_PARTICIPANTS_ALREADY_EXISTS;
+import static org.example.common.ChatApplicationError.CHAT_PARTICIPANTS_NOT_EXISTS;
+import static org.example.common.ChatApplicationError.REQUEST_CANNOT_CONTAIN_REQUESTER_ID;
+import static org.example.common.ChatApplicationError.USER_DOES_NOT_BELONG_TO_CHAT;
+import static org.example.common.ChatApplicationError.USER_IS_NOT_ADMIN;
 import static org.example.common.Constants.ADMIN_ROLE;
 
 @Service
