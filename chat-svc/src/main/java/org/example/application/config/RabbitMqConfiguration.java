@@ -7,7 +7,9 @@ import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
+@EnableScheduling
 @Configuration
 public class RabbitMqConfiguration {
 
@@ -20,12 +22,6 @@ public class RabbitMqConfiguration {
     public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory) {
         final RabbitTemplate template = new RabbitTemplate(connectionFactory);
         template.setMessageConverter(jsonMessageConverter());
-//        template.setChannelTransacted(true);
         return template;
     }
-
-//    @Bean
-//    public RabbitTransactionManager rabbitTransactionManager(ConnectionFactory connectionFactory) {
-//        return new RabbitTransactionManager(connectionFactory);
-//    }
 }

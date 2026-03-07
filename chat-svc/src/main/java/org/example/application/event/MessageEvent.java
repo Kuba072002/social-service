@@ -1,4 +1,4 @@
-package org.example.application.message;
+package org.example.application.event;
 
 import java.time.Instant;
 

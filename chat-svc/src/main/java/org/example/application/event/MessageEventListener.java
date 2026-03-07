@@ -1,4 +1,4 @@
-package org.example.application.message;
+package org.example.application.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,7 @@ public class MessageEventListener {
 
     @RabbitListener(queues = "${message.events.queue.rabbit}")
     public void process(MessageEvent messageEvent) {
-        log.info("Processing message event for chat: {} , with type: {}", messageEvent.chatId(), messageEvent.type());
+        log.info("Processing message event for chatId: {}, with type: {}", messageEvent.chatId(), messageEvent.type());
         int updatedRows = switch (messageEvent.type()) {
             case POST_EVENT_TYPE ->
                     chatFacade.updateLastMessageAt(messageEvent.chatId(), messageEvent.lastMessageCreatedAt());
@@ -27,6 +27,6 @@ public class MessageEventListener {
                 yield 0;
             }
         };
-        log.info("Updated rows {}", updatedRows);
+        log.info("Processed successfully event: {}, chatId: {}, updated rows {}", messageEvent.type(), messageEvent.chatId(), updatedRows);
     }
 }

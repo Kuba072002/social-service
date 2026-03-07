@@ -1,7 +1,7 @@
 package org.example;
 
 import org.apache.commons.lang3.RandomUtils;
-import org.example.application.message.MessageEvent;
+import org.example.application.event.MessageEvent;
 import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;
 import org.junit.jupiter.params.ParameterizedTest;

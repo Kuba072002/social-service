@@ -5,6 +5,7 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.apache.commons.lang3.RandomUtils;
+import org.example.application.chat.ChatEvent;
 import org.example.application.dto.ChatActivityRequest;
 import org.example.application.dto.MessageDTO;
 import org.example.application.dto.MessageEditRequest;
@@ -13,6 +14,7 @@ import org.example.application.dto.WsEvent;
 import org.example.application.event.MessageEvent;
 import org.example.common.Utils;
 import org.example.domain.activity.ActiveUserRegistry;
+import org.example.domain.chat.ChatRepository;
 import org.example.domain.message.Message;
 import org.example.domain.message.MessageRepository;
 import org.example.domain.message.MessageState;
@@ -86,6 +88,8 @@ class TestScenarios {
     private ActiveUserRegistry activeUserRegistry;
     @Autowired
     private RabbitTemplate rabbitTemplate;
+    @Autowired
+    private ChatRepository chatRepository;
     @LocalServerPort
     private int port;
     private WebSocketStompClient stompClient;
@@ -290,6 +294,15 @@ class TestScenarios {
             assertThat(event.lastReadAt()).isEqualTo(req.lastReadAt());
         });
         session.disconnect();
+    }
+
+    @Test
+    void shouldSaveChatWhenReceivedEvent() {
+        rabbitTemplate.convertAndSend("chat_events_queue", new ChatEvent("CREATE", 123L, Set.of(1L, 2L, 3L), Instant.now().toEpochMilli()));
+
+        await().atMost(10, TimeUnit.SECONDS).untilAsserted(() -> {
+            assertThat(!chatRepository.findAll().isEmpty()).isTrue();
+        });
     }
 
     private void putParticipantsToCache(long chatId, Set<Long> participants) {
