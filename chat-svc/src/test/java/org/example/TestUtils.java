@@ -8,6 +8,8 @@ import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.user.UserDTO;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,6 +21,9 @@ import java.util.stream.IntStream;
 import static org.example.common.Constants.ADMIN_ROLE;
 
 public class TestUtils {
+    public static final String USERNAME_PREFIX = "username:";
+    public static final String URL_PREFIX = "url:";
+
     private static final RandomStringGenerator STRING_GENERATOR = new RandomStringGenerator.Builder()
             .withinRange('A', 'Z')
             .withinRange('a', 'z')
@@ -40,9 +45,9 @@ public class TestUtils {
         return userIds.stream()
                 .map(userId -> new UserDTO(
                                 userId,
+                                USERNAME_PREFIX + randomAlphabetic(12),
                                 randomAlphabetic(12),
-                                randomAlphabetic(12),
-                                randomAlphabetic(12),
+                                URL_PREFIX + randomAlphabetic(12),
                                 null
                         )
                 ).toList();
@@ -53,15 +58,13 @@ public class TestUtils {
     }
 
     private static Chat createChat(boolean isPrivate) {
-        var builder = Chat.builder().isPrivate(isPrivate);
-        if (isPrivate) {
-            return builder.build();
-        } else {
-            return builder
-                    .name(randomAlphabetic(12))
-                    .imageUrl(randomAlphabetic(12))
-                    .build();
+        var builder = Chat.builder()
+                .isPrivate(isPrivate)
+                .lastMessageAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
+        if (!isPrivate) {
+            builder.name(randomAlphabetic(12)).imageUrl(randomAlphabetic(12));
         }
+        return builder.build();
     }
 
     public static Chat createChat(boolean isPrivate, Collection<Long> userIds) {
@@ -72,6 +75,8 @@ public class TestUtils {
         Chat chat = createChat(isPrivate);
         var userMap = userIds.stream()
                 .map(id -> new ChatParticipant(chat, id))
+                .peek(cp -> cp.setLastReadAt(
+                        Instant.now().minusSeconds(cp.getUserId() % 100).truncatedTo(ChronoUnit.MICROS)))
                 .collect(Collectors.toMap(ChatParticipant::getUserId, Function.identity()));
         if (userId != null) userMap.put(userId, new ChatParticipant(chat, userId, ADMIN_ROLE));
         chat.setParticipants(new ArrayList<>(userMap.values()));

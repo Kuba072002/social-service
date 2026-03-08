@@ -29,8 +29,8 @@ public class GetChatService {
         if (BooleanUtils.isTrue(isPrivate)) {
             var chatDetails = chatFacade.findUserPrivateChatDetails(userId, pageNumber, pageSize);
             var userIds = chatDetails.stream()
-                .map(ChatDetail::getOtherUser)
-                .collect(Collectors.toSet());
+                    .map(ChatDetail::getOtherUser)
+                    .collect(Collectors.toSet());
             var usersMap = userFacade.getUsersMap(userIds);
             chatDetails.forEach(chatDetail -> {
                 var userDTO = usersMap.get(chatDetail.getOtherUser());
@@ -43,34 +43,61 @@ public class GetChatService {
         }
     }
 
+    public ChatDetail getChat(Long userId, Long chatId) {
+        var chat = chatFacade.findChatWithParticipants(chatId)
+                .orElseThrow(() -> new ApplicationException(CHAT_NOT_EXISTS));
+        var userIds = getParticipantIdsAndValidateUser(chat.getParticipants(), userId);
+        var usersMap = userFacade.getUsersMap(userIds);
+        var participantDTOs = chatResponseMapper.toParticipantDTOs(chat.getParticipants(), usersMap);
+        ChatDetail chatDetail = new ChatDetail(
+                chatId, chat.getName(), chat.getImageUrl(), chat.getIsPrivate(), chat.getLastMessageAt(), null);
+        chatDetail.setParticipants(participantDTOs);
+
+        chat.getParticipants().stream()
+                .filter(participant -> participant.getUserId().equals(userId))
+                .findFirst()
+                .ifPresent(participant -> chatDetail.setLastReadAt(participant.getLastReadAt()));
+
+        if (BooleanUtils.isTrue(chat.getIsPrivate())) {
+            chat.getParticipants().stream()
+                    .map(ChatParticipant::getUserId)
+                    .filter(id -> !id.equals(userId))
+                    .findFirst()
+                    .ifPresent(otherParticipantId -> {
+                        chatDetail.setOtherUser(otherParticipantId);
+                        var otherUser = usersMap.get(otherParticipantId);
+                        chatDetail.setName(otherUser.userName());
+                        chatDetail.setImageUrl(otherUser.imageUrl());
+                    });
+        }
+        return chatDetail;
+    }
+
     public List<ParticipantDTO> getParticipants(Long userId, Long chatId) {
-        var participants = getParticipants(chatId);
+        var participants = chatFacade.findChatParticipants(chatId);
+        if (participants.isEmpty()) {
+            throw new ApplicationException(CHAT_NOT_EXISTS);
+        }
+        var userIds = getParticipantIdsAndValidateUser(participants, userId);
+        var usersMap = userFacade.getUsersMap(userIds);
+        return chatResponseMapper.toParticipantDTOs(participants, usersMap);
+    }
+
+    public List<Long> getChatParticipantsIds(Long chatId) {
+        var participantIds = chatFacade.findChatParticipantIds(chatId);
+        if (participantIds.isEmpty()) {
+            throw new ApplicationException(CHAT_NOT_EXISTS);
+        }
+        return participantIds;
+    }
+
+    private Set<Long> getParticipantIdsAndValidateUser(List<ChatParticipant> participants, Long userId) {
         var userIds = participants.stream()
                 .map(ChatParticipant::getUserId)
                 .collect(Collectors.toSet());
         if (!userIds.contains(userId)) {
             throw new ApplicationException(USER_DOES_NOT_BELONG_TO_CHAT);
         }
-        var usersMap = userFacade.getUsersMap(userIds);
-        return participants.stream()
-                .map(chatParticipant -> {
-                    var userDTO = usersMap.get(chatParticipant.getUserId());
-                    return chatResponseMapper.toParticipantDto(chatParticipant, userDTO);
-                })
-                .toList();
-    }
-
-    public Set<Long> getParticipantIds(Long chatId) {
-        return getParticipants(chatId).stream()
-                .map(ChatParticipant::getUserId)
-                .collect(Collectors.toSet());
-    }
-
-    private List<ChatParticipant> getParticipants(Long chatId) {
-        var participants = chatFacade.findChatParticipants(chatId);
-        if (participants.isEmpty()) {
-            throw new ApplicationException(CHAT_NOT_EXISTS);
-        }
-        return participants;
+        return userIds;
     }
 }

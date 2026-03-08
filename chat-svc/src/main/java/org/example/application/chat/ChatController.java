@@ -90,6 +90,14 @@ public class ChatController {
         return ResponseEntity.ok(getChatService.getChats(userId, isPrivate, pageNumber, pageSize));
     }
 
+    @GetMapping("/chats/{chatId}")
+    public ResponseEntity<ChatDetail> getChat(
+            @RequestHeader(USER_ID_HEADER) Long userId,
+            @PathVariable Long chatId
+    ) {
+        return ResponseEntity.ok(getChatService.getChat(userId, chatId));
+    }
+
     @GetMapping("/chats/{chatId}/participants")
     public ResponseEntity<List<ParticipantDTO>> getChatParticipants(
             @RequestHeader(USER_ID_HEADER) Long userId,
@@ -98,6 +106,7 @@ public class ChatController {
         return ResponseEntity.ok(getChatService.getParticipants(userId, chatId));
     }
 
+    @Deprecated
     @PatchMapping("/chats/{chatId}/participants/last_read_at")
     public ResponseEntity<Void> updateLastReadAt(
             @RequestHeader(USER_ID_HEADER) Long userId,
@@ -118,8 +127,8 @@ public class ChatController {
     }
 
     @GetMapping("/internal/chats/{chatId}/participants/ids")
-    public ResponseEntity<Set<Long>> getChatParticipantsIds(@PathVariable Long chatId) {
+    public ResponseEntity<List<Long>> getChatParticipantsIds(@PathVariable Long chatId) {
         return ResponseEntity.ok()
-                .body(getChatService.getParticipantIds(chatId));
+                .body(getChatService.getChatParticipantsIds(chatId));
     }
 }

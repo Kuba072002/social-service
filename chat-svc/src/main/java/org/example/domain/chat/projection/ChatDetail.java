@@ -5,8 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.application.chat.dto.ParticipantDTO;
 
 import java.time.Instant;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -23,6 +25,8 @@ public class ChatDetail {
     private Instant lastReadAt;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Long otherUser;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private List<ParticipantDTO> participants;
 
     public ChatDetail(
             Long chatId, Boolean isPrivate,

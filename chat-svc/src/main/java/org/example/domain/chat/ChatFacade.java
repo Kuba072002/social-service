@@ -53,6 +53,10 @@ public class ChatFacade {
         return chatParticipantRepository.findByChatId(chatId);
     }
 
+    public List<Long> findChatParticipantIds(Long chatId) {
+        return chatParticipantRepository.findUserIdsByChatId(chatId);
+    }
+
     public List<ChatDetail> findUserGroupChatDetails(Long userId, Integer pageNumber, Integer pageSize) {
         int offset = (pageNumber - 1) * pageSize;
         return chatParticipantRepository.findUserGroupChats(userId, offset, pageSize);

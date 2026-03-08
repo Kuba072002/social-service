@@ -154,10 +154,13 @@ class ChatControllerTest extends BaseIntegrationTest {
                         .findFirst()
                         .orElse(null);
                 assertThat(chatDetail.getOtherUser()).isEqualTo(otherUserId);
+                assertThat(chatDetail.getName()).startsWith(TestUtils.USERNAME_PREFIX);
+                assertThat(chatDetail.getImageUrl()).startsWith(TestUtils.URL_PREFIX);
             } else {
                 assert chatDetail.getOtherUser() == null;
-                var name = chatMap.get(chatDetail.getChatId()).getName();
-                assertThat(chatDetail.getName()).isEqualTo(name);
+                var chat = chatMap.get(chatDetail.getChatId());
+                assertThat(chatDetail.getName()).isEqualTo(chat.getName());
+                assertThat(chatDetail.getImageUrl()).isEqualTo(chat.getImageUrl());
             }
         }
     }
@@ -172,7 +175,7 @@ class ChatControllerTest extends BaseIntegrationTest {
         chatRepository.save(chat);
 
         ResponseEntity<Set<Long>> result = restTemplate.exchange(
-                "/internal/chats/"+ chat.getId() +"/participants/ids",
+                "/internal/chats/" + chat.getId() + "/participants/ids",
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<>() {
@@ -217,7 +220,8 @@ class ChatControllerTest extends BaseIntegrationTest {
         );
         mockGetUsers(request.userIdsToAdd());
         ResponseEntity<Void> result = restTemplate.exchange(
-                "/chats/" + chat.getId() + "/participants", HttpMethod.PATCH, new HttpEntity<>(request, getHttpHeaders(senderId)), Void.class);
+                "/chats/" + chat.getId() + "/participants",
+                HttpMethod.PATCH, new HttpEntity<>(request, getHttpHeaders(senderId)), Void.class);
 
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
         var savedChat = chatRepository.findWithParticipantsById(chat.getId()).orElse(null);
@@ -241,13 +245,49 @@ class ChatControllerTest extends BaseIntegrationTest {
         chatRepository.save(chat);
 
         ResponseEntity<Void> result = restTemplate.exchange(
-                "/chats/" + chat.getId() + "/participants", HttpMethod.DELETE, new HttpEntity<>(null, getHttpHeaders(senderId)), Void.class);
+                "/chats/" + chat.getId() + "/participants",
+                HttpMethod.DELETE, new HttpEntity<>(null, getHttpHeaders(senderId)), Void.class);
 
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
         var savedChat = chatRepository.findWithParticipantsById(chat.getId()).orElse(null);
         assertThat(savedChat).isNotNull();
         var participants = savedChat.getParticipants().stream().map(ChatParticipant::getUserId).collect(Collectors.toSet());
         assertThat(participants).containsExactlyInAnyOrderElementsOf(userIds);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void shouldGetChatWhenRequested(boolean isPrivate) {
+        int numberOfParticipants = isPrivate ? 1 : 3;
+        Long senderId = RandomUtils.secure().randomLong();
+        var userIds = getRandomUserIds(numberOfParticipants);
+        Chat chat = createChat(isPrivate, userIds, senderId);
+        chatRepository.save(chat);
+
+        userIds.add(senderId);
+        mockGetUsers(userIds);
+        ResponseEntity<ChatDetail> result = restTemplate.exchange(
+                "/chats/" + chat.getId(),
+                HttpMethod.GET, new HttpEntity<>(null, getHttpHeaders(senderId)),
+                ChatDetail.class
+        );
+
+        assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+        assertThat(result.getBody()).isNotNull();
+        if (isPrivate) {
+            assertThat(result.getBody().getName()).startsWith(TestUtils.USERNAME_PREFIX);
+            assertThat(result.getBody().getImageUrl()).startsWith(TestUtils.URL_PREFIX);
+        } else {
+            assertThat(result.getBody().getName()).isEqualTo(chat.getName());
+            assertThat(result.getBody().getImageUrl()).isEqualTo(chat.getImageUrl());
+        }
+        assertThat(result.getBody().getLastMessageAt()).isEqualTo(chat.getLastMessageAt());
+        assertThat(result.getBody().getLastReadAt()).isNotNull();
+        assertThat(result.getBody().getParticipants())
+                .isNotNull()
+                .hasSize(numberOfParticipants + 1)
+                .extracting(ParticipantDTO::userId)
+                .containsExactlyInAnyOrderElementsOf(userIds);
     }
 
     @Test
