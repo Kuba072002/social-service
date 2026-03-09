@@ -1,11 +1,14 @@
 package org.example.domain.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.domain.entity.RefreshToken;
 import org.example.domain.entity.User;
+import org.example.domain.repository.RefreshTokenRepository;
 import org.example.domain.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -13,9 +16,14 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public void save(User user) {
         userRepository.save(user);
+    }
+
+    public void save(RefreshToken refreshToken) {
+        refreshTokenRepository.save(refreshToken);
     }
 
     public boolean validateIfExists(String userName, String email) {
@@ -26,8 +34,8 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    public Optional<User> findByUserName(String userName) {
-        return userRepository.findByUserName(userName);
+    public List<User> findByUserNameContaining(String userName) {
+        return userRepository.findByUserNameContaining(userName);
     }
 
     public Optional<User> findById(Long userId) {
@@ -40,5 +48,9 @@ public class UserService {
 
     public Optional<User> findByIdForUpdate(Long userId) {
         return userRepository.findByIdForUpdate(userId);
+    }
+
+    public Optional<RefreshToken> findStoredRefreshToken(Long userId, String hashToken) {
+        return refreshTokenRepository.findByUserIdAndHashToken(userId, hashToken);
     }
 }

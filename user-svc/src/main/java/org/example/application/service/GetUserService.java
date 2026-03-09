@@ -6,6 +6,7 @@ import org.example.application.dto.UserDTO;
 import org.example.domain.service.UserService;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.example.comon.UserApplicationError.USER_NOT_EXISTS;
@@ -16,10 +17,8 @@ public class GetUserService {
     private final UserService userService;
     private final UserMapper userMapper;
 
-    public UserDTO get(String userName) {
-        var user = userService.findByUserName(userName)
-                .orElseThrow(() -> new ApplicationException(USER_NOT_EXISTS));
-        return userMapper.toUserDTO(user);
+    public List<UserDTO> get(String userName) {
+        return userMapper.toUserDTOs(userService.findByUserNameContaining(userName));
     }
 
     public UserDTO get(Long userId) {
@@ -28,7 +27,7 @@ public class GetUserService {
         return userMapper.toUserDTO(user);
     }
 
-    public Set<UserDTO> find(Set<Long> userIds) {
+    public List<UserDTO> find(Set<Long> userIds) {
         return userMapper.toUserDTOs(userService.findByIds(userIds));
     }
 

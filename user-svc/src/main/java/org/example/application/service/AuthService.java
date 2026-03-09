@@ -1,20 +1,16 @@
 package org.example.application.service;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
 import org.example.application.dto.SignInResponse;
+import org.example.domain.entity.RefreshToken;
 import org.example.domain.service.UserService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-
+import static org.example.application.service.TokenService.ACCESS_TYPE;
+import static org.example.application.service.TokenService.REFRESH_TYPE;
 import static org.example.comon.UserApplicationError.INVALID_AUTH_DATA;
 
 @Service
@@ -23,32 +19,47 @@ public class AuthService {
     private final UserService userService;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-    @Value("${jwt.secret}")
-    private String jwtSecret;
-    @Value("${jwt.expiration}")
-    private int jwtExpirationMillis;
-    private SecretKey key;
-
-    @PostConstruct
-    public void init() {
-        this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
-    }
+    private final TokenService tokenService;
 
     public SignInResponse authUser(String email, String password) {
         var user = userService.findByEmail(email)
                 .filter(u -> passwordEncoder.matches(password, u.getPassword()))
                 .orElseThrow(() -> new ApplicationException(INVALID_AUTH_DATA));
-        var token = generateToken(user.getId(), user.getUserName());
-        return new SignInResponse(userMapper.toUserDTO(user), token);
+
+        var accessToken = tokenService.generate(user.getId(), user.getUserName(), ACCESS_TYPE);
+        var refreshToken = tokenService.generate(user.getId(), user.getUserName(), REFRESH_TYPE);
+
+        var expiredAt = tokenService.validateAndGetClaims(refreshToken, REFRESH_TYPE).getExpiration().getTime();
+        userService.save(new RefreshToken(user.getId(), tokenService.hash(refreshToken), expiredAt));
+        return new SignInResponse(userMapper.toUserDTO(user), accessToken, refreshToken);
     }
 
-    public String generateToken(Long userId, String userName) {
-        return Jwts.builder()
-                .subject(userId.toString())
-                .claim("userName", userName)
-                .issuedAt(new Date())
-                .expiration(new Date((new Date()).getTime() + jwtExpirationMillis))
-                .signWith(key)
-                .compact();
+    @Transactional
+    public SignInResponse refreshToken(String refreshToken) {
+        var userIdStr = tokenService.validateAndGetClaims(refreshToken, REFRESH_TYPE).getSubject();
+        var userId = getUserId(userIdStr);
+
+        var user = userService.findById(userId)
+                .orElseThrow(() -> new ApplicationException(INVALID_AUTH_DATA));
+        var hashToken = tokenService.hash(refreshToken);
+        var storedToken = userService.findStoredRefreshToken(userId, hashToken)
+                .orElseThrow(() -> new ApplicationException(INVALID_AUTH_DATA));
+
+        var newAccessToken = tokenService.generate(user.getId(), user.getUserName(), ACCESS_TYPE);
+        var newRefreshToken = tokenService.generate(user.getId(), user.getUserName(), REFRESH_TYPE);
+
+        storedToken.setHashToken(tokenService.hash(newRefreshToken));
+        storedToken.setExpiredAt(tokenService.validateAndGetClaims(newRefreshToken, REFRESH_TYPE).getExpiration().getTime());
+        userService.save(storedToken);
+
+        return new SignInResponse(userMapper.toUserDTO(user), newAccessToken, newRefreshToken);
+    }
+
+    private static long getUserId(String userIdStr) {
+        try {
+            return Long.parseLong(userIdStr);
+        } catch (NumberFormatException e) {
+            throw new ApplicationException(INVALID_AUTH_DATA);
+        }
     }
 }

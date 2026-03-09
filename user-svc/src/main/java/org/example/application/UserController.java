@@ -3,6 +3,7 @@ package org.example.application;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
+import org.example.application.dto.RefreshTokenRequest;
 import org.example.application.dto.SignInRequest;
 import org.example.application.dto.SignInResponse;
 import org.example.application.dto.SignUpRequest;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 import static org.springframework.http.HttpStatus.CREATED;
@@ -47,8 +49,14 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<SignInResponse> refresh(@RequestBody @Valid RefreshTokenRequest refreshTokenRequest) {
+        var response = authService.refreshToken(refreshTokenRequest.refreshToken());
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/users")
-    public ResponseEntity<UserDTO> getUser(@RequestParam String userName) {
+    public ResponseEntity<List<UserDTO>> getUsers(@RequestParam String userName) {
         var response = getUserService.get(userName);
         return ResponseEntity.ok(response);
     }
@@ -60,7 +68,7 @@ public class UserController {
     }
 
     @PostMapping("/internal/users")
-    public ResponseEntity<Set<UserDTO>> findUsers(@RequestBody @NotEmpty Set<Long> userIds) {
+    public ResponseEntity<List<UserDTO>> findUsers(@RequestBody @NotEmpty Set<Long> userIds) {
         var response = getUserService.find(userIds);
         return ResponseEntity.ok(response);
     }

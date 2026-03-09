@@ -7,8 +7,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Mapper
 public interface UserMapper {
@@ -18,9 +17,9 @@ public interface UserMapper {
 
     UserDTO toUserDTO(User user);
 
-    default Set<UserDTO> toUserDTOs(Collection<User> users) {
+    default List<UserDTO> toUserDTOs(Collection<User> users) {
         return users.stream()
                 .map(this::toUserDTO)
-                .collect(Collectors.toSet());
+                .toList();
     }
 }

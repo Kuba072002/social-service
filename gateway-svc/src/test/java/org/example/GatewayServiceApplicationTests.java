@@ -11,6 +11,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
@@ -112,6 +113,7 @@ class GatewayServiceApplicationTests {
 
     private String validJwt(String userId) {
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .subject(userId)
                 .signWith(Keys.hmacShaKeyFor(
                         "long_and_secure_jwt_secret_for_development"

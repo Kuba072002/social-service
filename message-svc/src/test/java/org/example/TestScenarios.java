@@ -360,6 +360,7 @@ class TestScenarios {
 
     private String generateToken(Long userId) {
         return Jwts.builder()
+                .id(UUID.randomUUID().toString())
                 .subject(userId.toString())
                 .claim("userName", "user_name_" + userId)
                 .issuedAt(new Date())

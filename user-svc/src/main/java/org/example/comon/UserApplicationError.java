@@ -11,6 +11,7 @@ public enum UserApplicationError implements ApplicationError {
     USER_ALREADY_EXISTS(BAD_REQUEST, "User already exists."),
     CONFIRM_PASSWORD_DO_NOT_MATCH(BAD_REQUEST, "Confirm password do not match."),
     INVALID_AUTH_DATA(BAD_REQUEST, "Invalid authentication data."),
+    INVALID_REFRESH_TOKEN(BAD_REQUEST, "Invalid refresh token."),
     USER_NOT_EXISTS(BAD_REQUEST, "User not exists.");
 
 
