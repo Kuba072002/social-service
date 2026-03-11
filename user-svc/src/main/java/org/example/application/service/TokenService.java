@@ -1,9 +1,12 @@
 package org.example.application.service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import org.example.ApplicationException;
+import org.example.comon.UserApplicationError;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.codec.Hex;
 import org.springframework.stereotype.Component;
@@ -66,11 +69,16 @@ public class TokenService {
 
     public Claims validateAndGetClaims(String token, String type) {
         var key = type.equals(REFRESH_TYPE) ? refreshSecretKey : accessSecretKey;
-        return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        try {
+            return Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (JwtException e) {
+            throw new ApplicationException(UserApplicationError.INVALID_AUTH_DATA);
+        }
+
     }
 
 }
