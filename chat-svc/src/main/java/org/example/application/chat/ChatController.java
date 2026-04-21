@@ -98,6 +98,7 @@ public class ChatController {
         return ResponseEntity.ok(getChatService.getChat(userId, chatId));
     }
 
+    @Deprecated
     @GetMapping("/chats/{chatId}/participants")
     public ResponseEntity<List<ParticipantDTO>> getChatParticipants(
             @RequestHeader(USER_ID_HEADER) Long userId,

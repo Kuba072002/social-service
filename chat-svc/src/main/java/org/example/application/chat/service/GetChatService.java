@@ -8,6 +8,7 @@ import org.example.application.chat.service.mapper.ChatResponseMapper;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.projection.ChatDetail;
+import org.example.domain.user.UserDTO;
 import org.example.domain.user.UserFacade;
 import org.springframework.stereotype.Service;
 
@@ -29,11 +30,11 @@ public class GetChatService {
         if (BooleanUtils.isTrue(isPrivate)) {
             var chatDetails = chatFacade.findUserPrivateChatDetails(userId, pageNumber, pageSize);
             var userIds = chatDetails.stream()
-                    .map(ChatDetail::getOtherUser)
+                    .map(ChatDetail::getOtherUserId)
                     .collect(Collectors.toSet());
             var usersMap = userFacade.getUsersMap(userIds);
             chatDetails.forEach(chatDetail -> {
-                var userDTO = usersMap.get(chatDetail.getOtherUser());
+                var userDTO = usersMap.get(chatDetail.getOtherUserId());
                 chatDetail.setName(userDTO.userName());
                 chatDetail.setImageUrl(userDTO.imageUrl());
             });
@@ -46,7 +47,7 @@ public class GetChatService {
     public ChatDetail getChat(Long userId, Long chatId) {
         var chat = chatFacade.findChatWithParticipants(chatId)
                 .orElseThrow(() -> new ApplicationException(CHAT_NOT_EXISTS));
-        var userIds = getParticipantIdsAndValidateUser(chat.getParticipants(), userId);
+        var userIds = getUserIdsAndValidateUser(chat.getParticipants(), userId);
         var usersMap = userFacade.getUsersMap(userIds);
         var participantDTOs = chatResponseMapper.toParticipantDTOs(chat.getParticipants(), usersMap);
         ChatDetail chatDetail = new ChatDetail(
@@ -56,7 +57,8 @@ public class GetChatService {
         chat.getParticipants().stream()
                 .filter(participant -> participant.getUserId().equals(userId))
                 .findFirst()
-                .ifPresent(participant -> chatDetail.setLastReadAt(participant.getLastReadAt()));
+                .map(ChatParticipant::getLastReadAt)
+                .ifPresent(chatDetail::setLastReadAt);
 
         if (BooleanUtils.isTrue(chat.getIsPrivate())) {
             chat.getParticipants().stream()
@@ -64,8 +66,8 @@ public class GetChatService {
                     .filter(id -> !id.equals(userId))
                     .findFirst()
                     .ifPresent(otherParticipantId -> {
-                        chatDetail.setOtherUser(otherParticipantId);
-                        var otherUser = usersMap.get(otherParticipantId);
+                        chatDetail.setOtherUserId(otherParticipantId);
+                        UserDTO otherUser = usersMap.get(otherParticipantId);
                         chatDetail.setName(otherUser.userName());
                         chatDetail.setImageUrl(otherUser.imageUrl());
                     });
@@ -78,7 +80,7 @@ public class GetChatService {
         if (participants.isEmpty()) {
             throw new ApplicationException(CHAT_NOT_EXISTS);
         }
-        var userIds = getParticipantIdsAndValidateUser(participants, userId);
+        var userIds = getUserIdsAndValidateUser(participants, userId);
         var usersMap = userFacade.getUsersMap(userIds);
         return chatResponseMapper.toParticipantDTOs(participants, usersMap);
     }
@@ -91,7 +93,7 @@ public class GetChatService {
         return participantIds;
     }
 
-    private Set<Long> getParticipantIdsAndValidateUser(List<ChatParticipant> participants, Long userId) {
+    private Set<Long> getUserIdsAndValidateUser(List<ChatParticipant> participants, Long userId) {
         var userIds = participants.stream()
                 .map(ChatParticipant::getUserId)
                 .collect(Collectors.toSet());

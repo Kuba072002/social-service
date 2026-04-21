@@ -1,6 +1,5 @@
 package org.example.application.message.service;
 
-import org.example.application.dto.MessageDTO;
 import org.example.domain.message.Message;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -12,6 +11,4 @@ public interface MessageMapper {
     @Mapping(target = "timestamp", expression = "java(java.time.Instant.now())")
     @Mapping(target = "state", constant = "CREATED")
     Message toMessage(Long senderId, Long chatId, String content);
-
-    MessageDTO toMessageDTO(Message message);
 }

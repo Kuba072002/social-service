@@ -20,6 +20,11 @@ public class ChatAccessValidator {
         return participants;
     }
 
+    public void validateParticipant(Long chatId, Long requesterId) {
+        var participants = chatFacade.findChatParticipants(chatId);
+        validateRequester(participants, requesterId);
+    }
+
     private void validateRequester(Set<Long> chatParticipantIds, Long requesterId) {
         if (!chatParticipantIds.contains(requesterId)) {
             throw new ApplicationException(NOT_INVOLVED_REQUESTER);

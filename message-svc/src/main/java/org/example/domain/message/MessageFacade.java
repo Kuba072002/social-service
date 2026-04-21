@@ -2,6 +2,7 @@ package org.example.domain.message;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import lombok.RequiredArgsConstructor;
+import org.example.application.dto.MessageDTO;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +36,7 @@ public class MessageFacade {
         messageRepository.save(message);
     }
 
-    public List<Message> getMessages(Long chatId, Instant from, Instant to, Integer limit) {
+    public List<MessageDTO> getMessages(Long chatId, Instant from, Instant to, Integer limit) {
         UUID fromUUID = UuidCreator.getTimeOrderedEpoch(from);
         UUID toUUID = UuidCreator.getTimeOrderedEpoch(to);
         return messageRepository.findAllByChatIdAndMessageIdBetween(chatId, fromUUID, toUUID, limit);

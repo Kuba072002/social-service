@@ -145,7 +145,7 @@ class ChatControllerTest extends BaseIntegrationTest {
             assertThat(chatDetail.getIsPrivate()).isEqualTo(isPrivate);
             assert chatDetail.getName() != null;
             if (isPrivate) {
-                assert chatDetail.getOtherUser() != null;
+                assert chatDetail.getOtherUserId() != null;
                 var otherUserId = chatMap.get(chatDetail.getChatId())
                         .getParticipants()
                         .stream()
@@ -153,11 +153,11 @@ class ChatControllerTest extends BaseIntegrationTest {
                         .filter(userId -> !userId.equals(senderId))
                         .findFirst()
                         .orElse(null);
-                assertThat(chatDetail.getOtherUser()).isEqualTo(otherUserId);
+                assertThat(chatDetail.getOtherUserId()).isEqualTo(otherUserId);
                 assertThat(chatDetail.getName()).startsWith(TestUtils.USERNAME_PREFIX);
                 assertThat(chatDetail.getImageUrl()).startsWith(TestUtils.URL_PREFIX);
             } else {
-                assert chatDetail.getOtherUser() == null;
+                assert chatDetail.getOtherUserId() == null;
                 var chat = chatMap.get(chatDetail.getChatId());
                 assertThat(chatDetail.getName()).isEqualTo(chat.getName());
                 assertThat(chatDetail.getImageUrl()).isEqualTo(chat.getImageUrl());

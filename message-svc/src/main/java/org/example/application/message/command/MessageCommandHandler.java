@@ -3,6 +3,7 @@ package org.example.application.message.command;
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
 import org.example.application.chat.ChatAccessValidator;
+import org.example.application.dto.MessageDTO;
 import org.example.application.dto.WsEvent;
 import org.example.application.event.MessageEvent;
 import org.example.application.event.OutboundMessagingService;
@@ -11,10 +12,13 @@ import org.example.domain.message.Message;
 import org.example.domain.message.MessageFacade;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import static org.example.common.MessageApplicationError.FROM_GREATER_THAN_TO;
 import static org.example.common.MessageApplicationError.MESSAGE_NOT_FOUND;
 import static org.example.common.MessageApplicationError.SENDER_MISMATCH;
 
@@ -54,6 +58,12 @@ public class MessageCommandHandler {
         notifyParticipants(chatParticipantIds, message);
     }
 
+    public List<MessageDTO> handle(GetMessagesCommand command) {
+        validateQueryParams(command.from(), command.to());
+        chatAccessValidator.validateParticipant(command.chatId(), command.userId());
+        return messageFacade.getMessages(command.chatId(), command.from(), command.to(), command.limit());
+    }
+
     private Message findMessageAndValidateSender(Long senderId, Long chatId, UUID messageId) {
         var message = messageFacade.find(chatId, messageId)
                 .orElseThrow(() -> new ApplicationException(MESSAGE_NOT_FOUND));
@@ -70,5 +80,9 @@ public class MessageCommandHandler {
                 WsEvent.of(message),
                 MessageEvent.post(message.getChatId(), message.getTimestamp())
         );
+    }
+
+    private void validateQueryParams(Instant from, Instant to) {
+        if (from.isAfter(to)) throw new ApplicationException(FROM_GREATER_THAN_TO);
     }
 }

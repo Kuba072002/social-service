@@ -22,13 +22,13 @@ public class Message {
 
     @PrimaryKeyColumn(name = "chat_id", type = PrimaryKeyType.PARTITIONED)
     private Long chatId;
+    @PrimaryKeyColumn(name = "message_id", type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
+    private UUID messageId;
     @Column("sender_id")
     private Long senderId;
     private String content;
     @Column("media_content")
     private String mediaContent;
-    @PrimaryKeyColumn(name = "message_id", type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
-    private UUID messageId;
     private Instant timestamp;
     @Column("state")
     private MessageState state;

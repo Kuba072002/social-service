@@ -11,8 +11,9 @@ import org.example.application.dto.MessageRequest;
 import org.example.application.message.command.CreateMessageCommand;
 import org.example.application.message.command.DeleteMessageCommand;
 import org.example.application.message.command.EditMessageCommand;
+import org.example.application.message.command.GetMessagesCommand;
 import org.example.application.message.command.MessageCommandHandler;
-import org.example.application.message.service.MessageService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -39,7 +41,8 @@ import static org.springframework.http.HttpStatus.CREATED;
 @Validated
 public class MessageController {
     private final MessageCommandHandler messageCommandHandler;
-    private final MessageService messageService;
+    @Value("${message.query.from.default.subtract.days:365}")
+    private long defaultFromSubtractDays;
 
     @PostMapping(value = "/messages", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> createMessage(
@@ -59,7 +62,14 @@ public class MessageController {
             @RequestParam(required = false) @PastOrPresent Instant to,
             @RequestParam(required = false, defaultValue = "${message.query.default.limit}") @Max(100) Integer limit
     ) {
-        return ResponseEntity.ok(messageService.getMessages(senderId, chatId, from, to, limit));
+        if (to == null) {
+            to = Instant.now();
+        }
+        if (from == null) {
+            from = Instant.now().minus(Duration.ofDays(defaultFromSubtractDays));
+        }
+        var command = new GetMessagesCommand(senderId, chatId, from, to, limit);
+        return ResponseEntity.ok(messageCommandHandler.handle(command));
     }
 
     @PutMapping("/messages")

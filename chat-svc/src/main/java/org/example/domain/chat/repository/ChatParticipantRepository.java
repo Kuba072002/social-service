@@ -38,7 +38,7 @@ public interface ChatParticipantRepository extends JpaRepository<ChatParticipant
                 FROM chat_schema.chat_participants cp2
                 WHERE cp2.chat_id = c.id AND cp2.user_id != ?1
                 limit 1
-            ) AS other_user
+            ) AS other_user_id
             FROM chat_schema.chat_participants cp
             JOIN chat_schema.chats c ON cp.chat_id = c.id
             WHERE cp.user_id = ?1 AND c.is_private = 'true'
