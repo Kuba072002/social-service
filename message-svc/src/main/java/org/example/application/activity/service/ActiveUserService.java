@@ -40,6 +40,7 @@ public class ActiveUserService {
 
     public void handleConnectedUser(String userId, String sessionId) {
         activeUserRegistry.userConnected(userId, sessionId);
+        log.info("User connected: userId = {}, sessionId = {}", userId, sessionId);
         outboundMessagingService.broadcastUserStatus(userId, UserStatusEvent.Status.ONLINE);
     }
 
@@ -49,6 +50,7 @@ public class ActiveUserService {
             log.warn("No userId found for sessionId = {}", sessionId);
             return;
         }
+        log.info("User disconnected: userId = {}, sessionIds = {}", userId, sessionId);
         if (!activeUserRegistry.isUserOnline(userId)) {
             outboundMessagingService.broadcastUserStatus(userId, UserStatusEvent.Status.OFFLINE);
             var lastSeenAt = Instant.now().minusSeconds(10).truncatedTo(ChronoUnit.SECONDS);

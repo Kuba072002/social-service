@@ -6,11 +6,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 
 import java.time.Duration;
 
 @Configuration
 @EnableCaching
+@EnableRedisRepositories(basePackages = "com.example.domain.activity")
 public class RedisConfiguration {
 
     @Bean
