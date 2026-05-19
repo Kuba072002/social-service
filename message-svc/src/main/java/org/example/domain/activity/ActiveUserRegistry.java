@@ -12,40 +12,38 @@ import java.util.stream.Collectors;
 @Component
 @RequiredArgsConstructor
 public class ActiveUserRegistry {
-    private final SessionInfoRepository sessionInfoRepository;
-    private final UserSessionInfoRepository userSessionInfoRepository;
+    private final SessionStore sessionStore;
 
     public void userConnected(String userId, String sessionId) {
-        sessionInfoRepository.save(new SessionInfo(sessionId, userId));
-        userSessionInfoRepository.findById(userId)
-                .map(existing -> {
+        sessionStore.saveSession(new SessionInfo(sessionId, userId));
+        sessionStore.findUserSession(userId)
+                .ifPresentOrElse(existing -> {
                     List<String> updatedSessions = new ArrayList<>(existing.sessionIds());
                     if (!updatedSessions.contains(sessionId)) {
                         updatedSessions.add(sessionId);
                     }
-                    return userSessionInfoRepository.save(
+                    sessionStore.saveUserSession(
                             new UserSessionInfo(existing.userId(), updatedSessions));
-                })
-                .orElseGet(() -> userSessionInfoRepository.save(
+                }, () -> sessionStore.saveUserSession(
                         new UserSessionInfo(userId, List.of(sessionId))));
     }
 
     public String userDisconnected(String sessionId) {
         String userId = getUserIdBySession(sessionId);
         if (userId != null) {
-            sessionInfoRepository.deleteById(sessionId);
-            userSessionInfoRepository.findById(userId)
+            sessionStore.deleteSession(sessionId);
+            sessionStore.findUserSession(userId)
                     .ifPresent(existing -> {
                         if (!existing.sessionIds().contains(sessionId)) {
                             return;
                         }
                         if (existing.sessionIds().size() == 1) {
-                            userSessionInfoRepository.deleteById(userId);
+                            sessionStore.deleteUserSession(userId);
                             return;
                         }
                         List<String> updatedSessions = new ArrayList<>(existing.sessionIds());
                         updatedSessions.remove(sessionId);
-                        userSessionInfoRepository.save(
+                        sessionStore.saveUserSession(
                                 new UserSessionInfo(existing.userId(), updatedSessions));
                     });
         }
@@ -53,13 +51,13 @@ public class ActiveUserRegistry {
     }
 
     public String getUserIdBySession(String sessionId) {
-        return sessionInfoRepository.findById(sessionId)
+        return sessionStore.findSession(sessionId)
                 .map(SessionInfo::userId)
                 .orElse(null);
     }
 
     public boolean isUserOnline(String userId) {
-        int count = userSessionInfoRepository.findById(userId)
+        int count = sessionStore.findUserSession(userId)
                 .map(userSessionInfo -> userSessionInfo.sessionIds().size())
                 .orElse(0);
         return count > 0;
@@ -70,7 +68,7 @@ public class ActiveUserRegistry {
             return Collections.emptySet();
         }
         return userIds.stream()
-                .filter(userId -> userSessionInfoRepository.existsById(String.valueOf(userId)))
+                .filter(userId -> sessionStore.existUserSession(String.valueOf(userId)))
                 .collect(Collectors.toSet());
     }
 

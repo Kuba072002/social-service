@@ -21,7 +21,7 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "chat_participants",
-        indexes = @Index(columnList = "user_id"),
+        indexes = @Index(columnList = "user_id, chat_id, last_read_at"),
         uniqueConstraints = @UniqueConstraint(columnNames = {"chat_id", "user_id"})
 )
 @Data
@@ -40,6 +40,7 @@ public class ChatParticipant {
     @Column(name = "user_id")
     private Long userId;
     private String role;
+    @Column(name = "last_read_at")
     private Instant lastReadAt;
     @CreationTimestamp
     private Instant joinedAt;

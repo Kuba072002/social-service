@@ -1,5 +1,6 @@
 package org.example.application.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,7 @@ import java.time.Duration;
 @Configuration
 @EnableCaching
 @EnableRedisRepositories(basePackages = "com.example.domain.activity")
+@ConditionalOnProperty(name = "spring.cache.type", havingValue = "redis")
 public class RedisConfiguration {
 
     @Bean

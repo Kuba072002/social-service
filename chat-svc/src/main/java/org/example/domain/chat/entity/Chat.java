@@ -7,7 +7,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -20,9 +19,7 @@ import java.time.Instant;
 import java.util.List;
 
 @Entity
-@Table(name = "chats", indexes = {
-        @Index(name = "idx_last_message_at", columnList = "is_private, last_message_at")
-})
+@Table(name = "chats")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

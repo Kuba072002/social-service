@@ -104,7 +104,8 @@ public class IntegrationTestInitializer implements ApplicationContextInitializer
                 "logging.level.org.springframework.web=DEBUG",
                 "logging.level.org.springframework.messaging=DEBUG",
                 "logging.level.org.springframework.web.socket=DEBUG",
-                "logging.level.org.springframework.web.socket.messaging=DEBUG"
+                "logging.level.org.springframework.web.socket.messaging=DEBUG",
+                "spring.cache.type=redis"
         ).applyTo(applicationContext.getEnvironment());
     }
 }

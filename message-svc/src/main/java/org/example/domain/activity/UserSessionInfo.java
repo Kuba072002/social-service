@@ -5,7 +5,7 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.util.List;
 
-@RedisHash("user_info")
+@RedisHash(value = "user_info", timeToLive =  300)
 public record UserSessionInfo(
         @Id
         String userId,
