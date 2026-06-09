@@ -18,12 +18,20 @@ import org.testcontainers.rabbitmq.RabbitMQContainer;
 import org.testcontainers.scylladb.ScyllaDBContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Objects;
 
 @SpringBootTest
 @Testcontainers
 public class IntegrationTestInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+
+    private static final String SCYLLA_INIT_SCRIPT = "init_scylla.cql";
+    private static final String LOCAL_DATACENTER = "datacenter1";
+    private static final String MESSAGE_KEYSPACE = "message_keyspace";
 
     @Container
     static ScyllaDBContainer scyllaDBContainer = new ScyllaDBContainer(DockerImageName.parse("scylladb/scylla:6.2"))
@@ -69,21 +77,11 @@ public class IntegrationTestInitializer implements ApplicationContextInitializer
         rabbitMQContainer.start();
         redisContainer.start();
 
-        var session = CqlSession.builder()
-                .addContactPoint(new InetSocketAddress(scyllaDBContainer.getHost(), scyllaDBContainer.getMappedPort(9042)))
-                .withLocalDatacenter("datacenter1")
-                .build();
-
-        session.execute("CREATE KEYSPACE IF NOT EXISTS message_keyspace WITH replication = "
-                + "{'class': 'NetworkTopologyStrategy', 'datacenter1': 1}");
-        session.execute("USE message_keyspace");
-
-        session.close();
+        initializeDb();
 
         WIREMOCK.stubFor(WireMock.patch(WireMock.urlPathMatching("/internal/users/*"))
                 .willReturn(WireMock.aResponse().withStatus(200).withHeader("Content-Type", "application/json")));
     }
-
 
     @Override
     public void initialize(@NotNull ConfigurableApplicationContext applicationContext) {
@@ -91,8 +89,8 @@ public class IntegrationTestInitializer implements ApplicationContextInitializer
                 "spring.cassandra.contact-points=" +
                         scyllaDBContainer.getHost() + ":" +
                         scyllaDBContainer.getMappedPort(9042),
-                "spring.cassandra.local-datacenter=datacenter1",
-                "spring.cassandra.keyspace-name=message_keyspace",
+                "spring.cassandra.local-datacenter=" + LOCAL_DATACENTER,
+                "spring.cassandra.keyspace-name=" + MESSAGE_KEYSPACE,
                 "spring.data.redis.host=" + redisContainer.getHost(),
                 "spring.data.redis.port=" + redisContainer.getRedisPort(),
                 "user.service.url=http://localhost:" + WIREMOCK.port(),
@@ -107,5 +105,33 @@ public class IntegrationTestInitializer implements ApplicationContextInitializer
                 "logging.level.org.springframework.web.socket.messaging=DEBUG",
                 "spring.cache.type=redis"
         ).applyTo(applicationContext.getEnvironment());
+    }
+
+    private static void initializeDb() {
+        try (CqlSession session = CqlSession.builder()
+                .addContactPoint(new InetSocketAddress(scyllaDBContainer.getHost(), scyllaDBContainer.getMappedPort(9042)))
+                .withLocalDatacenter(LOCAL_DATACENTER)
+                .build()) {
+            String scyllaInitScript = loadScyllaInitScript();
+            for (String statement : scyllaInitScript.split(";")) {
+                String trimmed = statement.trim();
+                if (!trimmed.isEmpty()) {
+                    session.execute(trimmed);
+                }
+            }
+        }
+    }
+
+    private static String loadScyllaInitScript() {
+        try (var inputStream = Objects.requireNonNull(
+                IntegrationTestInitializer.class
+                        .getClassLoader()
+                        .getResourceAsStream(SCYLLA_INIT_SCRIPT),
+                "Missing classpath resource: " + SCYLLA_INIT_SCRIPT
+        )) {
+            return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to read " + SCYLLA_INIT_SCRIPT, e);
+        }
     }
 }

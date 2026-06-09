@@ -15,6 +15,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MessageFacade {
     private final MessageRepository messageRepository;
+    private final MessageDeduplicationRepository messageDeduplicationRepository;
 
     @Transactional
     public void createMessage(Message message) {
@@ -36,10 +37,9 @@ public class MessageFacade {
         messageRepository.save(message);
     }
 
-    public List<MessageDTO> getMessages(Long chatId, Instant from, Instant to, Integer limit) {
-        UUID fromUUID = UuidCreator.getTimeOrderedEpoch(from);
-        UUID toUUID = UuidCreator.getTimeOrderedEpoch(to);
-        return messageRepository.findAllByChatIdAndMessageIdBetween(chatId, fromUUID, toUUID, limit);
+    public List<MessageDTO> getMessages(Long chatId, Instant before, Integer limit) {
+        UUID beforeUUID = UuidCreator.getTimeOrderedEpoch(before);
+        return messageRepository.findAllByChatIdAndMessageIdBefore(chatId, beforeUUID, limit);
     }
 
     public Optional<Message> find(Long chatId, UUID messageId) {
@@ -50,4 +50,7 @@ public class MessageFacade {
         messageRepository.deleteByChatId(chatId);
     }
 
+    public boolean insertMessageDeduplicationIfUnique(Long senderId, UUID clientMessageId) {
+        return messageDeduplicationRepository.insertIfNotExists(senderId, clientMessageId);
+    }
 }

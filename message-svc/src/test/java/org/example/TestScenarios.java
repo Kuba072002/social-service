@@ -21,6 +21,8 @@ import org.example.domain.message.MessageState;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -134,7 +136,7 @@ class TestScenarios {
     void shouldCreateMessageWhenRequested() throws Exception {
         var senderId = RandomUtils.secure().randomLong();
         var chatId = RandomUtils.secure().randomLong();
-        MessageRequest messageRequest = new MessageRequest(chatId, randomAlphabetic(50));
+        MessageRequest messageRequest = new MessageRequest(chatId, randomAlphabetic(50), UUID.randomUUID());
         var connectedUserId = RandomUtils.secure().randomLong();
         Set<Long> participants = Set.of(connectedUserId, RandomUtils.secure().randomLong(), senderId);
         putParticipantsToCache(chatId, participants);
@@ -171,7 +173,7 @@ class TestScenarios {
         StompSession session = connectUserByStomp(connectedUserId, messageFuture);
 
         var result = restTemplate.exchange("/messages",
-                HttpMethod.PUT,
+                HttpMethod.PATCH,
                 new HttpEntity<>(messageEditRequest, getHttpHeaders(senderId)),
                 Void.class);
 
@@ -234,7 +236,11 @@ class TestScenarios {
         var chatId = RandomUtils.secure().randomLong();
         var otherUserId = RandomUtils.secure().randomLong();
         List<Message> originalMessages = IntStream.range(0, 12)
-                .mapToObj(i -> createMessage(chatId, i % 3 == 0 ? senderId : otherUserId))
+                .mapToObj(i -> createMessage(
+                        chatId,
+                        i % 3 == 0 ? senderId : otherUserId,
+                        i > 3 ? MessageState.values()[i % 3] : null)
+                )
                 .toList();
         messageRepository.saveAll(originalMessages);
         putParticipantsToCache(chatId, Set.of(otherUserId, senderId));
@@ -305,6 +311,45 @@ class TestScenarios {
         });
     }
 
+    @Test
+    void shouldNotCreateMessageWhenOneWithClientIdAlreadyExists() {
+        var senderId = RandomUtils.secure().randomLong();
+        var chatId = RandomUtils.secure().randomLong();
+        MessageRequest messageRequest = new MessageRequest(chatId, randomAlphabetic(50), UUID.randomUUID());
+        Set<Long> participants = Set.of(RandomUtils.secure().randomLong(), senderId);
+        putParticipantsToCache(chatId, participants);
+
+        var result = restTemplate.postForEntity("/messages", new HttpEntity<>(messageRequest, getHttpHeaders(senderId)), UUID.class);
+
+        assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+        assert result.getBody() != null;
+        assertThat(messageRepository.findByChatIdAndMessageId(chatId, result.getBody())).isPresent();
+
+        MessageRequest duplicatedMessageRequest = new MessageRequest(chatId, randomAlphabetic(50), messageRequest.clientMessageId());
+        var duplicatedResult = restTemplate.postForEntity("/messages", new HttpEntity<>(duplicatedMessageRequest, getHttpHeaders(senderId)), Void.class);
+        assertThat(duplicatedResult.getStatusCode().is4xxClientError()).isTrue();
+        var chatMessages = messageRepository.findAllByChatIdAndMessageIdBefore(chatId, UuidCreator.getTimeOrderedEpoch(Instant.now()), 10);
+        assertThat(chatMessages).hasSize(1);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1, 130})
+    void shouldReturn400WhenGetMessagesRequestedWithInvalidData(int limit) {
+        var senderId = RandomUtils.secure().randomLong();
+        var chatId = RandomUtils.secure().randomLong();
+        var otherUserId = RandomUtils.secure().randomLong();
+        List<Message> originalMessages = List.of(createMessage(chatId, otherUserId));
+        messageRepository.saveAll(originalMessages);
+        putParticipantsToCache(chatId, Set.of(otherUserId, senderId));
+
+        ResponseEntity<Void> result = restTemplate.exchange("/messages?chatId=" + chatId + "&limit=" + limit,
+                HttpMethod.GET,
+                new HttpEntity<>(null, getHttpHeaders(senderId)),
+                Void.class);
+
+        assertThat(result.getStatusCode().is4xxClientError()).isTrue();
+    }
+
     private void putParticipantsToCache(long chatId, Set<Long> participants) {
         Cache cache = cacheManager.getCache("chatParticipantIds");
         assertThat(cache).isNotNull();
@@ -349,12 +394,17 @@ class TestScenarios {
     }
 
     private static Message createMessage(long chatId, long senderId) {
+        return createMessage(chatId, senderId, MessageState.CREATED);
+    }
+
+    private static Message createMessage(long chatId, long senderId, MessageState state) {
         return Message.builder()
                 .messageId(UuidCreator.getTimeOrderedEpoch(Instant.now()))
                 .chatId(chatId)
                 .senderId(senderId)
                 .content(randomAlphabetic(20))
                 .timestamp(Instant.now())
+                .state(state)
                 .build();
     }
 

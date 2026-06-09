@@ -5,8 +5,7 @@ import java.time.Instant;
 public record GetMessagesCommand(
         Long userId,
         Long chatId,
-        Instant from,
-        Instant to,
+        Instant before,
         Integer limit
 ) {
 }

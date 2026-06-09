@@ -12,13 +12,12 @@ import org.example.domain.message.Message;
 import org.example.domain.message.MessageFacade;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.example.common.MessageApplicationError.FROM_GREATER_THAN_TO;
+import static org.example.common.MessageApplicationError.MESSAGE_ALREADY_EXISTS;
 import static org.example.common.MessageApplicationError.MESSAGE_NOT_FOUND;
 import static org.example.common.MessageApplicationError.SENDER_MISMATCH;
 
@@ -32,6 +31,7 @@ public class MessageCommandHandler {
 
     public UUID handle(CreateMessageCommand command) {
         var chatParticipantIds = chatAccessValidator.getParticipantsIfAllowed(command.chatId(), command.userId());
+        checkIfMessageIsUnique(command.userId(), command.clientMessageId());
 
         var message = messageMapper.toMessage(command.userId(), command.chatId(), command.content());
         messageFacade.createMessage(message);
@@ -59,9 +59,8 @@ public class MessageCommandHandler {
     }
 
     public List<MessageDTO> handle(GetMessagesCommand command) {
-        validateQueryParams(command.from(), command.to());
         chatAccessValidator.validateParticipant(command.chatId(), command.userId());
-        return messageFacade.getMessages(command.chatId(), command.from(), command.to(), command.limit());
+        return messageFacade.getMessages(command.chatId(), command.before(), command.limit());
     }
 
     private Message findMessageAndValidateSender(Long senderId, Long chatId, UUID messageId) {
@@ -73,6 +72,13 @@ public class MessageCommandHandler {
         return message;
     }
 
+    private void checkIfMessageIsUnique(Long senderId, UUID clientMessageId) {
+        boolean isUnique = messageFacade.insertMessageDeduplicationIfUnique(senderId, clientMessageId);
+        if (!isUnique) {
+            throw new ApplicationException(MESSAGE_ALREADY_EXISTS);
+        }
+    }
+
     private void notifyParticipants(Set<Long> userIds, Message message) {
         outboundMessagingService.broadcastMessageAndPublishEventAsync(
                 userIds,
@@ -80,9 +86,5 @@ public class MessageCommandHandler {
                 WsEvent.of(message),
                 MessageEvent.post(message.getChatId(), message.getTimestamp())
         );
-    }
-
-    private void validateQueryParams(Instant from, Instant to) {
-        if (from.isAfter(to)) throw new ApplicationException(FROM_GREATER_THAN_TO);
     }
 }

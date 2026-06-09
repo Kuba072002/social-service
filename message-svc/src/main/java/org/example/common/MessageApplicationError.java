@@ -15,6 +15,7 @@ public enum MessageApplicationError implements ApplicationError {
     NOT_INVOLVED_REQUESTER(BAD_REQUEST, "Requester is not involved in chat."),
     FROM_GREATER_THAN_TO(BAD_REQUEST, "From cannot be greater than to."),
     MESSAGE_NOT_FOUND(BAD_REQUEST, "Message not found."),
+    MESSAGE_ALREADY_EXISTS(BAD_REQUEST, "Message already exists."),
     SENDER_MISMATCH(BAD_REQUEST, "Sender of message mismatch.");
 
     private final HttpStatus status;

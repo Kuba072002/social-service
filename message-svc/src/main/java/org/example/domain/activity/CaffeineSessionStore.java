@@ -12,7 +12,7 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = "spring.cache.type", havingValue = "caffeine", matchIfMissing = true)
-class CaffeineStore implements SessionStore {
+class CaffeineSessionStore implements SessionStore {
     private final CacheManager cacheManager;
 
     @Override

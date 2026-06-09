@@ -11,8 +11,8 @@ import java.util.UUID;
 
 @Repository
 public interface MessageRepository extends ListCrudRepository<Message, UUID> {
-    @Query("SELECT * FROM messages WHERE chat_id = ?0 AND message_id >= ?1 AND message_id <= ?2 LIMIT ?3")
-    List<MessageDTO> findAllByChatIdAndMessageIdBetween(Long chatId, UUID from, UUID to, int limit);
+    @Query("SELECT * FROM messages WHERE chat_id = ?0 AND message_id < ?1 LIMIT ?2")
+    List<MessageDTO> findAllByChatIdAndMessageIdBefore(Long chatId, UUID before, int limit);
 
     Optional<Message> findByChatIdAndMessageId(Long chatId, UUID messageId);
 
