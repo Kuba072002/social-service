@@ -21,10 +21,10 @@ public interface ChatParticipantRepository extends JpaRepository<ChatParticipant
     List<Long> findUserIdsByChatId(@Param("chatId") Long chatId);
 
     @Query(value = """
-            SELECT c.id, c.name, c.image_url, c.is_private, c.last_message_at, cp.last_read_at
+            SELECT c.id, c.name, c.image_url, c.chat_type, c.last_message_at, cp.last_read_at
             FROM chat_schema.chat_participants cp
             JOIN chat_schema.chats c ON cp.chat_id = c.id
-            WHERE cp.user_id = ?1 AND c.is_private = 'false'
+            WHERE cp.user_id = ?1 AND c.chat_type = 'GROUP'
             ORDER BY c.last_message_at
             OFFSET ?2
             LIMIT ?3
@@ -32,7 +32,7 @@ public interface ChatParticipantRepository extends JpaRepository<ChatParticipant
     List<ChatDetail> findUserGroupChats(Long userId, int offset, int limit);
 
     @Query(value = """
-            SELECT c.id, c.is_private, c.last_message_at, cp.last_read_at,
+            SELECT c.id, c.chat_type, c.last_message_at, cp.last_read_at,
             (
                 SELECT cp2.user_id
                 FROM chat_schema.chat_participants cp2
@@ -41,7 +41,7 @@ public interface ChatParticipantRepository extends JpaRepository<ChatParticipant
             ) AS other_user_id
             FROM chat_schema.chat_participants cp
             JOIN chat_schema.chats c ON cp.chat_id = c.id
-            WHERE cp.user_id = ?1 AND c.is_private = 'true'
+            WHERE cp.user_id = ?1 AND c.chat_type = 'PRIVATE'
             ORDER BY c.last_message_at
             OFFSET ?2
             LIMIT ?3

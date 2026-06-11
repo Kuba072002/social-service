@@ -22,8 +22,8 @@ public class ChatFacade {
     private final ChatParticipantRepository chatParticipantRepository;
     private final ChatEventService chatEventService;
 
-    public boolean checkIfPrivateChatExists(Long user1Id, Long user2Id) {
-        return chatRepository.existsPrivateChat(user1Id, user2Id);
+    public boolean checkIfPrivateChatExists(String privatePairKey) {
+        return chatRepository.existsByPrivatePairKey(privatePairKey);
     }
 
     @Transactional

@@ -12,7 +12,6 @@ public enum ChatApplicationError implements ApplicationError {
     INVALID_USER_HEADER(BAD_REQUEST, "Header is missing or invalid."),
     INVALID_USERS(BAD_REQUEST, "Invalid users: %s"),
     PRIVATE_CHAT_ALREADY_EXISTS(BAD_REQUEST, "Private chat already exists."),
-    REQUEST_GROUP_VALIDATION_NOT_EXISTS(BAD_REQUEST, "Request group validation not exists."),
     REQUEST_CANNOT_CONTAIN_REQUESTER_ID(BAD_REQUEST, "Request cannot contain requester id."),
     CHAT_NOT_EXISTS(NOT_FOUND, "Chat not exists."),
     CANNOT_MODIFY_PRIVATE_CHAT(BAD_REQUEST, "Cannot modify private chat."),

@@ -3,6 +3,8 @@ package org.example.domain.chat.entity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -30,10 +32,13 @@ public class Chat {
     private Long id;
     private String name;
     private String imageUrl;
-    @Column(name = "is_private")
-    private Boolean isPrivate;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "chat_type")
+    private ChatType chatType;//change to enum
     @Column(name = "last_message_at")
     private Instant lastMessageAt;
+    @Column(name = "private_pair_key", updatable = false)
+    private String privatePairKey;
     @CreationTimestamp
     private Instant createdAt;
     @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -44,7 +49,7 @@ public class Chat {
         return "Chat{" +
                 "name='" + name + '\'' +
                 ", lastMessageAt=" + lastMessageAt +
-                ", isPrivate=" + isPrivate +
+                ", chatType=" + chatType +
                 ", imageUrl='" + imageUrl + '\'' +
                 ", id=" + id +
                 ", createdAt=" + createdAt +

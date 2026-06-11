@@ -48,6 +48,7 @@ public class IntegrationTestInitializer implements ApplicationContextInitializer
         WIREMOCK.start();
         postgresContainer.start();
         rabbitMQContainer.start();
+        System.out.println(postgresContainer.getJdbcUrl());
     }
 
     @Override
@@ -61,7 +62,7 @@ public class IntegrationTestInitializer implements ApplicationContextInitializer
                 "spring.datasource.username=test",
                 "spring.datasource.password=test",
                 "spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect",
-                "spring.jpa.hibernate.ddl-auto=create",
+                "spring.jpa.hibernate.ddl-auto=none",
                 "spring.jpa.show-sql=true",
                 "spring.jpa.defer-datasource-initialization=true",
                 "spring.sql.init.mode=always",

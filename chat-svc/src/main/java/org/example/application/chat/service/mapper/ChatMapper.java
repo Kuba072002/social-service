@@ -3,6 +3,7 @@ package org.example.application.chat.service.mapper;
 import org.example.application.chat.dto.ChatRequest;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
+import org.example.domain.chat.entity.ChatParticipantRole;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -18,7 +19,7 @@ public interface ChatMapper {
 
     default List<ChatParticipant> toChatParticipants(Set<Long> userIds, Chat chat) {
         return userIds.stream()
-                .map(id -> new ChatParticipant(chat, id))
+                .map(id -> new ChatParticipant(chat, id, ChatParticipantRole.MEMBER))
                 .collect(Collectors.toList());
     }
 }

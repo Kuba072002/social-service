@@ -14,16 +14,7 @@ import java.util.Optional;
 @Repository
 public interface ChatRepository extends JpaRepository<Chat, Long> {
 
-    @Query(value = """
-                SELECT EXISTS (
-                    SELECT 1
-                    FROM chat_schema.chat_participants cp1
-                    JOIN chat_schema.chat_participants cp2 ON cp2.chat_id = cp1.chat_id AND cp2.user_id = :user2Id
-                    JOIN chat_schema.chats c ON c.id = cp1.chat_id AND c.is_private = true
-                    WHERE cp1.user_id = :user1Id
-                )
-            """, nativeQuery = true)
-    boolean existsPrivateChat(@Param("user1Id") Long user1Id, @Param("user2Id") Long user2Id);
+    boolean existsByPrivatePairKey(@Param("privatePairKey") String privatePairKey);
 
     @EntityGraph(attributePaths = "participants")
     Optional<Chat> findWithParticipantsById(Long chatId);

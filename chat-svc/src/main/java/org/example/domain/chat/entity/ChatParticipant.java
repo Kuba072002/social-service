@@ -2,15 +2,15 @@ package org.example.domain.chat.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,10 +20,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.Instant;
 
 @Entity
-@Table(name = "chat_participants",
-        indexes = @Index(columnList = "user_id, chat_id, last_read_at"),
-        uniqueConstraints = @UniqueConstraint(columnNames = {"chat_id", "user_id"})
-)
+@Table(name = "chat_participants")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -39,7 +36,8 @@ public class ChatParticipant {
     private Long chatId;
     @Column(name = "user_id")
     private Long userId;
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private ChatParticipantRole role;
     @Column(name = "last_read_at")
     private Instant lastReadAt;
     @CreationTimestamp
@@ -51,7 +49,7 @@ public class ChatParticipant {
         this.lastReadAt = Instant.now();
     }
 
-    public ChatParticipant(Chat chat, Long userId, String role) {
+    public ChatParticipant(Chat chat, Long userId, ChatParticipantRole role) {
         this.chat = chat;
         this.userId = userId;
         this.role = role;

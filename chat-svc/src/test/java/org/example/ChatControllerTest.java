@@ -8,8 +8,8 @@ import org.example.application.chat.dto.ParticipantDTO;
 import org.example.application.chat.dto.UpdateChatReadAtRequest;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
+import org.example.domain.chat.entity.ChatType;
 import org.example.domain.chat.projection.ChatDetail;
-import org.example.domain.chat.repository.ChatParticipantRepository;
 import org.example.domain.chat.repository.ChatRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -49,8 +49,6 @@ class ChatControllerTest extends BaseIntegrationTest {
     private TestRestTemplate restTemplate;
     @Autowired
     private ChatRepository chatRepository;
-    @Autowired
-    private ChatParticipantRepository chatParticipantRepository;
 
     @ParameterizedTest
     @ValueSource(booleans = {true, false})
@@ -64,8 +62,8 @@ class ChatControllerTest extends BaseIntegrationTest {
             createChat(false, participantIds);
         }
         ChatRequest chatRequest = isPrivate
-                ? new ChatRequest(null, null, true, userIds)
-                : new ChatRequest(randomAlphabetic(12), randomAlphabetic(12), false, userIds);
+                ? new ChatRequest(null, null, ChatRequest.ChatType.PRIVATE, userIds)
+                : new ChatRequest(randomAlphabetic(12), randomAlphabetic(12), ChatRequest.ChatType.GROUP, userIds);
 
         mockGetUsers(userIds);
         var result = restTemplate.postForEntity("/chats", new HttpEntity<>(chatRequest, getHttpHeaders(senderId)), Long.class);
@@ -83,7 +81,7 @@ class ChatControllerTest extends BaseIntegrationTest {
         var senderId = RandomUtils.secure().randomLong();
         var secondUser = RandomUtils.secure().randomLong();
         var userIds = Set.of(secondUser);
-        ChatRequest chatRequest = new ChatRequest(null, null, true, userIds);
+        ChatRequest chatRequest = new ChatRequest(null, null, ChatRequest.ChatType.PRIVATE, userIds);
         Chat chat = createChat(true, List.of(senderId, secondUser));
         chatRepository.save(chat);
 
@@ -142,7 +140,7 @@ class ChatControllerTest extends BaseIntegrationTest {
                 .collect(Collectors.toMap(Chat::getId, Function.identity()));
 
         for (ChatDetail chatDetail : chatDetails) {
-            assertThat(chatDetail.getIsPrivate()).isEqualTo(isPrivate);
+            assertThat(chatDetail.getChatType()).isEqualTo(isPrivate ? ChatType.PRIVATE : ChatType.GROUP);
             assert chatDetail.getName() != null;
             if (isPrivate) {
                 assert chatDetail.getOtherUserId() != null;

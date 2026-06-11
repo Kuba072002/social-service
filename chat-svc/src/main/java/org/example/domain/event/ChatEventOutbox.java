@@ -24,7 +24,7 @@ public class ChatEventOutbox {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+    @Column(name = "payload", columnDefinition = "jsonb")
     private ChatEvent payload;
     private Long createdAt;
 

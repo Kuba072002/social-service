@@ -1,8 +1,6 @@
 package org.example.application.chat.service;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.Strings;
 import org.example.ApplicationException;
 import org.example.application.chat.dto.ModifyChatParticipantsRequest;
 import org.example.application.chat.dto.ModifyChatRequest;
@@ -10,6 +8,8 @@ import org.example.application.chat.service.mapper.ChatMapper;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
+import org.example.domain.chat.entity.ChatParticipantRole;
+import org.example.domain.chat.entity.ChatType;
 import org.example.domain.user.UserFacade;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +24,6 @@ import static org.example.common.ChatApplicationError.CHAT_PARTICIPANTS_NOT_EXIS
 import static org.example.common.ChatApplicationError.REQUEST_CANNOT_CONTAIN_REQUESTER_ID;
 import static org.example.common.ChatApplicationError.USER_DOES_NOT_BELONG_TO_CHAT;
 import static org.example.common.ChatApplicationError.USER_IS_NOT_ADMIN;
-import static org.example.common.Constants.ADMIN_ROLE;
 
 @Service
 @RequiredArgsConstructor
@@ -84,16 +83,16 @@ public class ModifyChatService {
     }
 
     private void validateIfUserIsAdmin(Long userId, Chat chat) {
-        var userIsAdmin = chat.getParticipants().stream()
-                .anyMatch(chatParticipant -> chatParticipant.getUserId().equals(userId)
-                        && Strings.CS.equals(chatParticipant.getRole(), ADMIN_ROLE));
-        if (!userIsAdmin) {
-            throw new ApplicationException(USER_IS_NOT_ADMIN);
-        }
+        chat.getParticipants().stream()
+                .filter(participant -> participant.getUserId().equals(userId))
+                .findFirst()
+                .filter(participant -> participant.getRole() == ChatParticipantRole.ADMIN
+                        || participant.getRole() == ChatParticipantRole.OWNER)
+                .orElseThrow(() -> new ApplicationException(USER_IS_NOT_ADMIN));
     }
 
     private void validateIfIsNotPrivate(Chat chat) {
-        if (BooleanUtils.isTrue(chat.getIsPrivate())) {
+        if (chat.getChatType() == ChatType.PRIVATE) {
             throw new ApplicationException(CANNOT_MODIFY_PRIVATE_CHAT);
         }
     }

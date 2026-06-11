@@ -6,6 +6,8 @@ import org.apache.commons.text.RandomStringGenerator;
 import org.example.common.JsonUtils;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
+import org.example.domain.chat.entity.ChatParticipantRole;
+import org.example.domain.chat.entity.ChatType;
 import org.example.domain.user.UserDTO;
 
 import java.time.Instant;
@@ -14,11 +16,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static org.example.common.Constants.ADMIN_ROLE;
+import java.util.stream.Stream;
 
 public class TestUtils {
     public static final String USERNAME_PREFIX = "username:";
@@ -59,7 +59,7 @@ public class TestUtils {
 
     private static Chat createChat(boolean isPrivate) {
         var builder = Chat.builder()
-                .isPrivate(isPrivate)
+                .chatType(isPrivate ? ChatType.PRIVATE : ChatType.GROUP)
                 .lastMessageAt(Instant.now().truncatedTo(ChronoUnit.MICROS));
         if (!isPrivate) {
             builder.name(randomAlphabetic(12)).imageUrl(randomAlphabetic(12));
@@ -73,14 +73,33 @@ public class TestUtils {
 
     public static Chat createChat(boolean isPrivate, Collection<Long> userIds, Long userId) {
         Chat chat = createChat(isPrivate);
-        var userMap = userIds.stream()
+        if (isPrivate) {
+            chat.setPrivatePairKey(createPrivatePairKey(userIds, userId));
+        }
+        var participants = userIds.stream()
                 .map(id -> new ChatParticipant(chat, id))
+                .peek(participant -> participant.setRole(ChatParticipantRole.MEMBER))
                 .peek(cp -> cp.setLastReadAt(
                         Instant.now().minusSeconds(cp.getUserId() % 100).truncatedTo(ChronoUnit.MICROS)))
-                .collect(Collectors.toMap(ChatParticipant::getUserId, Function.identity()));
-        if (userId != null) userMap.put(userId, new ChatParticipant(chat, userId, ADMIN_ROLE));
-        chat.setParticipants(new ArrayList<>(userMap.values()));
+                .collect(Collectors.toCollection(ArrayList::new));
+        if (userId != null) participants.add(new ChatParticipant(chat, userId, ChatParticipantRole.ADMIN));
+        chat.setParticipants(participants);
         return chat;
+    }
+
+    private static String createPrivatePairKey(Collection<Long> userIds, Long userId) {
+        Stream<Long> userIdsStream;
+        if (userIds.size() == 1 && userId != null) {
+            userIdsStream = Stream.of(userId, userIds.iterator().next());
+        } else if (userIds.size() == 2) {
+            userIdsStream = userIds.stream();
+        } else {
+            throw new IllegalArgumentException("Private chat must have exactly 2 participants");
+        }
+        return userIdsStream
+                .sorted()
+                .map(String::valueOf)
+                .collect(Collectors.joining(":"));
     }
 
     public static Set<Long> getRandomUserIds(int numberOfParticipants) {

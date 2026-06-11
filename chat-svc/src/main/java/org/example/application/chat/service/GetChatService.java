@@ -7,6 +7,7 @@ import org.example.application.chat.dto.ParticipantDTO;
 import org.example.application.chat.service.mapper.ChatResponseMapper;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.chat.entity.ChatParticipant;
+import org.example.domain.chat.entity.ChatType;
 import org.example.domain.chat.projection.ChatDetail;
 import org.example.domain.user.UserDTO;
 import org.example.domain.user.UserFacade;
@@ -50,8 +51,13 @@ public class GetChatService {
         var userIds = getUserIdsAndValidateUser(chat.getParticipants(), userId);
         var usersMap = userFacade.getUsersMap(userIds);
         var participantDTOs = chatResponseMapper.toParticipantDTOs(chat.getParticipants(), usersMap);
-        ChatDetail chatDetail = new ChatDetail(
-                chatId, chat.getName(), chat.getImageUrl(), chat.getIsPrivate(), chat.getLastMessageAt(), null);
+        ChatDetail chatDetail = ChatDetail.builder()
+                .chatId(chat.getId())
+                .name(chat.getName())
+                .imageUrl(chat.getImageUrl())
+                .chatType(chat.getChatType())
+                .lastMessageAt(chat.getLastMessageAt())
+                .build();
         chatDetail.setParticipants(participantDTOs);
 
         chat.getParticipants().stream()
@@ -60,7 +66,7 @@ public class GetChatService {
                 .map(ChatParticipant::getLastReadAt)
                 .ifPresent(chatDetail::setLastReadAt);
 
-        if (BooleanUtils.isTrue(chat.getIsPrivate())) {
+        if (chat.getChatType() == ChatType.PRIVATE) {
             chat.getParticipants().stream()
                     .map(ChatParticipant::getUserId)
                     .filter(id -> !id.equals(userId))
