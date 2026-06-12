@@ -274,7 +274,6 @@ class ChatControllerTest extends BaseIntegrationTest {
         Chat chat = createChat(isPrivate, userIds, senderId);
         chatRepository.save(chat);
 
-        userIds.add(senderId);
         mockGetUsers(userIds);
         ResponseEntity<ChatDetail> result = restTemplate.exchange(
                 "/chats/" + chat.getId(),
@@ -295,7 +294,7 @@ class ChatControllerTest extends BaseIntegrationTest {
         assertThat(result.getBody().getLastReadAt()).isNotNull();
         assertThat(result.getBody().getParticipants())
                 .isNotNull()
-                .hasSize(numberOfParticipants + 1)
+                .hasSize(numberOfParticipants)
                 .extracting(ParticipantDTO::userId)
                 .containsExactlyInAnyOrderElementsOf(userIds);
     }
@@ -308,7 +307,6 @@ class ChatControllerTest extends BaseIntegrationTest {
         Chat chat = createChat(false, userIds, senderId);
         chatRepository.save(chat);
 
-        userIds.add(senderId);
         mockGetUsers(userIds);
         ResponseEntity<List<ParticipantDTO>> result = restTemplate.exchange(
                 "/chats/" + chat.getId() + "/participants",
@@ -319,7 +317,7 @@ class ChatControllerTest extends BaseIntegrationTest {
 
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
         assertThat(result.getBody()).isNotNull()
-                .hasSize(numberOfParticipants + 1)
+                .hasSize(numberOfParticipants)
                 .extracting(ParticipantDTO::userId)
                 .containsExactlyInAnyOrderElementsOf(userIds);
     }

@@ -9,13 +9,13 @@ import org.example.domain.chat.ChatFacade;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.entity.ChatType;
 import org.example.domain.chat.projection.ChatDetail;
-import org.example.domain.user.UserDTO;
 import org.example.domain.user.UserFacade;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.example.common.ChatApplicationError.CHAT_NOT_EXISTS;
@@ -43,35 +43,17 @@ public class GetChatService {
     public ChatDetail getChat(Long userId, Long chatId) {
         var chat = chatFacade.findChatWithParticipants(chatId)
                 .orElseThrow(() -> new ApplicationException(CHAT_NOT_EXISTS));
-        var userIds = getUserIdsAndValidateUser(chat.getParticipants(), userId);
-        var usersMap = userFacade.getUsersMap(userIds);
-        var participantDTOs = chatResponseMapper.toParticipantDTOs(chat.getParticipants(), usersMap);
-        ChatDetail chatDetail = ChatDetail.builder()
-                .chatId(chat.getId())
-                .name(chat.getName())
-                .imageUrl(chat.getImageUrl())
-                .chatType(chat.getChatType())
-                .lastMessageAt(chat.getLastMessageAt())
-                .build();
-        chatDetail.setParticipants(participantDTOs);
-
-        chat.getParticipants().stream()
-                .filter(participant -> participant.getUserId().equals(userId))
-                .findFirst()
-                .map(ChatParticipant::getLastReadAt)
-                .ifPresent(chatDetail::setLastReadAt);
+        var participantsMap = getParticipantMapAndValidateUser(userId, chat.getParticipants());
+        var senderParticipant = participantsMap.remove(userId);
+        var usersMap = userFacade.getUsersMap(participantsMap.keySet());
+        var participantDTOs = chatResponseMapper.toParticipantDTOs(participantsMap.values(), usersMap);
+        ChatDetail chatDetail = chatResponseMapper.toChatDetail(chat, senderParticipant, participantDTOs);
 
         if (chat.getChatType() == ChatType.PRIVATE) {
-            chat.getParticipants().stream()
-                    .map(ChatParticipant::getUserId)
-                    .filter(id -> !id.equals(userId))
-                    .findFirst()
-                    .ifPresent(otherParticipantId -> {
-                        chatDetail.setOtherUserId(otherParticipantId);
-                        UserDTO otherUser = usersMap.get(otherParticipantId);
-                        chatDetail.setName(otherUser.userName());
-                        chatDetail.setImageUrl(otherUser.imageUrl());
-                    });
+            var otherParticipant = participantDTOs.getFirst();
+            chatDetail.setOtherUserId(otherParticipant.userId());
+            chatDetail.setName(otherParticipant.userName());
+            chatDetail.setImageUrl(otherParticipant.imageUrl());
         }
         return chatDetail;
     }
@@ -81,9 +63,10 @@ public class GetChatService {
         if (participants.isEmpty()) {
             throw new ApplicationException(CHAT_NOT_EXISTS);
         }
-        var userIds = getUserIdsAndValidateUser(participants, userId);
-        var usersMap = userFacade.getUsersMap(userIds);
-        return chatResponseMapper.toParticipantDTOs(participants, usersMap);
+        var participantsMap = getParticipantMapAndValidateUser(userId, participants);
+        participantsMap.remove(userId);
+        var usersMap = userFacade.getUsersMap(participantsMap.keySet());
+        return chatResponseMapper.toParticipantDTOs(participantsMap.values(), usersMap);
     }
 
     public List<Long> getChatParticipantsIds(Long chatId) {
@@ -92,16 +75,6 @@ public class GetChatService {
             throw new ApplicationException(CHAT_NOT_EXISTS);
         }
         return participantIds;
-    }
-
-    private Set<Long> getUserIdsAndValidateUser(List<ChatParticipant> participants, Long userId) {
-        var userIds = participants.stream()
-                .map(ChatParticipant::getUserId)
-                .collect(Collectors.toSet());
-        if (!userIds.contains(userId)) {
-            throw new ApplicationException(USER_DOES_NOT_BELONG_TO_CHAT);
-        }
-        return userIds;
     }
 
     private List<ChatDetail> enrichPrivateChats(List<ChatDetail> chatDetails) {
@@ -122,5 +95,16 @@ public class GetChatService {
                     chatDetail.setImageUrl(userDTO.imageUrl());
                 });
         return chatDetails;
+    }
+
+    private static Map<Long, ChatParticipant> getParticipantMapAndValidateUser(
+            Long userId, List<ChatParticipant> participants
+    ) {
+        var participantsMap = participants.stream()
+                .collect(Collectors.toMap(ChatParticipant::getUserId, Function.identity()));
+        if (!participantsMap.containsKey(userId)) {
+            throw new ApplicationException(USER_DOES_NOT_BELONG_TO_CHAT);
+        }
+        return participantsMap;
     }
 }
