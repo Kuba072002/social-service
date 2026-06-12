@@ -4,6 +4,7 @@ import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
 import org.example.application.chat.dto.ChatRequest;
+import org.example.application.chat.dto.ChatTypeDTO;
 import org.example.application.chat.service.mapper.ChatMapper;
 import org.example.domain.chat.ChatFacade;
 import org.example.domain.chat.entity.Chat;
@@ -27,9 +28,9 @@ public class CreateChatService {
     private final Validator validator;
     private final ChatFacade chatFacade;
     private final ChatMapper chatMapper;
-    private final Map<ChatRequest.ChatType, Class<?>> validationGroups = Map.of(
-            ChatRequest.ChatType.PRIVATE, ChatRequest.PrivateChatGroup.class,
-            ChatRequest.ChatType.GROUP, ChatRequest.GroupChatGroup.class
+    private final Map<ChatTypeDTO, Class<?>> validationGroups = Map.of(
+            ChatTypeDTO.PRIVATE, ChatRequest.PrivateChatGroup.class,
+            ChatTypeDTO.GROUP, ChatRequest.GroupChatGroup.class
     );
 
     public Long create(Long userId, ChatRequest chatRequest) {
@@ -42,7 +43,7 @@ public class CreateChatService {
     private Chat prepareChatWithParticipants(Long userId, ChatRequest chatRequest) {
         var chat = chatMapper.toChat(chatRequest);
         var chatParticipants = chatMapper.toChatParticipants(chatRequest.userIds(), chat);
-        if (chatRequest.chatType() == ChatRequest.ChatType.PRIVATE) {
+        if (chatRequest.chatType() == ChatTypeDTO.PRIVATE) {
             chatParticipants.getFirst().setRole(ChatParticipantRole.ADMIN);
             chat.setPrivatePairKey(getPrivatePairKey(userId, chatRequest.userIds().iterator().next()));
         }
@@ -54,7 +55,7 @@ public class CreateChatService {
     private void validate(Long userId, ChatRequest chatRequest) {
         validateRequest(userId, chatRequest);
         userFacade.getAndValidateUsers(chatRequest.userIds());
-        if (chatRequest.chatType() == ChatRequest.ChatType.PRIVATE) {
+        if (chatRequest.chatType() == ChatTypeDTO.PRIVATE) {
             validateIfPrivateChatAlreadyExists(userId, chatRequest.userIds().iterator().next());
         }
     }

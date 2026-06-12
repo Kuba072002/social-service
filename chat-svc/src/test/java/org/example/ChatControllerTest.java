@@ -1,7 +1,9 @@
 package org.example;
 
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.example.application.chat.dto.ChatRequest;
+import org.example.application.chat.dto.ChatTypeDTO;
 import org.example.application.chat.dto.ModifyChatParticipantsRequest;
 import org.example.application.chat.dto.ModifyChatRequest;
 import org.example.application.chat.dto.ParticipantDTO;
@@ -13,6 +15,8 @@ import org.example.domain.chat.projection.ChatDetail;
 import org.example.domain.chat.repository.ChatRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,19 +55,19 @@ class ChatControllerTest extends BaseIntegrationTest {
     private ChatRepository chatRepository;
 
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void shouldCreateChatWhenRequested(boolean isPrivate) {
-        int numberOfParticipants = isPrivate ? 1 : 3;
+    @EnumSource(names = {"PRIVATE", "GROUP"})
+    void shouldCreateChatWhenRequested(ChatTypeDTO chatType) {
+        int numberOfParticipants = chatType == ChatTypeDTO.PRIVATE ? 1 : 3;
         var userIds = getRandomUserIds(numberOfParticipants);
         var senderId = RandomUtils.secure().randomLong();
-        if (isPrivate) { // for test existsPrivateChat query
+        if (chatType == ChatTypeDTO.PRIVATE) { // for test existsPrivateChat query
             var participantIds = new HashSet<>(userIds);
             participantIds.add(senderId);
             createChat(false, participantIds);
         }
-        ChatRequest chatRequest = isPrivate
-                ? new ChatRequest(null, null, ChatRequest.ChatType.PRIVATE, userIds)
-                : new ChatRequest(randomAlphabetic(12), randomAlphabetic(12), ChatRequest.ChatType.GROUP, userIds);
+        ChatRequest chatRequest = chatType == ChatTypeDTO.PRIVATE
+                ? new ChatRequest(null, null, ChatTypeDTO.PRIVATE, userIds)
+                : new ChatRequest(randomAlphabetic(12), randomAlphabetic(12), ChatTypeDTO.GROUP, userIds);
 
         mockGetUsers(userIds);
         var result = restTemplate.postForEntity("/chats", new HttpEntity<>(chatRequest, getHttpHeaders(senderId)), Long.class);
@@ -81,7 +85,7 @@ class ChatControllerTest extends BaseIntegrationTest {
         var senderId = RandomUtils.secure().randomLong();
         var secondUser = RandomUtils.secure().randomLong();
         var userIds = Set.of(secondUser);
-        ChatRequest chatRequest = new ChatRequest(null, null, ChatRequest.ChatType.PRIVATE, userIds);
+        ChatRequest chatRequest = new ChatRequest(null, null, ChatTypeDTO.PRIVATE, userIds);
         Chat chat = createChat(true, List.of(senderId, secondUser));
         chatRepository.save(chat);
 
@@ -94,8 +98,9 @@ class ChatControllerTest extends BaseIntegrationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {true, false})
-    void shouldReturnUserChatsWhenRequested(boolean isPrivate) {
+    @EnumSource(names = {"PRIVATE", "GROUP"})
+    @NullSource
+    void shouldReturnUserChatsWhenRequested(ChatTypeDTO chatType) {
         int numberOfGroupChats = 4;
         int numberOfPrivateChats = 5;
         Long senderId = RandomUtils.secure().randomLong();
@@ -112,7 +117,7 @@ class ChatControllerTest extends BaseIntegrationTest {
                 .mapToObj(i -> createChat(true, List.of(senderId, RandomUtils.secure().randomLong())))
                 .toList();
         chatRepository.saveAll(privateChats);
-        if (isPrivate) {
+        if (chatType != ChatTypeDTO.GROUP) {
             var userIdsToFetch = privateChats.stream()
                     .map(Chat::getParticipants)
                     .flatMap(Collection::stream)
@@ -122,13 +127,19 @@ class ChatControllerTest extends BaseIntegrationTest {
             mockGetUsers(userIdsToFetch);
         }
 
-        ResponseEntity<List<ChatDetail>> result = restTemplate.exchange("/chats?isPrivate=" + isPrivate,
+        String url = chatType != null ? "/chats?chatType=" + chatType.name().toLowerCase() : "/chats";
+        ResponseEntity<List<ChatDetail>> result = restTemplate.exchange(
+                url,
                 HttpMethod.GET,
                 new HttpEntity<>(null, getHttpHeaders(senderId)),
                 new ParameterizedTypeReference<>() {
                 });
 
-        var expectedChatsInResponse = isPrivate ? privateChats : groupChats;
+        var expectedChatsInResponse = switch (chatType) {
+            case PRIVATE -> privateChats;
+            case GROUP -> groupChats;
+            case null -> ListUtils.union(privateChats, groupChats);
+        };
 
         assert result.getBody() != null;
         var chatDetails = result.getBody();
@@ -140,9 +151,9 @@ class ChatControllerTest extends BaseIntegrationTest {
                 .collect(Collectors.toMap(Chat::getId, Function.identity()));
 
         for (ChatDetail chatDetail : chatDetails) {
-            assertThat(chatDetail.getChatType()).isEqualTo(isPrivate ? ChatType.PRIVATE : ChatType.GROUP);
             assert chatDetail.getName() != null;
-            if (isPrivate) {
+            if (chatType == ChatTypeDTO.PRIVATE) {
+                assertThat(chatDetail.getChatType()).isEqualTo(ChatType.PRIVATE);
                 assert chatDetail.getOtherUserId() != null;
                 var otherUserId = chatMap.get(chatDetail.getChatId())
                         .getParticipants()
@@ -154,7 +165,8 @@ class ChatControllerTest extends BaseIntegrationTest {
                 assertThat(chatDetail.getOtherUserId()).isEqualTo(otherUserId);
                 assertThat(chatDetail.getName()).startsWith(TestUtils.USERNAME_PREFIX);
                 assertThat(chatDetail.getImageUrl()).startsWith(TestUtils.URL_PREFIX);
-            } else {
+            } else if (chatType == ChatTypeDTO.GROUP) {
+                assertThat(chatDetail.getChatType()).isEqualTo(ChatType.GROUP);
                 assert chatDetail.getOtherUserId() == null;
                 var chat = chatMap.get(chatDetail.getChatId());
                 assertThat(chatDetail.getName()).isEqualTo(chat.getName());

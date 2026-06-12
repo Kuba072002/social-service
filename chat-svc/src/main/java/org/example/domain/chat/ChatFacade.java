@@ -67,6 +67,11 @@ public class ChatFacade {
         return chatParticipantRepository.findUserPrivateChats(userId, offset, pageSize);
     }
 
+    public List<ChatDetail> findUserChatDetails(Long userId, Integer pageNumber, Integer pageSize) {
+        int offset = (pageNumber - 1) * pageSize;
+        return chatParticipantRepository.findUserChats(userId, offset, pageSize);
+    }
+
     @Transactional
     public int updateLastMessageAt(Long chatId, Instant lastMessageAt) {
         return chatRepository.updateLastMessageAt(chatId, lastMessageAt);

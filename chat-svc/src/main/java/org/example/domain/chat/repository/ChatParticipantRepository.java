@@ -48,6 +48,26 @@ public interface ChatParticipantRepository extends JpaRepository<ChatParticipant
             """, nativeQuery = true)
     List<ChatDetail> findUserPrivateChats(Long userId, int offset, int limit);
 
+    @Query(value = """
+            SELECT c.id, c.name, c.image_url, c.chat_type, c.last_message_at, cp.last_read_at,
+            CASE
+                WHEN c.chat_type = 'PRIVATE' THEN (
+                    SELECT cp2.user_id
+                    FROM chat_schema.chat_participants cp2
+                    WHERE cp2.chat_id = c.id AND cp2.user_id != ?1
+                    LIMIT 1
+                )
+                ELSE NULL
+            END AS other_user_id
+            FROM chat_schema.chat_participants cp
+            JOIN chat_schema.chats c ON cp.chat_id = c.id
+            WHERE cp.user_id = ?1
+            ORDER BY c.last_message_at
+            OFFSET ?2
+            LIMIT ?3
+            """, nativeQuery = true)
+    List<ChatDetail> findUserChats(Long userId, int offset, int limit);
+
     Optional<ChatParticipant> findByChatIdAndUserId(Long chatId, Long userId);
 
     @Modifying

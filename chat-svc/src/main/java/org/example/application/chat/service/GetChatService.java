@@ -1,8 +1,8 @@
 package org.example.application.chat.service;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.BooleanUtils;
 import org.example.ApplicationException;
+import org.example.application.chat.dto.ChatTypeDTO;
 import org.example.application.chat.dto.ParticipantDTO;
 import org.example.application.chat.service.mapper.ChatResponseMapper;
 import org.example.domain.chat.ChatFacade;
@@ -14,6 +14,7 @@ import org.example.domain.user.UserFacade;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -27,22 +28,16 @@ public class GetChatService {
     private final UserFacade userFacade;
     private final ChatResponseMapper chatResponseMapper;
 
-    public List<ChatDetail> getChats(Long userId, Boolean isPrivate, Integer pageNumber, Integer pageSize) {
-        if (BooleanUtils.isTrue(isPrivate)) {
+    public List<ChatDetail> getChats(Long userId, ChatTypeDTO chatType, Integer pageNumber, Integer pageSize) {
+        if (chatType == ChatTypeDTO.PRIVATE) {
             var chatDetails = chatFacade.findUserPrivateChatDetails(userId, pageNumber, pageSize);
-            var userIds = chatDetails.stream()
-                    .map(ChatDetail::getOtherUserId)
-                    .collect(Collectors.toSet());
-            var usersMap = userFacade.getUsersMap(userIds);
-            chatDetails.forEach(chatDetail -> {
-                var userDTO = usersMap.get(chatDetail.getOtherUserId());
-                chatDetail.setName(userDTO.userName());
-                chatDetail.setImageUrl(userDTO.imageUrl());
-            });
-            return chatDetails;
-        } else {
+            return enrichPrivateChats(chatDetails);
+        }
+        if (chatType == ChatTypeDTO.GROUP) {
             return chatFacade.findUserGroupChatDetails(userId, pageNumber, pageSize);
         }
+        var chatDetails = chatFacade.findUserChatDetails(userId, pageNumber, pageSize);
+        return enrichPrivateChats(chatDetails);
     }
 
     public ChatDetail getChat(Long userId, Long chatId) {
@@ -107,5 +102,25 @@ public class GetChatService {
             throw new ApplicationException(USER_DOES_NOT_BELONG_TO_CHAT);
         }
         return userIds;
+    }
+
+    private List<ChatDetail> enrichPrivateChats(List<ChatDetail> chatDetails) {
+        var userIds = chatDetails.stream()
+                .filter(chatDetail -> chatDetail.getChatType() == ChatType.PRIVATE)
+                .map(ChatDetail::getOtherUserId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (userIds.isEmpty()) {
+            return chatDetails;
+        }
+        var usersMap = userFacade.getUsersMap(userIds);
+        chatDetails.stream()
+                .filter(chatDetail -> chatDetail.getChatType() == ChatType.PRIVATE)
+                .forEach(chatDetail -> {
+                    var userDTO = usersMap.get(chatDetail.getOtherUserId());
+                    chatDetail.setName(userDTO.userName());
+                    chatDetail.setImageUrl(userDTO.imageUrl());
+                });
+        return chatDetails;
     }
 }

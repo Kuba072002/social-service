@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.example.application.chat.dto.ChatRequest;
+import org.example.application.chat.dto.ChatTypeDTO;
 import org.example.application.chat.dto.ModifyChatParticipantsRequest;
 import org.example.application.chat.dto.ModifyChatRequest;
 import org.example.application.chat.dto.ParticipantDTO;
@@ -82,11 +83,11 @@ public class ChatController {
     @GetMapping("/chats")
     public ResponseEntity<List<ChatDetail>> getUserChats(
             @RequestHeader(USER_ID_HEADER) Long userId,
-            @RequestParam(required = false) Boolean isPrivate,
+            @RequestParam(required = false) ChatTypeDTO chatType,
             @RequestParam(required = false, defaultValue = "1") @Min(1) Integer pageNumber,
             @RequestParam(required = false, defaultValue = "${default.chat.page.size}") @Min(1) Integer pageSize
     ) {
-        return ResponseEntity.ok(getChatService.getChats(userId, isPrivate, pageNumber, pageSize));
+        return ResponseEntity.ok(getChatService.getChats(userId, chatType, pageNumber, pageSize));
     }
 
     @GetMapping("/chats/{chatId}")

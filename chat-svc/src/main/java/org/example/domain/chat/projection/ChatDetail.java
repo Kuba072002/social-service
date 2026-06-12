@@ -57,4 +57,14 @@ public class ChatDetail {
         this.lastReadAt = lastReadAt;
     }
 
+    public ChatDetail(
+            Long chatId, String name,
+            String imageUrl, String chatType,
+            Instant lastMessageAt, Instant lastReadAt,
+            Long otherUserId
+    ) {
+        this(chatId, name, imageUrl, chatType, lastMessageAt, lastReadAt);
+        this.otherUserId = otherUserId;
+    }
+
 }

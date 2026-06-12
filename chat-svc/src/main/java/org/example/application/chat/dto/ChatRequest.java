@@ -14,7 +14,7 @@ public record ChatRequest(
         String name,
         String imageUrl,
         @NotNull
-        ChatType chatType,
+        ChatTypeDTO chatType,
         @NotEmpty
         @Size(max = 20, groups = GroupChatGroup.class)
         @Size(max = 1, groups = PrivateChatGroup.class)
@@ -24,9 +24,5 @@ public record ChatRequest(
     }
 
     public interface GroupChatGroup {
-    }
-
-    public enum ChatType {
-        PRIVATE, GROUP
     }
 }
