@@ -16,6 +16,8 @@ public enum ChatApplicationError implements ApplicationError {
     CHAT_NOT_EXISTS(NOT_FOUND, "Chat not exists."),
     CANNOT_MODIFY_PRIVATE_CHAT(BAD_REQUEST, "Cannot modify private chat."),
     USER_IS_NOT_ADMIN(BAD_REQUEST, "User is not admin."),
+    NO_PARTICIPANTS_LEFT_WITH_ADMIN_ROLE(BAD_REQUEST, "No participants left with admin role."),
+    CANNOT_MODIFY_OWNER_ROLE(BAD_REQUEST, "Cannot modify owner role."),
     CHAT_PARTICIPANTS_ALREADY_EXISTS(BAD_REQUEST, "Chat participants already exists."),
     CHAT_PARTICIPANTS_NOT_EXISTS(BAD_REQUEST, "Chat participants not exists."),
     USER_DOES_NOT_BELONG_TO_CHAT(BAD_REQUEST, "User does not belong to chat.");

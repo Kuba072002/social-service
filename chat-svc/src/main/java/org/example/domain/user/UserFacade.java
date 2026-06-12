@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.isNull;
 import static org.example.common.ChatApplicationError.INVALID_USERS;
 
 @Component
@@ -19,12 +18,7 @@ import static org.example.common.ChatApplicationError.INVALID_USERS;
 public class UserFacade {
     private final UserService userService;
 
-    public void validateUser(Long userId) {
-        if (isNull(userId)) return;
-        userService.getUser(userId);
-    }
-
-    public Set<UserDTO> getAndValidateUsers(Set<Long> userIds) {
+    public Set<UserDTO> validateUsers(Set<Long> userIds) {
         if (CollectionUtils.isEmpty(userIds)) {
             return Collections.emptySet();
         }
@@ -37,7 +31,7 @@ public class UserFacade {
         if (CollectionUtils.isEmpty(userIds)) {
             return Collections.emptyMap();
         }
-        return getAndValidateUsers(userIds).stream()
+        return validateUsers(userIds).stream()
                 .collect(Collectors.toMap(UserDTO::id, Function.identity()));
     }
 

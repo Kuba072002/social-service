@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.example.application.chat.dto.ChatRequest;
 import org.example.application.chat.dto.ChatTypeDTO;
+import org.example.application.chat.dto.ModifyChatParticipantRole;
 import org.example.application.chat.dto.ModifyChatParticipantsRequest;
 import org.example.application.chat.dto.ModifyChatRequest;
 import org.example.application.chat.dto.ParticipantDTO;
@@ -68,6 +69,16 @@ public class ChatController {
             @RequestBody @Valid ModifyChatParticipantsRequest modifyChatParticipantsRequest
     ) {
         modifyChatService.modifyChatParticipants(userId, chatId, modifyChatParticipantsRequest);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/chats/{chatId}/participants/role")
+    public ResponseEntity<Void> modifyChatParticipantRole(
+            @RequestHeader(USER_ID_HEADER) Long userId,
+            @PathVariable Long chatId,
+            @RequestBody @Valid ModifyChatParticipantRole modifyChatParticipantRole
+    ) {
+        modifyChatService.modifyChatParticipantRole(userId, chatId, modifyChatParticipantRole);
         return ResponseEntity.ok().build();
     }
 

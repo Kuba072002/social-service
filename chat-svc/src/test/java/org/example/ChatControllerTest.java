@@ -2,14 +2,17 @@ package org.example;
 
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.example.application.chat.dto.ChatParticipantRoleDTO;
 import org.example.application.chat.dto.ChatRequest;
 import org.example.application.chat.dto.ChatTypeDTO;
+import org.example.application.chat.dto.ModifyChatParticipantRole;
 import org.example.application.chat.dto.ModifyChatParticipantsRequest;
 import org.example.application.chat.dto.ModifyChatRequest;
 import org.example.application.chat.dto.ParticipantDTO;
 import org.example.application.chat.dto.UpdateChatReadAtRequest;
 import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
+import org.example.domain.chat.entity.ChatParticipantRole;
 import org.example.domain.chat.entity.ChatType;
 import org.example.domain.chat.projection.ChatDetail;
 import org.example.domain.chat.repository.ChatRepository;
@@ -244,6 +247,32 @@ class ChatControllerTest extends BaseIntegrationTest {
                 .containsAll(request.userIdsToAdd())
                 .doesNotContainAnyElementsOf(request.userIdsToDelete())
                 .containsAll(userIdsToStay);
+    }
+
+    @ParameterizedTest
+    @EnumSource(ChatParticipantRoleDTO.class)
+    void shouldChangeChatParticipantRoleWhenRequested(ChatParticipantRoleDTO chatParticipantRoleDTO) {
+        Long senderId = RandomUtils.secure().randomLong();
+        Long participantId = RandomUtils.secure().randomLong();
+        Chat chat = createChat(false, List.of(participantId), senderId);
+        chatRepository.save(chat);
+
+        var request = new ModifyChatParticipantRole(participantId, chatParticipantRoleDTO);
+        ResponseEntity<Void> result = restTemplate.exchange(
+                "/chats/" + chat.getId() + "/participants/role",
+                HttpMethod.PATCH,
+                new HttpEntity<>(request, getHttpHeaders(senderId)),
+                Void.class
+        );
+
+        assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+        var savedChat = chatRepository.findWithParticipantsById(chat.getId()).orElseThrow();
+        assertThat(savedChat.getParticipants())
+                .filteredOn(participant -> participant.getUserId().equals(participantId))
+                .singleElement()
+                .extracting(ChatParticipant::getRole)
+                .extracting(ChatParticipantRole::name)
+                .isEqualTo(chatParticipantRoleDTO.name());
     }
 
     @Test

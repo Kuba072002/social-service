@@ -2,6 +2,7 @@ package org.example.application.chat.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
+import org.example.application.chat.dto.ModifyChatParticipantRole;
 import org.example.application.chat.dto.ModifyChatParticipantsRequest;
 import org.example.application.chat.dto.ModifyChatRequest;
 import org.example.application.chat.service.mapper.ChatMapper;
@@ -17,6 +18,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.example.common.ChatApplicationError.CANNOT_MODIFY_OWNER_ROLE;
 import static org.example.common.ChatApplicationError.CANNOT_MODIFY_PRIVATE_CHAT;
 import static org.example.common.ChatApplicationError.CHAT_NOT_EXISTS;
 import static org.example.common.ChatApplicationError.CHAT_PARTICIPANTS_ALREADY_EXISTS;
@@ -67,6 +69,26 @@ public class ModifyChatService {
         chatFacade.save(chat);
     }
 
+    public void modifyChatParticipantRole(
+            Long userId, Long chatId, ModifyChatParticipantRole modifyChatParticipantRole
+    ) {
+        var chat = chatFacade.findChatWithParticipants(chatId)
+                .orElseThrow(() -> new ApplicationException(CHAT_NOT_EXISTS));
+        validateIfIsNotPrivate(chat);
+        validateIfUserIsAdmin(userId, chat);
+        var modifiedParticipant = chat.getParticipants().stream()
+                .filter(participant ->
+                        participant.getUserId().equals(modifyChatParticipantRole.userId()))
+                .findFirst()
+                .orElseThrow(() -> new ApplicationException(USER_DOES_NOT_BELONG_TO_CHAT));
+        if (modifiedParticipant.getRole() == ChatParticipantRole.OWNER) {
+            throw new ApplicationException(CANNOT_MODIFY_OWNER_ROLE);
+        }
+        modifiedParticipant.setRole(
+                ChatParticipantRole.valueOf(modifyChatParticipantRole.role().name()));
+        chatFacade.save(modifiedParticipant);
+    }
+
     private void validateRequestedParticipants(ModifyChatParticipantsRequest modifyRequest, List<ChatParticipant> chatParticipants) {
         var existedParticipantIds = chatParticipants.stream()
                 .map(ChatParticipant::getUserId)
@@ -79,7 +101,7 @@ public class ModifyChatService {
         if (!existedParticipantIds.containsAll(modifyRequest.userIdsToDelete())) {
             throw new ApplicationException(CHAT_PARTICIPANTS_NOT_EXISTS);
         }
-        userFacade.getAndValidateUsers(modifyRequest.userIdsToAdd());
+        userFacade.validateUsers(modifyRequest.userIdsToAdd());
     }
 
     private void validateIfUserIsAdmin(Long userId, Chat chat) {
