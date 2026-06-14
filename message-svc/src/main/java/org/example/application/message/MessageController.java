@@ -5,14 +5,17 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.RequiredArgsConstructor;
+import org.example.application.dto.LatestChatMessagesDTO;
 import org.example.application.dto.MessageDTO;
 import org.example.application.dto.MessageEditRequest;
 import org.example.application.dto.MessageRequest;
 import org.example.application.message.command.CreateMessageCommand;
 import org.example.application.message.command.DeleteMessageCommand;
 import org.example.application.message.command.EditMessageCommand;
-import org.example.application.message.command.GetMessagesCommand;
+import org.example.application.message.command.GetMessagesForChatsQuery;
+import org.example.application.message.command.GetMessagesQuery;
 import org.example.application.message.command.MessageCommandHandler;
+import org.example.application.message.command.MessageQueryHandler;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -28,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.example.common.Constants.USER_ID_HEADER;
@@ -39,6 +43,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 @Validated
 public class MessageController {
     private final MessageCommandHandler messageCommandHandler;
+    private final MessageQueryHandler messageQueryHandler;
 
     @PostMapping(value = "/messages", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UUID> createMessage(
@@ -59,8 +64,8 @@ public class MessageController {
             @RequestParam(required = false, defaultValue = "${message.query.default.limit}") @Min(1) @Max(100) Integer limit
     ) {
         before = before == null ? Instant.now() : before;
-        var command = new GetMessagesCommand(senderId, chatId, before, limit);
-        return ResponseEntity.ok(messageCommandHandler.handle(command));
+        var command = new GetMessagesQuery(senderId, chatId, before, limit);
+        return ResponseEntity.ok(messageQueryHandler.handle(command));
     }
 
     @PatchMapping("/messages")
@@ -83,5 +88,14 @@ public class MessageController {
         var command = new DeleteMessageCommand(senderId, chatId, messageId);
         messageCommandHandler.handle(command);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/internal/messages")
+    public ResponseEntity<List<LatestChatMessagesDTO>> getLatestMessagesInternal(
+            @RequestParam Set<Long> chatIds,
+            @RequestParam(required = false, defaultValue = "1") @Min(1) @Max(20) Integer limit
+    ) {
+        var command = new GetMessagesForChatsQuery(chatIds, limit);
+        return ResponseEntity.ok(messageQueryHandler.handle(command));
     }
 }

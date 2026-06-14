@@ -23,7 +23,7 @@ import static org.example.common.ChatApplicationError.REQUEST_CANNOT_CONTAIN_REQ
 
 @Service
 @RequiredArgsConstructor
-public class CreateChatService {
+class CreateChatService {
     private final UserFacade userFacade;
     private final Validator validator;
     private final ChatFacade chatFacade;

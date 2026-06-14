@@ -17,7 +17,7 @@ import static org.example.common.ChatApplicationError.USER_IS_NOT_ADMIN;
 
 @Service
 @RequiredArgsConstructor
-public class DeleteChatService {
+class DeleteChatService {
     private final ChatFacade chatFacade;
 
     public void delete(Long userId, Long chatId) {

@@ -3,7 +3,6 @@ package org.example.application.message.command;
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
 import org.example.application.chat.ChatAccessValidator;
-import org.example.application.dto.MessageDTO;
 import org.example.application.dto.WsEvent;
 import org.example.application.event.MessageEvent;
 import org.example.application.event.OutboundMessagingService;
@@ -12,7 +11,6 @@ import org.example.domain.message.Message;
 import org.example.domain.message.MessageFacade;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -56,11 +54,6 @@ public class MessageCommandHandler {
         messageFacade.deleteMessage(message);
 
         notifyParticipants(chatParticipantIds, message);
-    }
-
-    public List<MessageDTO> handle(GetMessagesCommand command) {
-        chatAccessValidator.validateParticipant(command.chatId(), command.userId());
-        return messageFacade.getMessages(command.chatId(), command.before(), command.limit());
     }
 
     private Message findMessageAndValidateSender(Long senderId, Long chatId, UUID messageId) {

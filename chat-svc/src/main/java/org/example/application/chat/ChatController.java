@@ -10,10 +10,8 @@ import org.example.application.chat.dto.ModifyChatParticipantsRequest;
 import org.example.application.chat.dto.ModifyChatRequest;
 import org.example.application.chat.dto.ParticipantDTO;
 import org.example.application.chat.dto.UpdateChatReadAtRequest;
-import org.example.application.chat.service.CreateChatService;
-import org.example.application.chat.service.DeleteChatService;
-import org.example.application.chat.service.GetChatService;
-import org.example.application.chat.service.ModifyChatService;
+import org.example.application.chat.service.ChatCommandFacade;
+import org.example.application.chat.service.ChatQueryFacade;
 import org.example.domain.chat.projection.ChatDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -38,10 +36,8 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RequiredArgsConstructor
 @Validated
 public class ChatController {
-    private final CreateChatService createChatService;
-    private final ModifyChatService modifyChatService;
-    private final GetChatService getChatService;
-    private final DeleteChatService deleteChatService;
+    private final ChatCommandFacade chatCommandFacade;
+    private final ChatQueryFacade chatQueryFacade;
 
     @PostMapping("/chats")
     public ResponseEntity<Long> createChat(
@@ -49,7 +45,7 @@ public class ChatController {
             @RequestBody @Valid ChatRequest chatRequest
     ) {
         return ResponseEntity.status(CREATED)
-                .body(createChatService.create(userId, chatRequest));
+                .body(chatCommandFacade.createChat(userId, chatRequest));
     }
 
     @PatchMapping("/chats/{chatId}")
@@ -58,7 +54,7 @@ public class ChatController {
             @PathVariable Long chatId,
             @RequestBody @Valid ModifyChatRequest modifyChatRequest
     ) {
-        modifyChatService.modifyChat(userId, chatId, modifyChatRequest);
+        chatCommandFacade.modifyChat(userId, chatId, modifyChatRequest);
         return ResponseEntity.ok().build();
     }
 
@@ -68,7 +64,7 @@ public class ChatController {
             @PathVariable Long chatId,
             @RequestBody @Valid ModifyChatParticipantsRequest modifyChatParticipantsRequest
     ) {
-        modifyChatService.modifyChatParticipants(userId, chatId, modifyChatParticipantsRequest);
+        chatCommandFacade.modifyChatParticipants(userId, chatId, modifyChatParticipantsRequest);
         return ResponseEntity.ok().build();
     }
 
@@ -78,7 +74,7 @@ public class ChatController {
             @PathVariable Long chatId,
             @RequestBody @Valid ModifyChatParticipantRole modifyChatParticipantRole
     ) {
-        modifyChatService.modifyChatParticipantRole(userId, chatId, modifyChatParticipantRole);
+        chatCommandFacade.modifyChatParticipantRole(userId, chatId, modifyChatParticipantRole);
         return ResponseEntity.ok().build();
     }
 
@@ -87,7 +83,7 @@ public class ChatController {
             @RequestHeader(USER_ID_HEADER) Long userId,
             @PathVariable Long chatId
     ) {
-        deleteChatService.deleteParticipant(userId, chatId);
+        chatCommandFacade.deleteParticipant(userId, chatId);
         return ResponseEntity.ok().build();
     }
 
@@ -98,7 +94,7 @@ public class ChatController {
             @RequestParam(required = false, defaultValue = "1") @Min(1) Integer pageNumber,
             @RequestParam(required = false, defaultValue = "${default.chat.page.size}") @Min(1) Integer pageSize
     ) {
-        return ResponseEntity.ok(getChatService.getChats(userId, chatType, pageNumber, pageSize));
+        return ResponseEntity.ok(chatQueryFacade.getChats(userId, chatType, pageNumber, pageSize));
     }
 
     @GetMapping("/chats/{chatId}")
@@ -106,7 +102,7 @@ public class ChatController {
             @RequestHeader(USER_ID_HEADER) Long userId,
             @PathVariable Long chatId
     ) {
-        return ResponseEntity.ok(getChatService.getChat(userId, chatId));
+        return ResponseEntity.ok(chatQueryFacade.getChat(userId, chatId));
     }
 
     @Deprecated
@@ -115,7 +111,7 @@ public class ChatController {
             @RequestHeader(USER_ID_HEADER) Long userId,
             @PathVariable Long chatId
     ) {
-        return ResponseEntity.ok(getChatService.getParticipants(userId, chatId));
+        return ResponseEntity.ok(chatQueryFacade.getParticipants(userId, chatId));
     }
 
     @Deprecated
@@ -125,7 +121,7 @@ public class ChatController {
             @PathVariable Long chatId,
             @RequestBody @Valid UpdateChatReadAtRequest request
     ) {
-        modifyChatService.updateLastReadAt(userId, chatId, request.lastReadAt());
+        chatCommandFacade.updateLastReadAt(userId, chatId, request.lastReadAt());
         return ResponseEntity.ok().build();
     }
 
@@ -134,13 +130,13 @@ public class ChatController {
             @RequestHeader(USER_ID_HEADER) Long userId,
             @PathVariable Long chatId
     ) {
-        deleteChatService.delete(userId, chatId);
+        chatCommandFacade.deleteChat(userId, chatId);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/internal/chats/{chatId}/participants/ids")
     public ResponseEntity<List<Long>> getChatParticipantsIds(@PathVariable Long chatId) {
         return ResponseEntity.ok()
-                .body(getChatService.getChatParticipantsIds(chatId));
+                .body(chatQueryFacade.getChatParticipantsIds(chatId));
     }
 }

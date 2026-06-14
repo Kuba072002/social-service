@@ -1,5 +1,6 @@
 package org.example;
 
+import com.github.tomakehurst.wiremock.client.MappingBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.text.RandomStringGenerator;
@@ -8,6 +9,8 @@ import org.example.domain.chat.entity.Chat;
 import org.example.domain.chat.entity.ChatParticipant;
 import org.example.domain.chat.entity.ChatParticipantRole;
 import org.example.domain.chat.entity.ChatType;
+import org.example.domain.message.LatestChatMessagesDTO;
+import org.example.domain.message.MessageDTO;
 import org.example.domain.user.UserDTO;
 
 import java.time.Instant;
@@ -16,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -106,5 +110,43 @@ public class TestUtils {
         return IntStream.range(0, numberOfParticipants)
                 .mapToObj(i -> RandomUtils.secure().randomLong())
                 .collect(Collectors.toSet());
+    }
+
+    public static List<LatestChatMessagesDTO> mockGetLatestMessages(List<Long> chatIds) {
+        var messages = createMessages(chatIds);
+
+        MappingBuilder builder = WireMock.get(
+                WireMock.urlPathEqualTo("/internal/messages"));
+
+        for (Long chatId : chatIds) {
+            builder.withQueryParam("chatIds",
+                    WireMock.containing(chatId.toString()));
+        }
+
+        IntegrationTestInitializer.WIREMOCK.stubFor(
+                builder.willReturn(
+                        WireMock.aResponse()
+                                .withStatus(200)
+                                .withHeader("Content-Type", "application/json")
+                                .withBody(JsonUtils.writeToJson(messages))));
+        return messages;
+    }
+
+    private static List<LatestChatMessagesDTO> createMessages(Collection<Long> chatIds) {
+        var now = Instant.now();
+        return chatIds.stream()
+                .map(chatId -> new LatestChatMessagesDTO(
+                        chatId,
+                        List.of(new MessageDTO(
+                                chatId,
+                                UUID.randomUUID(),
+                                RandomUtils.insecure().randomLong(),
+                                randomAlphabetic(20),
+                                randomAlphabetic(20),
+                                now.minusSeconds(chatId % 100).truncatedTo(ChronoUnit.MICROS),
+                                "CREATED"
+                        ))
+                ))
+                .toList();
     }
 }

@@ -31,6 +31,7 @@ services:
     environment:
       - DB_HOST=postgresql_database
       - USER_SERVICE_URL=http://user-svc:8081/user-svc/
+      - MESSAGE_SERVICE_URL=http://message-svc:8083/message-svc/
       - SPRING_RABBITMQ_HOST=rabbitmq
       - MONITORING_HOST=grafana-lgtm
     ports:

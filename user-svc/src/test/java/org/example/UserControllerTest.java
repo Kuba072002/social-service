@@ -118,9 +118,11 @@ class UserControllerTest {
                 .toList();
         assertThat(refreshHashTokens)
                 .contains(tokenService.hash(loginResponse.refreshToken()));
-        var loginTokenExpiration = tokenService.validateAndGetClaims(loginResponse.refreshToken(), TokenService.REFRESH_TYPE).getExpiration();
+        var loginTokenExpiration = tokenService
+                .validateAndGetClaims(loginResponse.refreshToken(), TokenService.REFRESH_TYPE)
+                .getExpiration();
 
-        Thread.sleep(500);
+        Thread.sleep(2000);
 
         var response = restTestClient.post()
                 .uri("/refresh")

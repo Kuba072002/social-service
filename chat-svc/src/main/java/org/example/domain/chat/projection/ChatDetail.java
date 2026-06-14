@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.application.chat.dto.ParticipantDTO;
 import org.example.domain.chat.entity.ChatType;
+import org.example.domain.message.MessageDTO;
 
 import java.time.Instant;
 import java.util.List;
@@ -31,6 +32,8 @@ public class ChatDetail {
     private Long otherUserId;
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<ParticipantDTO> participants;
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private MessageDTO latestMessage;
 
     public ChatDetail(
             Long chatId, String chatType,

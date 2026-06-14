@@ -1,5 +1,6 @@
 package org.example.application.config;
 
+import org.example.domain.message.MessageService;
 import org.example.domain.user.UserService;
 import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -9,7 +10,8 @@ import org.zalando.logbook.spring.LogbookClientHttpRequestInterceptor;
 
 @Configuration(proxyBeanMethods = false)
 @ImportHttpServices(UserService.class)
-public class UserServiceConfiguration {
+@ImportHttpServices(MessageService.class)
+public class HttpClientConfiguration {
     @Bean
     RestClientCustomizer userAgentCustomizer(LogbookClientHttpRequestInterceptor interceptor) {
         return restClientBuilder -> restClientBuilder

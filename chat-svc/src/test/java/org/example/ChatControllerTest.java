@@ -16,6 +16,7 @@ import org.example.domain.chat.entity.ChatParticipantRole;
 import org.example.domain.chat.entity.ChatType;
 import org.example.domain.chat.projection.ChatDetail;
 import org.example.domain.chat.repository.ChatRepository;
+import org.example.domain.message.LatestChatMessagesDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -34,6 +35,7 @@ import org.springframework.http.ResponseEntity;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -44,6 +46,7 @@ import java.util.stream.IntStream;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.example.TestUtils.createChat;
 import static org.example.TestUtils.getRandomUserIds;
+import static org.example.TestUtils.mockGetLatestMessages;
 import static org.example.TestUtils.mockGetUsers;
 import static org.example.TestUtils.randomAlphabetic;
 import static org.example.common.ChatApplicationError.PRIVATE_CHAT_ALREADY_EXISTS;
@@ -130,6 +133,18 @@ class ChatControllerTest extends BaseIntegrationTest {
             mockGetUsers(userIdsToFetch);
         }
 
+        var expectedChatsInResponse = switch (chatType) {
+            case PRIVATE -> privateChats;
+            case GROUP -> groupChats;
+            case null -> ListUtils.union(privateChats, groupChats);
+        };
+        var expectedChatIds = expectedChatsInResponse.stream()
+                .sorted(Comparator.comparing(Chat::getLastMessageAt).reversed())
+                .map(Chat::getId)
+                .toList();
+        var messagesMap = mockGetLatestMessages(expectedChatIds).stream()
+                .collect(Collectors.toMap(LatestChatMessagesDTO::chatId, Function.identity()));
+
         String url = chatType != null ? "/chats?chatType=" + chatType.name().toLowerCase() : "/chats";
         ResponseEntity<List<ChatDetail>> result = restTemplate.exchange(
                 url,
@@ -137,12 +152,6 @@ class ChatControllerTest extends BaseIntegrationTest {
                 new HttpEntity<>(null, getHttpHeaders(senderId)),
                 new ParameterizedTypeReference<>() {
                 });
-
-        var expectedChatsInResponse = switch (chatType) {
-            case PRIVATE -> privateChats;
-            case GROUP -> groupChats;
-            case null -> ListUtils.union(privateChats, groupChats);
-        };
 
         assert result.getBody() != null;
         var chatDetails = result.getBody();
@@ -175,6 +184,8 @@ class ChatControllerTest extends BaseIntegrationTest {
                 assertThat(chatDetail.getName()).isEqualTo(chat.getName());
                 assertThat(chatDetail.getImageUrl()).isEqualTo(chat.getImageUrl());
             }
+            var expectedMessage = messagesMap.get(chatDetail.getChatId());
+            assertThat(chatDetail.getLatestMessage()).isEqualTo(expectedMessage.messages().getFirst());
         }
     }
 
@@ -281,6 +292,10 @@ class ChatControllerTest extends BaseIntegrationTest {
         Long senderId = RandomUtils.secure().randomLong();
         var userIds = getRandomUserIds(numberOfParticipants);
         Chat chat = createChat(false, userIds, senderId);
+        chat.getParticipants().stream()
+                .filter(participant -> !participant.getUserId().equals(senderId))
+                .findFirst()
+                .ifPresent(participant -> participant.setRole(ChatParticipantRole.ADMIN));
         chatRepository.save(chat);
 
         ResponseEntity<Void> result = restTemplate.exchange(

@@ -68,7 +68,8 @@ public class IntegrationTestInitializer implements ApplicationContextInitializer
                 "spring.sql.init.mode=always",
                 "spring.rabbitmq.host=" + rabbitMQContainer.getHost(),
                 "spring.rabbitmq.port=" + rabbitMQContainer.getMappedPort(5672),
-                "user.service.url=http://localhost:" + WIREMOCK.port()
+                "user.service.url=http://localhost:" + WIREMOCK.port(),
+                "message.service.url=http://localhost:" + WIREMOCK.port()
         ).applyTo(applicationContext);
     }
 }

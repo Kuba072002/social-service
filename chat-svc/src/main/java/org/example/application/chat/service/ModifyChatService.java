@@ -29,7 +29,7 @@ import static org.example.common.ChatApplicationError.USER_IS_NOT_ADMIN;
 
 @Service
 @RequiredArgsConstructor
-public class ModifyChatService {
+class ModifyChatService {
     private final ChatFacade chatFacade;
     private final UserFacade userFacade;
     private final ChatMapper chatMapper;

@@ -19,7 +19,6 @@ CREATE UNIQUE INDEX uq_chats_private_pair_key
     WHERE private_pair_key IS NOT NULL;
 
 --changeset kuba:3
-
 CREATE TABLE IF NOT EXISTS chat_schema.chat_participants
 (
     id           BIGSERIAL PRIMARY KEY,

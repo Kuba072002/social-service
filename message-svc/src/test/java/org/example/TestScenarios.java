@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import org.apache.commons.lang3.RandomUtils;
 import org.example.application.chat.ChatEvent;
 import org.example.application.dto.ChatActivityRequest;
+import org.example.application.dto.LatestChatMessagesDTO;
 import org.example.application.dto.MessageDTO;
 import org.example.application.dto.MessageEditRequest;
 import org.example.application.dto.MessageRequest;
@@ -66,6 +67,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -256,6 +259,38 @@ class TestScenarios {
         assertThat(result.getBody()).hasSize(originalMessages.size());
         assertThat(result.getBody().stream().map(MessageDTO::messageId).toList())
                 .containsExactlyInAnyOrderElementsOf(originalMessages.stream().map(Message::getMessageId).toList());
+    }
+
+    @Test
+    void shouldGetLatestMessageWhenRequestedInInternalCall() {
+        var chatIds = IntStream.range(0, 12)
+                .mapToObj(i -> RandomUtils.secure().randomLong())
+                .toList();
+        Map<Long, Message> originalMessagesMap = chatIds.stream()
+                .map(chatId -> createMessage(
+                        chatId,
+                        RandomUtils.secure().randomLong(),
+                        MessageState.values()[Math.toIntExact(chatId % 3)])
+                )
+                .collect(Collectors.toMap(Message::getChatId, Function.identity()));
+        messageRepository.saveAll(originalMessagesMap.values());
+
+        var requestParams = chatIds.stream().map(chatId -> "chatIds=" + chatId).collect(Collectors.joining("&"));
+        ResponseEntity<List<LatestChatMessagesDTO>> result = restTemplate.exchange("/internal/messages?" + requestParams,
+                HttpMethod.GET,
+                new HttpEntity<>(null, new HttpHeaders()),
+                new ParameterizedTypeReference<>() {
+                });
+
+        assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
+        assert result.getBody() != null;
+        assertThat(result.getBody()).hasSize(chatIds.size());
+        result.getBody().forEach(dto -> {
+            var originalMessage = originalMessagesMap.get(dto.chatId());
+            assertThat(dto.messages().getFirst())
+                    .extracting(MessageDTO::messageId, MessageDTO::state, MessageDTO::senderId)
+                    .contains(originalMessage.getMessageId(), originalMessage.getState(), originalMessage.getSenderId());
+        });
     }
 
     @Test
