@@ -1,9 +1,11 @@
-package org.example.application.message.command;
+package org.example.application.message.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.application.chat.ChatAccessValidator;
 import org.example.application.dto.LatestChatMessagesDTO;
 import org.example.application.dto.MessageDTO;
+import org.example.application.message.command.GetMessagesForChatsQuery;
+import org.example.application.message.command.GetMessagesQuery;
 import org.example.domain.message.MessageFacade;
 import org.springframework.stereotype.Service;
 

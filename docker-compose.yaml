@@ -69,7 +69,6 @@ services:
     image: bitnami/scylladb:6.2.3
     container_name: scylla_db
     restart: always
-    command: [ "--smp", "1", "--memory", "512M", "--overprovisioned", "1" ]
     ports:
       - "7000:7000"
       - "9042:9042"

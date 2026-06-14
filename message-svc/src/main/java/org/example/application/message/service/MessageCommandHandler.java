@@ -1,4 +1,4 @@
-package org.example.application.message.command;
+package org.example.application.message.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
@@ -6,7 +6,9 @@ import org.example.application.chat.ChatAccessValidator;
 import org.example.application.dto.WsEvent;
 import org.example.application.event.MessageEvent;
 import org.example.application.event.OutboundMessagingService;
-import org.example.application.message.service.MessageMapper;
+import org.example.application.message.command.CreateMessageCommand;
+import org.example.application.message.command.DeleteMessageCommand;
+import org.example.application.message.command.EditMessageCommand;
 import org.example.domain.message.Message;
 import org.example.domain.message.MessageFacade;
 import org.springframework.stereotype.Service;

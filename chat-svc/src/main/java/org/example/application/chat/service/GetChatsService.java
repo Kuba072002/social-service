@@ -59,7 +59,9 @@ class GetChatsService {
         var latestChatMessages = messageFacade.getLatestChatMessages(chatDetailMap.keySet());
         latestChatMessages.forEach(latestMessage -> {
             var chatDetail = chatDetailMap.get(latestMessage.chatId());
-            chatDetail.setLatestMessage(latestMessage.messages().getFirst());
+            if (!latestMessage.messages().isEmpty()) {
+                chatDetail.setLatestMessage(latestMessage.messages().getFirst());
+            }
         });
     }
 }
