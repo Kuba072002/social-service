@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.PastOrPresent;
 import lombok.RequiredArgsConstructor;
 import org.example.application.dto.LatestChatMessagesDTO;
+import org.example.application.dto.MessageCommandResponse;
 import org.example.application.dto.MessageDTO;
 import org.example.application.dto.MessageEditRequest;
 import org.example.application.dto.MessageRequest;
@@ -16,7 +17,6 @@ import org.example.application.message.command.GetMessagesForChatsQuery;
 import org.example.application.message.command.GetMessagesQuery;
 import org.example.application.message.service.MessageCommandHandler;
 import org.example.application.message.service.MessageQueryHandler;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -45,15 +45,15 @@ public class MessageController {
     private final MessageCommandHandler messageCommandHandler;
     private final MessageQueryHandler messageQueryHandler;
 
-    @PostMapping(value = "/messages", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UUID> createMessage(
+    @PostMapping(value = "/messages")
+    public ResponseEntity<MessageCommandResponse> createMessage(
             @RequestHeader(USER_ID_HEADER) Long senderId,
             @RequestBody @Valid MessageRequest messageRequest
     ) {
         var command = new CreateMessageCommand(
                 senderId, messageRequest.chatId(), messageRequest.content(), messageRequest.clientMessageId());
-        var messageId = messageCommandHandler.handle(command);
-        return ResponseEntity.status(CREATED).body(messageId);
+        var messageResponse = messageCommandHandler.handle(command);
+        return ResponseEntity.status(CREATED).body(messageResponse);
     }
 
     @GetMapping("/messages")
@@ -69,25 +69,25 @@ public class MessageController {
     }
 
     @PatchMapping("/messages")
-    public ResponseEntity<Void> editMessage(
+    public ResponseEntity<MessageCommandResponse> editMessage(
             @RequestHeader(USER_ID_HEADER) Long senderId,
             @RequestBody @Valid MessageEditRequest messageEditRequest
     ) {
         var command = new EditMessageCommand(
                 senderId, messageEditRequest.chatId(), messageEditRequest.messageId(), messageEditRequest.content());
-        messageCommandHandler.handle(command);
-        return ResponseEntity.ok().build();
+        var messageResponse = messageCommandHandler.handle(command);
+        return ResponseEntity.ok().body(messageResponse);
     }
 
     @DeleteMapping("/messages")
-    public ResponseEntity<Void> deleteMessage(
+    public ResponseEntity<MessageCommandResponse> deleteMessage(
             @RequestHeader(USER_ID_HEADER) Long senderId,
             @RequestParam Long chatId,
             @RequestParam UUID messageId
     ) {
         var command = new DeleteMessageCommand(senderId, chatId, messageId);
-        messageCommandHandler.handle(command);
-        return ResponseEntity.ok().build();
+        var messageResponse = messageCommandHandler.handle(command);
+        return ResponseEntity.ok().body(messageResponse);
     }
 
     @GetMapping("/internal/messages")

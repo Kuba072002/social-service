@@ -24,7 +24,7 @@ public class MessageFacade {
 
     @Transactional
     public void editMessage(Message message, String content) {
-        message.setContent(content);
+        message.setContent(MessageContent.text(content));
         message.setTimestamp(Instant.now());
         message.setState(MessageState.EDITED);
         messageRepository.save(message);

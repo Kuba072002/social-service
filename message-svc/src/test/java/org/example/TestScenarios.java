@@ -8,6 +8,7 @@ import org.apache.commons.lang3.RandomUtils;
 import org.example.application.chat.ChatEvent;
 import org.example.application.dto.ChatActivityRequest;
 import org.example.application.dto.LatestChatMessagesDTO;
+import org.example.application.dto.MessageCommandResponse;
 import org.example.application.dto.MessageDTO;
 import org.example.application.dto.MessageEditRequest;
 import org.example.application.dto.MessageRequest;
@@ -17,6 +18,7 @@ import org.example.common.Utils;
 import org.example.domain.activity.ActiveUserRegistry;
 import org.example.domain.chat.ChatRepository;
 import org.example.domain.message.Message;
+import org.example.domain.message.MessageContent;
 import org.example.domain.message.MessageRepository;
 import org.example.domain.message.MessageState;
 import org.jetbrains.annotations.NotNull;
@@ -146,11 +148,11 @@ class TestScenarios {
         CompletableFuture<String> messageFuture = new CompletableFuture<>();
         StompSession session = connectUserByStomp(connectedUserId, messageFuture);
 
-        var result = restTemplate.postForEntity("/messages", new HttpEntity<>(messageRequest, getHttpHeaders(senderId)), UUID.class);
+        var result = restTemplate.postForEntity("/messages", new HttpEntity<>(messageRequest, getHttpHeaders(senderId)), MessageCommandResponse.class);
 
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
         assert result.getBody() != null;
-        assertThat(messageRepository.findByChatIdAndMessageId(chatId, result.getBody())).isPresent();
+        assertThat(messageRepository.findByChatIdAndMessageId(chatId, result.getBody().messageId())).isPresent();
         String receivedMessage = messageFuture.get(4, TimeUnit.SECONDS);
         LOGGER.info("Client got: {}", receivedMessage);
         assertThat(receivedMessage).isNotNull();
@@ -158,7 +160,7 @@ class TestScenarios {
         });
         assert wsEvent != null;
         assert wsEvent.payload() != null;
-        assertThat(wsEvent.payload().getContent()).isEqualTo(messageRequest.content());
+        assertThat(wsEvent.payload().getContent().value()).isEqualTo(messageRequest.content());
         session.disconnect();
     }
 
@@ -183,7 +185,7 @@ class TestScenarios {
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
         var updatedMessage = messageRepository.findByChatIdAndMessageId(chatId, orginalMessage.getMessageId()).orElse(null);
         assertThat(updatedMessage).isNotNull();
-        assertThat(updatedMessage.getContent()).isEqualTo(messageEditRequest.content());
+        assertThat(updatedMessage.getContent().value()).isEqualTo(messageEditRequest.content());
         assertThat(updatedMessage.getTimestamp()).isAfter(orginalMessage.getTimestamp());
 
         String receivedMessage = messageFuture.get(4, TimeUnit.SECONDS);
@@ -194,7 +196,7 @@ class TestScenarios {
         assert wsEvent != null;
         assert wsEvent.payload() != null;
         assertThat(wsEvent.payload().getMessageId()).isEqualTo(orginalMessage.getMessageId());
-        assertThat(wsEvent.payload().getContent()).isEqualTo(messageEditRequest.content());
+        assertThat(wsEvent.payload().getContent().value()).isEqualTo(messageEditRequest.content());
         session.disconnect();
     }
 
@@ -354,11 +356,11 @@ class TestScenarios {
         Set<Long> participants = Set.of(RandomUtils.secure().randomLong(), senderId);
         putParticipantsToCache(chatId, participants);
 
-        var result = restTemplate.postForEntity("/messages", new HttpEntity<>(messageRequest, getHttpHeaders(senderId)), UUID.class);
+        var result = restTemplate.postForEntity("/messages", new HttpEntity<>(messageRequest, getHttpHeaders(senderId)), MessageCommandResponse.class);
 
         assertThat(result.getStatusCode().is2xxSuccessful()).isTrue();
         assert result.getBody() != null;
-        assertThat(messageRepository.findByChatIdAndMessageId(chatId, result.getBody())).isPresent();
+        assertThat(messageRepository.findByChatIdAndMessageId(chatId, result.getBody().messageId())).isPresent();
 
         MessageRequest duplicatedMessageRequest = new MessageRequest(chatId, randomAlphabetic(50), messageRequest.clientMessageId());
         var duplicatedResult = restTemplate.postForEntity("/messages", new HttpEntity<>(duplicatedMessageRequest, getHttpHeaders(senderId)), Void.class);
@@ -437,7 +439,7 @@ class TestScenarios {
                 .messageId(UuidCreator.getTimeOrderedEpoch(Instant.now()))
                 .chatId(chatId)
                 .senderId(senderId)
-                .content(randomAlphabetic(20))
+                .content(MessageContent.text(randomAlphabetic(20)))
                 .timestamp(Instant.now())
                 .state(state)
                 .build();

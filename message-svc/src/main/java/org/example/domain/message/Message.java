@@ -27,9 +27,9 @@ public class Message {
     private UUID messageId;
     @Column("sender_id")
     private Long senderId;
-    private String content;
-    @Column("media_content")
-    private String mediaContent;
+    @Column("content")
+    @CassandraType(type = CassandraType.Name.TEXT)
+    private MessageContent content;
     private Instant timestamp;
     @Column("state")
     @CassandraType(type = CassandraType.Name.TEXT)

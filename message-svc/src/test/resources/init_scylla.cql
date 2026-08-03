@@ -11,7 +11,6 @@ CREATE TABLE IF NOT EXISTS messages (
     message_id uuid,
     sender_id bigint,
     content text,
-    media_content text,
     timestamp timestamp,
     state text,
 

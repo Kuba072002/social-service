@@ -3,6 +3,7 @@ package org.example.application.message.service;
 import lombok.RequiredArgsConstructor;
 import org.example.ApplicationException;
 import org.example.application.chat.ChatAccessValidator;
+import org.example.application.dto.MessageCommandResponse;
 import org.example.application.dto.WsEvent;
 import org.example.application.event.MessageEvent;
 import org.example.application.event.OutboundMessagingService;
@@ -29,7 +30,7 @@ public class MessageCommandHandler {
     private final MessageMapper messageMapper;
     private final OutboundMessagingService outboundMessagingService;
 
-    public UUID handle(CreateMessageCommand command) {
+    public MessageCommandResponse handle(CreateMessageCommand command) {
         var chatParticipantIds = chatAccessValidator.getParticipantsIfAllowed(command.chatId(), command.userId());
         checkIfMessageIsUnique(command.userId(), command.clientMessageId());
 
@@ -37,25 +38,27 @@ public class MessageCommandHandler {
         messageFacade.createMessage(message);
 
         notifyParticipants(chatParticipantIds, message);
-        return message.getMessageId();
+        return new MessageCommandResponse(message.getMessageId(), command.clientMessageId());
     }
 
-    public void handle(EditMessageCommand command) {
+    public MessageCommandResponse handle(EditMessageCommand command) {
         var message = findMessageAndValidateSender(command.userId(), command.chatId(), command.messageId());
         var chatParticipantIds = chatAccessValidator.getParticipantsIfAllowed(command.chatId(), command.userId());
 
         messageFacade.editMessage(message, command.content());
 
         notifyParticipants(chatParticipantIds, message);
+        return MessageCommandResponse.of(message.getMessageId());
     }
 
-    public void handle(DeleteMessageCommand command) {
+    public MessageCommandResponse handle(DeleteMessageCommand command) {
         var message = findMessageAndValidateSender(command.userId(), command.chatId(), command.messageId());
         var chatParticipantIds = chatAccessValidator.getParticipantsIfAllowed(command.chatId(), command.userId());
 
         messageFacade.deleteMessage(message);
 
         notifyParticipants(chatParticipantIds, message);
+        return MessageCommandResponse.of(message.getMessageId());
     }
 
     private Message findMessageAndValidateSender(Long senderId, Long chatId, UUID messageId) {
