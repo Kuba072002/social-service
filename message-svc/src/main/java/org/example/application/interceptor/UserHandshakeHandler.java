@@ -1,6 +1,5 @@
 package org.example.application.interceptor;
 
-import com.sun.security.auth.UserPrincipal;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -50,7 +49,7 @@ public class UserHandshakeHandler extends DefaultHandshakeHandler {
             String userId = validateTokenAndGetSubject(token);
             attributes.put("userId", userId);
             attributes.put("token", token);
-            return new UserPrincipal(userId);
+            return () -> userId;
         } catch (JwtException ex) {
             throw new ApplicationException(INVALID_TOKEN);
         }

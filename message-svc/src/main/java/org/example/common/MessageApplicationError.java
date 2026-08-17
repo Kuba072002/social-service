@@ -12,6 +12,7 @@ public enum MessageApplicationError implements ApplicationError {
     INVALID_USER_HEADER(BAD_REQUEST, "Header is missing or invalid."),
     MISSING_AUTH_HEADER(UNAUTHORIZED, "Missing Authorization header."),
     INVALID_TOKEN(UNAUTHORIZED, "Invalid token."),
+    INVALID_SUBSCRIPTION_DESTINATION(BAD_REQUEST, "Invalid subscription destination."),
     NOT_INVOLVED_REQUESTER(BAD_REQUEST, "Requester is not involved in chat."),
     FROM_GREATER_THAN_TO(BAD_REQUEST, "From cannot be greater than to."),
     MESSAGE_NOT_FOUND(BAD_REQUEST, "Message not found."),
