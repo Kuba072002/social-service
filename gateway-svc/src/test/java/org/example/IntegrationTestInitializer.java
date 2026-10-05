@@ -23,7 +23,8 @@ public class IntegrationTestInitializer implements ApplicationContextInitializer
                 "chat.service.url=http://localhost:" + WIREMOCK.port() + "/chat-svc",
                 "message.service.url=http://localhost:" + WIREMOCK.port() + "/message-svc",
                 "jwt.secret=long_and_secure_jwt_secret_for_development",
-                "jwt.expiration=3600000"
+                "jwt.expiration=3600000",
+                "management.opentelemetry.enabled=false"
         ).applyTo(applicationContext.getEnvironment());
     }
 }

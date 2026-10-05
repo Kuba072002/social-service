@@ -1,5 +1,5 @@
 #build
-FROM maven:3.9.9-eclipse-temurin-23-alpine AS build
+FROM maven:3.10.0-eclipse-temurin-25-alpine AS build
 
 WORKDIR /app
 
@@ -19,7 +19,7 @@ WORKDIR /app/message-svc
 RUN mvn clean package -DskipTests
 
 #run
-FROM eclipse-temurin:23-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 
 WORKDIR /app
 

@@ -10,10 +10,16 @@ public record MessageDTO(
         UUID messageId,
         Long senderId,
         @JsonInclude(JsonInclude.Include.NON_NULL)
-        String content,
+        MessageContent content,
         @JsonInclude(JsonInclude.Include.NON_NULL)
         String mediaContent,
         Instant timestamp,
         String state
 ) {
+
+    public record MessageContent(
+            String type,
+            String value
+    ) {
+    }
 }

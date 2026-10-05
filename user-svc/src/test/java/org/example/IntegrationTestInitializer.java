@@ -19,7 +19,8 @@ public class IntegrationTestInitializer implements ApplicationContextInitializer
                 "spring.jpa.hibernate.ddl-auto=create",
                 "spring.jpa.show-sql=true",
                 "spring.jpa.defer-datasource-initialization=true",
-                "spring.sql.init.mode=always"
+                "spring.sql.init.mode=always",
+                "management.opentelemetry.enabled=false"
         ).applyTo(applicationContext);
     }
 }

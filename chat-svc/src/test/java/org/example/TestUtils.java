@@ -141,7 +141,7 @@ public class TestUtils {
                                 chatId,
                                 UUID.randomUUID(),
                                 RandomUtils.insecure().randomLong(),
-                                randomAlphabetic(20),
+                                new MessageDTO.MessageContent("TEXT", randomAlphabetic(20)),
                                 randomAlphabetic(20),
                                 now.minusSeconds(chatId % 100).truncatedTo(ChronoUnit.MICROS),
                                 "CREATED"

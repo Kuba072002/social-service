@@ -44,7 +44,7 @@ services:
     container_name: message-svc
     environment:
       - USER_SERVICE_URL=http://user-svc:8081/user-svc/
-      - SPRING_CASSANDRA_CONTACT-POINTS=scylla
+      - SPRING_CASSANDRA_CONTACT-POINTS=scylla_db
       - CHAT_SERVICE_URL=http://chat-svc:8082/chat-svc/
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_DATA_REDIS_HOST=redis
@@ -65,16 +65,22 @@ services:
     ports:
       - "5432:5432"
 
-  scylla:
-    image: bitnami/scylladb:6.2.3
+  scylla_db:
+    image: scylladb/scylla:2026.2
     container_name: scylla_db
     restart: always
+    command: [ "--smp", "1", "--memory", "512M", "--overprovisioned", "1" ]
     ports:
       - "7000:7000"
       - "9042:9042"
     volumes:
-      - scylla_data:/var/lib/scylla
-      - ./init/scylla:/docker-entrypoint-initdb.d
+      - ./init/scylla:/init
+    healthcheck:
+      test: [ "CMD-SHELL", "cqlsh -e 'DESCRIBE KEYSPACES' >/dev/null 2>&1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
 
   redis:
     image: redis:latest

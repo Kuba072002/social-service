@@ -1,8 +1,4 @@
-CREATE KEYSPACE message_keyspace
-WITH replication = {
-    'class' : 'SimpleStrategy',
-    'replication_factor' : 1
-};
+CREATE KEYSPACE message_keyspace;
 
 USE message_keyspace;
 
@@ -24,3 +20,9 @@ CREATE TABLE IF NOT EXISTS message_dedup (
 
     PRIMARY KEY ((sender_id), client_message_id)
 ) WITH default_time_to_live = 86400;
+
+CREATE TABLE chats (
+    chat_id bigint PRIMARY KEY,
+    participant_ids set<bigint>,
+    updated_at bigint
+);

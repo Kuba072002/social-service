@@ -34,7 +34,7 @@ public class IntegrationTestInitializer implements ApplicationContextInitializer
     private static final String MESSAGE_KEYSPACE = "message_keyspace";
 
     @Container
-    static ScyllaDBContainer scyllaDBContainer = new ScyllaDBContainer(DockerImageName.parse("scylladb/scylla:6.2"))
+    static ScyllaDBContainer scyllaDBContainer = new ScyllaDBContainer(DockerImageName.parse("scylladb/scylla:2026.2"))
             .withCommand("--smp 1 --memory 512M --overprovisioned 1")
             .withStartupTimeout(Duration.ofSeconds(120));
 
@@ -103,7 +103,8 @@ public class IntegrationTestInitializer implements ApplicationContextInitializer
                 "logging.level.org.springframework.messaging=DEBUG",
                 "logging.level.org.springframework.web.socket=DEBUG",
                 "logging.level.org.springframework.web.socket.messaging=DEBUG",
-                "spring.cache.type=redis"
+                "spring.cache.type=redis",
+                "management.opentelemetry.enabled=false"
         ).applyTo(applicationContext.getEnvironment());
     }
 

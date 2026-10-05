@@ -67,7 +67,7 @@ oraz synchroniczne wywołania REST API
 ### ⚙️ Uruchomienie lokalne
 
 ```bash
-  docker-compose up -d
+  ./local-run.sh
 ```
 
 ### 📦 Struktura projektu
