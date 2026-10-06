@@ -7,7 +7,7 @@ import org.springframework.web.service.annotation.HttpExchange;
 import org.springframework.web.service.annotation.PostExchange;
 
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
 @HttpExchange(accept = "application/json", contentType = "application/json", url = "${user.service.url}")
 public interface UserService {
@@ -15,5 +15,5 @@ public interface UserService {
     UserDTO getUser(@PathVariable Long userId);
 
     @PostExchange("/internal/users")
-    Set<UserDTO> getUsers(@RequestBody Collection<Long> userIds);
+    List<UserDTO> getUsers(@RequestBody Collection<Long> userIds);
 }

@@ -29,3 +29,5 @@ while true; do
 done
 
 docker exec "$CONTAINER_NAME" cqlsh -f ./init/init_scylla.cql
+
+echo "ScyllaDB setup completed."

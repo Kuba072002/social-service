@@ -5,6 +5,7 @@ import org.example.ApplicationError;
 import org.springframework.http.HttpStatus;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Getter
@@ -20,7 +21,8 @@ public enum ChatApplicationError implements ApplicationError {
     CANNOT_MODIFY_OWNER_ROLE(BAD_REQUEST, "Cannot modify owner role."),
     CHAT_PARTICIPANTS_ALREADY_EXISTS(BAD_REQUEST, "Chat participants already exists."),
     CHAT_PARTICIPANTS_NOT_EXISTS(BAD_REQUEST, "Chat participants not exists."),
-    USER_DOES_NOT_BELONG_TO_CHAT(BAD_REQUEST, "User does not belong to chat.");
+    USER_DOES_NOT_BELONG_TO_CHAT(BAD_REQUEST, "User does not belong to chat."),
+    FAILED_TO_FETCH_USERS(INTERNAL_SERVER_ERROR, "Failed to fetch users.");
 
     private final HttpStatus status;
     private String message;

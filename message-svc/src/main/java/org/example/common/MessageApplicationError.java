@@ -5,6 +5,7 @@ import org.example.ApplicationError;
 import org.springframework.http.HttpStatus;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
+import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 
 @Getter
@@ -17,7 +18,8 @@ public enum MessageApplicationError implements ApplicationError {
     FROM_GREATER_THAN_TO(BAD_REQUEST, "From cannot be greater than to."),
     MESSAGE_NOT_FOUND(BAD_REQUEST, "Message not found."),
     MESSAGE_ALREADY_EXISTS(BAD_REQUEST, "Message already exists."),
-    SENDER_MISMATCH(BAD_REQUEST, "Sender of message mismatch.");
+    SENDER_MISMATCH(BAD_REQUEST, "Sender of message mismatch."),
+    FAILED_TO_FETCH_MESSAGES(INTERNAL_SERVER_ERROR, "Failed to fetch messages");
 
     private final HttpStatus status;
     private final String message;

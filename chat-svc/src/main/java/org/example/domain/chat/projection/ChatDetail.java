@@ -5,8 +5,9 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.example.application.chat.dto.ParticipantDTO;
 import org.example.domain.chat.entity.ChatType;
 import org.example.domain.message.MessageDTO;
@@ -14,7 +15,8 @@ import org.example.domain.message.MessageDTO;
 import java.time.Instant;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

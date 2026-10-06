@@ -8,6 +8,11 @@ public class ApplicationException extends RuntimeException {
         this.applicationError = applicationError;
     }
 
+    public ApplicationException(ApplicationError applicationError, Throwable cause) {
+        super(cause);
+        this.applicationError = applicationError;
+    }
+
     public ApplicationError getApplicationError() {
         return applicationError;
     }
